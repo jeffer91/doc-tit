@@ -1,6 +1,8 @@
 (() => {
-  const STORAGE_KEY = "doc-tit-v2";
-  const LEGACY_STORAGE_KEY = "doc-tit-v1";
+  "use strict";
+
+  const STORAGE_KEY = "doc-tit-v3";
+  const LEGACY_KEYS = ["doc-tit-v2","doc-tit-v1"];
   const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
   const SCHEDULE_ACTIVITIES = [
@@ -61,17 +63,18 @@
       documents: [{
         id: "plan-examen-complexivo",
         name: "Planificación de Examen Complexivo",
+        fileTitle: "Planificación De Examen Complexivo",
         prefix: "UTET-RGI1-",
         sequence: "01",
         process: "PRO-56",
         version: "1.0",
-        description: "Para generar esta planificación solo necesitas el cronograma y la distribución de estudiantes por carrera, lugar y cantidad.",
+        description: "Completa el cronograma, la distribución y cualquier información adicional. La app analiza el texto libre y genera el PDF completo directamente.",
         requirements: [
           {id:"period", label:"Período académico", source:"Automático", automatic:true},
           {id:"schedule", label:"Cronograma", source:"Fechas de las 9 actividades", automatic:false},
           {id:"distribution", label:"Carreras · Lugar · Cantidad", source:"Distribución del período", automatic:false},
-          {id:"logo", label:"Logo institucional", source:"Se usa en la cabecera de todas las páginas", automatic:false},
-          {id:"code", label:"Código, fecha y versión", source:"Automáticos", automatic:true}
+          {id:"logo", label:"Logo institucional", source:"Cabecera de todas las páginas", automatic:false},
+          {id:"code", label:"Código y versión", source:"Automáticos", automatic:true}
         ]
       }]
     },
@@ -107,9 +110,12 @@
     ],
     activePeriodId:"2026-04_2026-09",
     institutional:{
-      preparedBy:"Msg. Jefferson Villarreal · Gestor de Procesos Académicos",
-      reviewedBy:"Ing. Martha Tomalá · Coordinadora General de Carreras",
-      approvedBy:"Dr. Alex León T. · Vicerrector"
+      preparedBy:"Msg. Jefferson Villarreal",
+      preparedRole:"COORDINADOR DE CARRERAS",
+      reviewedBy:"Mgde. Martha Tomalá",
+      reviewedRole:"COORDINADORA GENERAL DE CARRERAS",
+      approvedBy:"Mgt. Alex León",
+      approvedRole:"VICERRECTOR"
     },
     documents:{}
   };
@@ -117,7 +123,7 @@
   let state = loadState();
   let activeDocument = null;
 
-  const $ = (s) => document.querySelector(s);
+  const $ = s => document.querySelector(s);
   const els = {
     periodSelect: $("#periodSelect"),
     periodStatus: $("#periodStatus"),
@@ -125,48 +131,57 @@
     processMenu: $("#processMenu"),
     dashboardView: $("#dashboardView"),
     documentView: $("#documentView"),
-    previewView: $("#previewView"),
     documentForm: $("#documentForm"),
     periodDialog: $("#periodDialog")
   };
 
-  function clone(value){return JSON.parse(JSON.stringify(value))}
+  function clone(v){ return JSON.parse(JSON.stringify(v)); }
   function loadState(){
     try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(raw) return normalizeState(JSON.parse(raw));
-      const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
-      if(legacy) return normalizeState(JSON.parse(legacy));
+      const current=localStorage.getItem(STORAGE_KEY);
+      if(current) return normalizeState(JSON.parse(current));
+      for(const key of LEGACY_KEYS){
+        const raw=localStorage.getItem(key);
+        if(raw) return normalizeState(JSON.parse(raw));
+      }
     }catch(e){}
     return clone(defaultState);
   }
+
   function normalizeState(parsed){
-    const base = clone(defaultState);
-    const merged = {...base, ...parsed};
-    merged.periods = Array.isArray(parsed.periods) ? parsed.periods.slice() : base.periods.slice();
-    base.periods.forEach(dp=>{if(!merged.periods.some(p=>p.id===dp.id)) merged.periods.unshift(dp)});
+    const base=clone(defaultState);
+    const merged={...base,...(parsed||{})};
+    merged.periods=Array.isArray(parsed?.periods)?parsed.periods.slice():base.periods.slice();
+    base.periods.forEach(dp=>{ if(!merged.periods.some(p=>p.id===dp.id)) merged.periods.unshift(dp); });
     if(!merged.periods.some(p=>p.id===merged.activePeriodId)) merged.activePeriodId=base.activePeriodId;
-    merged.institutional = {...base.institutional, ...(parsed.institutional||{})};
-    merged.documents = parsed.documents || {};
+
+    // La ficha de firmas se normaliza al formato institucional solicitado.
+    merged.institutional=clone(base.institutional);
+    merged.documents=parsed?.documents||{};
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(merged));
     return merged;
   }
-  function saveState(){localStorage.setItem(STORAGE_KEY, JSON.stringify(state))}
-  function activePeriod(){return state.periods.find(p=>p.id===state.activePeriodId) || state.periods[0]}
+
+  function saveState(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); }
+  function activePeriod(){ return state.periods.find(p=>p.id===state.activePeriodId)||state.periods[0]; }
   function monthYear(date){
-    const d = new Date(date+"T12:00:00");
-    return {year:d.getFullYear(), month:String(d.getMonth()+1).padStart(2,"0")};
+    const d=new Date(date+"T12:00:00");
+    return {year:d.getFullYear(),month:String(d.getMonth()+1).padStart(2,"0")};
   }
-  function documentCode(doc, period){
-    const {year,month} = monthYear(period.start);
+  function documentCode(doc,period){
+    const {year,month}=monthYear(period.start);
     return `${doc.prefix}${doc.sequence}-${doc.process}-${year}-${month}`;
   }
-  function docStoreKey(docId){return `${state.activePeriodId}::${docId}`}
-  function getDocData(docId){return state.documents[docStoreKey(docId)] || {}}
-  function setDocData(docId,data){state.documents[docStoreKey(docId)] = {...getDocData(docId), ...data};saveState()}
-  function allDocumentCount(){return Object.values(catalog).reduce((sum,p)=>sum+p.documents.length,0)}
+  function docStoreKey(docId){ return `${state.activePeriodId}::${docId}`; }
+  function getDocData(docId){ return state.documents[docStoreKey(docId)]||{}; }
+  function setDocData(docId,data){
+    state.documents[docStoreKey(docId)]={...getDocData(docId),...data};
+    saveState();
+  }
+  function allDocumentCount(){ return Object.values(catalog).reduce((sum,p)=>sum+p.documents.length,0); }
   function periodDocumentData(){
     const prefix=state.activePeriodId+"::";
-    return Object.entries(state.documents).filter(([key])=>key.startsWith(prefix)).map(([,data])=>data);
+    return Object.entries(state.documents).filter(([k])=>k.startsWith(prefix)).map(([,d])=>d);
   }
 
   function renderPeriods(){
@@ -199,7 +214,7 @@
   }
 
   function showView(view){
-    [els.dashboardView,els.documentView,els.previewView].forEach(v=>v.classList.remove("active"));
+    [els.dashboardView,els.documentView].forEach(v=>v.classList.remove("active"));
     view.classList.add("active");
     window.scrollTo({top:0,behavior:"smooth"});
   }
@@ -238,33 +253,10 @@
     renderSchedule(saved.schedule||starterSchedule());
     renderDistribution(saved.distribution||starterDistribution());
     renderAssetPreviews(saved.assets||{});
+    $("#smartTextInput").value=saved.smartText||"";
+    renderSmartAnalysis(saved.analysis||null);
+    renderGenerationStatus(saved);
     updateProgress();
-  }
-
-  function renderAssetPreviews(assets){
-    const configs=[
-      ["logoPreview",assets.logo,"Sin imagen"]
-    ];
-    configs.forEach(([id,src,empty])=>{
-      const el=$("#"+id);
-      if(el) el.innerHTML=src?`<img src="${src}" alt="Imagen cargada">`:`<span>${empty}</span>`;
-    });
-  }
-
-  async function storeAsset(key,file){
-    if(!activeDocument||!file) return;
-    try{
-      const maxW=key==="logo"?900:700;
-      const maxH=key==="logo"?320:360;
-      const dataUrl=await window.DocTitFullDocument.resizeImage(file,maxW,maxH);
-      const saved=getDocData(activeDocument.id);
-      const assets={...(saved.assets||{}),[key]:dataUrl};
-      setDocData(activeDocument.id,{assets});
-      renderAssetPreviews(assets);
-      updateProgress();
-    }catch(err){
-      alert(err.message||"No se pudo cargar la imagen.");
-    }
   }
 
   function renderSchedule(rows){
@@ -305,6 +297,26 @@
         updateProgress();
       };
     });
+  }
+
+  function renderAssetPreviews(assets){
+    const el=$("#logoPreview");
+    if(!el) return;
+    el.innerHTML=assets.logo?`<img src="${assets.logo}" alt="Logo cargado">`:"<span>Sin imagen</span>";
+  }
+
+  async function storeLogo(file){
+    if(!activeDocument||!file) return;
+    try{
+      const dataUrl=await window.DocTitFullDocument.resizeImage(file,900,320);
+      const saved=getDocData(activeDocument.id);
+      const assets={...(saved.assets||{}),logo:dataUrl};
+      setDocData(activeDocument.id,{assets});
+      renderAssetPreviews(assets);
+      updateProgress();
+    }catch(err){
+      alert(err.message||"No se pudo cargar el logo.");
+    }
   }
 
   function collectSchedule(){
@@ -351,36 +363,39 @@
     const data=[
       ["Período",p.name],
       ["Código",documentCode(doc,p)],
-      ["Fecha de elaboración",formatDate(p.start)],
       ["Versión","1.0"],
-      ["Elaborado por",state.institutional.preparedBy],
-      ["Revisado por",state.institutional.reviewedBy],
-      ["Aprobado por",state.institutional.approvedBy]
+      ["Elaborado por",`${state.institutional.preparedBy} · ${state.institutional.preparedRole}`],
+      ["Revisado por",`${state.institutional.reviewedBy} · ${state.institutional.reviewedRole}`],
+      ["Aprobado por",`${state.institutional.approvedBy} · ${state.institutional.approvedRole}`]
     ];
     $("#automaticData").innerHTML=data.map(([k,v])=>`<div class="auto-row"><span>${k}</span><strong>${escapeHtml(v)}</strong></div>`).join("");
   }
 
-  function scheduleComplete(schedule){return schedule.length===SCHEDULE_ACTIVITIES.length && schedule.every(r=>r.start&&r.end)}
-  function distributionComplete(rows){return rows.length>0 && rows.every(r=>r.career&&r.place&&r.count!==""&&Number(r.count)>=0)}
+  function scheduleComplete(schedule){
+    return schedule.length===SCHEDULE_ACTIVITIES.length&&schedule.every(r=>r.start&&r.end);
+  }
+  function distributionComplete(rows){
+    return rows.length>0&&rows.every(r=>r.career&&r.place&&r.count!==""&&Number(r.count)>=0);
+  }
 
   function updateProgress(){
     if(!activeDocument) return;
-    const schedule=collectSchedule();
-    const distribution=collectDistribution();
+    const scheduleOk=scheduleComplete(collectSchedule());
+    const distributionOk=distributionComplete(collectDistribution());
     const assets=getDocData(activeDocument.id).assets||{};
-    const scheduleOk=scheduleComplete(schedule);
-    const distributionOk=distributionComplete(distribution);
     const logoOk=!!assets.logo;
+
     const setReq=(id,ok)=>{
       const row=document.querySelector('[data-req="'+id+'"]');
-      if(!row)return;
+      if(!row) return;
       row.classList.toggle("done",ok);
       const icon=row.querySelector(".req-icon");
-      if(icon)icon.textContent=ok?"✓":"○";
+      if(icon) icon.textContent=ok?"✓":"○";
     };
     setReq("schedule",scheduleOk);
     setReq("distribution",distributionOk);
     setReq("logo",logoOk);
+
     const pct=Math.round(((2+(scheduleOk?1:0)+(distributionOk?1:0)+(logoOk?1:0))/5)*100);
     $("#progressText").textContent=`${pct}% completo`;
     $("#progressBar").style.width=pct+"%";
@@ -388,9 +403,141 @@
     $("#docStateBadge").className="badge "+(pct===100?"":"neutral");
   }
 
+  function splitSentences(text){
+    return String(text||"")
+      .replace(/\r/g,"\n")
+      .split(/(?<=[.!?])\s+|\n+/)
+      .map(s=>s.trim())
+      .filter(Boolean);
+  }
+
+  function keywordScore(sentence,words){
+    const n=normalize(sentence);
+    return words.reduce((score,w)=>score+(n.includes(normalize(w))?1:0),0);
+  }
+
+  function analyzeSmartText(text){
+    const sentences=splitSentences(text);
+    const sections={general:[],metodologia:[],requisitos:[],logistica:[],evaluacion:[],cronograma:[]};
+    const dictionaries={
+      metodologia:["metodología","inducción","núcleo","seminario","preparación","capacitación","acompañamiento"],
+      requisitos:["requisito","documento","cédula","pago","financiero","vinculación","prácticas","idioma","inglés","malla","secretaría"],
+      logistica:["laboratorio","aula","sede","norte","sur","manta","software","equipo","computador","distribución","online"],
+      evaluacion:["examen","pregunta","duración","minutos","hora","teórico","práctico","nota","ponderación","calificación","tribunal","supletorio"],
+      cronograma:["fecha","día","semana","cronograma","inicio","fin","octubre","noviembre","septiembre","agosto","julio","junio","mayo","abril"]
+    };
+
+    sentences.forEach(s=>{
+      let best="general",max=0;
+      Object.entries(dictionaries).forEach(([key,words])=>{
+        const score=keywordScore(s,words);
+        if(score>max){max=score;best=key;}
+      });
+      sections[best].push(s);
+    });
+
+    const dates=[...new Set((text.match(/\b(?:0?[1-9]|[12]\d|3[01])[\/\-.](?:0?[1-9]|1[0-2])[\/\-.](?:20\d{2})\b/g)||[]))];
+    const places=["Norte","Sur","Manta"].filter(p=>new RegExp("\\b"+p+"\\b","i").test(text));
+    const quantities=[...new Set((text.match(/\b\d+\s*(?:estudiantes?|preguntas?|minutos?|horas?)\b/gi)||[]).map(x=>x.trim()))];
+
+    const warnings=[];
+    const scheduleDates=new Set();
+    collectSchedule().forEach(r=>{
+      [r.start,r.end].filter(Boolean).forEach(v=>{
+        const d=new Date(v+"T12:00:00");
+        scheduleDates.add(new Intl.DateTimeFormat("es-EC",{day:"2-digit",month:"2-digit",year:"numeric"}).format(d));
+      });
+    });
+    const extraDates=dates.filter(d=>{
+      const parts=d.split(/[\/\-.]/);
+      const normalized=[parts[0].padStart(2,"0"),parts[1].padStart(2,"0"),parts[2]].join("/");
+      return !scheduleDates.has(normalized);
+    });
+    if(extraDates.length) warnings.push("Se detectaron fechas adicionales que no constan en el cronograma: "+extraDates.join(", ")+".");
+    if(/firma|qr/i.test(text)) warnings.push("Las firmas no se cargan como imagen: el PDF mantiene espacios en blanco para firma al final.");
+
+    const detectedSections=Object.entries(sections).filter(([,arr])=>arr.length).map(([k])=>k);
+    return {
+      sourceText:text,
+      analyzedAt:new Date().toISOString(),
+      sections,
+      dates,
+      places,
+      quantities,
+      warnings,
+      detectedSections
+    };
+  }
+
+  function renderSmartAnalysis(analysis){
+    const box=$("#smartAnalysisResult");
+    if(!box) return;
+    if(!analysis){
+      box.className="smart-analysis empty";
+      box.innerHTML="<strong>Análisis inteligente</strong><p>Escribe información y pulsa “Analizar información”.</p>";
+      return;
+    }
+
+    const labels={
+      general:"Contexto general",
+      metodologia:"Metodología / preparación",
+      requisitos:"Requisitos",
+      logistica:"Logística / sedes",
+      evaluacion:"Evaluación",
+      cronograma:"Cronograma"
+    };
+    const sections=Object.entries(analysis.sections||{}).filter(([,arr])=>arr&&arr.length);
+    const chips=[];
+    if(analysis.dates?.length) chips.push(`<span>${analysis.dates.length} fecha(s)</span>`);
+    if(analysis.places?.length) chips.push(`<span>${analysis.places.join(" · ")}</span>`);
+    if(analysis.quantities?.length) chips.push(`<span>${analysis.quantities.length} dato(s) numérico(s)</span>`);
+
+    box.className="smart-analysis";
+    box.innerHTML=`
+      <div class="smart-analysis-head">
+        <div><strong>Información analizada</strong><small>Se distribuirá automáticamente en el PDF.</small></div>
+        <span class="analysis-ok">✓ Analizado</span>
+      </div>
+      ${chips.length?`<div class="analysis-chips">${chips.join("")}</div>`:""}
+      <div class="analysis-sections">
+        ${sections.map(([key,arr])=>`<div><b>${labels[key]||key}</b><span>${arr.length} idea(s) detectada(s)</span></div>`).join("")}
+      </div>
+      ${analysis.warnings?.length?`<div class="analysis-warnings">${analysis.warnings.map(w=>`<p>⚠ ${escapeHtml(w)}</p>`).join("")}</div>`:""}
+    `;
+  }
+
+  function runSmartAnalysis(showMessage=true){
+    if(!activeDocument) return null;
+    const text=$("#smartTextInput").value.trim();
+    if(!text){
+      setDocData(activeDocument.id,{smartText:"",analysis:null});
+      renderSmartAnalysis(null);
+      if(showMessage) alert("Escribe información adicional antes de analizar.");
+      return null;
+    }
+    const analysis=analyzeSmartText(text);
+    setDocData(activeDocument.id,{smartText:text,analysis});
+    renderSmartAnalysis(analysis);
+    if(showMessage) {
+      const count=analysis.detectedSections.length;
+      $("#smartAnalysisResult").scrollIntoView({behavior:"smooth",block:"nearest"});
+    }
+    return analysis;
+  }
+
   function collectDocumentData(){
     const saved=activeDocument?getDocData(activeDocument.id):{};
-    return {schedule:collectSchedule(),distribution:collectDistribution(),assets:saved.assets||{}};
+    const smartText=$("#smartTextInput")?.value.trim()||"";
+    let analysis=saved.analysis||null;
+    if(smartText && (!analysis || analysis.sourceText!==smartText)) analysis=analyzeSmartText(smartText);
+    if(!smartText) analysis=null;
+    return {
+      schedule:collectSchedule(),
+      distribution:collectDistribution(),
+      assets:saved.assets||{},
+      smartText,
+      analysis
+    };
   }
 
   function saveDraft(){
@@ -398,12 +545,27 @@
     const data=collectDocumentData();
     const complete=scheduleComplete(data.schedule)&&distributionComplete(data.distribution)&&!!data.assets.logo;
     setDocData(activeDocument.id,{...data,complete});
+    renderSmartAnalysis(data.analysis);
     renderPeriods();
     updateProgress();
+    renderGenerationStatus(getDocData(activeDocument.id));
     alert("Borrador guardado para este período.");
   }
 
-  async function generatePreview(){
+  function renderGenerationStatus(saved){
+    const box=$("#generationStatus");
+    if(!box) return;
+    if(saved?.generatedAt && saved?.generatedFileName){
+      box.classList.remove("hidden","working","error");
+      box.classList.add("success");
+      box.innerHTML=`<strong>Último PDF generado</strong><span>${escapeHtml(saved.generatedFileName)}${saved.generatedPages?` · ${saved.generatedPages} páginas`:""}</span>`;
+    }else{
+      box.className="generation-status hidden";
+      box.innerHTML="";
+    }
+  }
+
+  async function generatePdf(){
     const data=collectDocumentData();
     if(!scheduleComplete(data.schedule)){
       alert("Completa las fechas de las 9 actividades del cronograma.");
@@ -417,29 +579,49 @@
       alert("Sube el logo institucional. Se utilizará en la cabecera de todas las páginas.");
       return;
     }
+
     const button=$("#generateBtn");
+    const status=$("#generationStatus");
     const oldText=button.textContent;
     button.disabled=true;
-    button.textContent="Generando documento completo…";
+    button.textContent="Generando PDF…";
+    status.className="generation-status working";
+    status.innerHTML="<strong>Generando documento completo</strong><span>Organizando contenido, índice, APA 7, cabeceras y firmas…</span>";
+
     try{
-      const p=activePeriod(),doc=activeDocument;
-      $("#printDocument").innerHTML=await window.DocTitFullDocument.render({
+      const p=activePeriod();
+      const doc=activeDocument;
+      const code=documentCode(doc,p);
+      const title=doc.fileTitle||doc.name;
+      const fileName=`${code} - ${title}.pdf`;
+
+      const result=await window.DocTitFullDocument.generateAndDownload({
         period:p,
         doc,
         schedule:data.schedule,
         distribution:data.distribution,
         assets:data.assets,
+        analysis:data.analysis,
         institutional:state.institutional,
-        code:documentCode(doc,p)
+        code
+      },fileName);
+
+      setDocData(activeDocument.id,{
+        ...data,
+        generatedAt:new Date().toISOString(),
+        generatedFileName:fileName,
+        generatedPages:result.pages,
+        complete:true
       });
-      setDocData(activeDocument.id,{...data,generatedAt:new Date().toISOString(),complete:true});
       renderPeriods();
-      showView(els.previewView);
-      const pageCount=$("#printDocument").querySelectorAll(".paper-page").length;
-      $("#screenTitle").textContent=`Vista de la planificación · ${pageCount} páginas`;
+      renderSmartAnalysis(data.analysis);
+      status.className="generation-status success";
+      status.innerHTML=`<strong>PDF descargado</strong><span>${escapeHtml(fileName)} · ${result.pages} páginas</span>`;
     }catch(err){
       console.error(err);
-      alert("No se pudo generar el documento completo: "+(err.message||err));
+      status.className="generation-status error";
+      status.innerHTML=`<strong>No se pudo generar</strong><span>${escapeHtml(err.message||String(err))}</span>`;
+      alert("No se pudo generar el PDF: "+(err.message||err));
     }finally{
       button.disabled=false;
       button.textContent=oldText;
@@ -447,29 +629,31 @@
   }
 
   function formatDate(v){
-    if(!v)return"—";
+    if(!v) return "—";
     const d=new Date(v+"T12:00:00");
     return new Intl.DateTimeFormat("es-EC",{day:"2-digit",month:"long",year:"numeric"}).format(d);
   }
-  function formatDateShort(v){
-    if(!v)return"";
-    const d=new Date(v+"T12:00:00");
-    return new Intl.DateTimeFormat("es-EC",{day:"2-digit",month:"2-digit",year:"numeric"}).format(d);
+
+  function escapeHtml(v){
+    return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));
   }
-  function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
-  function escapeAttr(v){return escapeHtml(v)}
+  function escapeAttr(v){ return escapeHtml(v); }
 
   function populateMonthSelectors(){
     const options=MONTHS.map((m,i)=>`<option value="${i+1}">${m}</option>`).join("");
-    $("#startMonth").innerHTML=options;$("#endMonth").innerHTML=options;
+    $("#startMonth").innerHTML=options;
+    $("#endMonth").innerHTML=options;
   }
-  function getYearValue(id){return Number($("#"+id).dataset.value)}
+  function getYearValue(id){ return Number($("#"+id).dataset.value); }
   function setYearValue(id,value){
     const safe=Math.min(2100,Math.max(2000,Number(value)));
-    const out=$("#"+id);out.dataset.value=String(safe);out.textContent=String(safe);
+    const out=$("#"+id);
+    out.dataset.value=String(safe);
+    out.textContent=String(safe);
   }
-  function monthIndexFromDate(date){return new Date(date+"T12:00:00").getMonth()+1}
-  function yearFromDate(date){return new Date(date+"T12:00:00").getFullYear()}
+  function monthIndexFromDate(date){ return new Date(date+"T12:00:00").getMonth()+1; }
+  function yearFromDate(date){ return new Date(date+"T12:00:00").getFullYear(); }
+
   function openPeriodDialog(){
     const p=activePeriod();
     $("#startMonth").value=String(monthIndexFromDate(p.start));
@@ -480,6 +664,7 @@
     updatePeriodPreview();
     els.periodDialog.showModal();
   }
+
   function updatePeriodPreview(){
     const sm=Number($("#startMonth").value),em=Number($("#endMonth").value);
     const sy=getYearValue("startYear"),ey=getYearValue("endYear");
@@ -488,9 +673,10 @@
     $("#periodError").classList.toggle("hidden",valid);
     return valid;
   }
-  function lastDayOfMonth(year,month){return new Date(year,month,0).getDate()}
+  function lastDayOfMonth(year,month){ return new Date(year,month,0).getDate(); }
+
   function createPeriod(){
-    if(!updatePeriodPreview())return;
+    if(!updatePeriodPreview()) return;
     const sm=Number($("#startMonth").value),em=Number($("#endMonth").value);
     const sy=getYearValue("startYear"),ey=getYearValue("endYear");
     const start=`${sy}-${String(sm).padStart(2,"0")}-01`;
@@ -504,49 +690,95 @@
       state.periods.unshift({id,name,start,end,status:"Activo"});
       state.activePeriodId=id;
     }
-    saveState();renderAll();els.periodDialog.close();
+    saveState();
+    renderAll();
+    els.periodDialog.close();
   }
 
   function exportBackup(){
     const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
-    const a=document.createElement("a");a.href=URL.createObjectURL(blob);
-    a.download=`doc-tit-respaldo-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href);
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download=`doc-tit-respaldo-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
   }
+
   function restoreBackup(file){
     const reader=new FileReader();
-    reader.onload=()=>{try{const parsed=JSON.parse(reader.result);if(!parsed.periods)throw new Error();state=normalizeState(parsed);saveState();renderAll();alert("Respaldo restaurado.");}catch{alert("El archivo no corresponde a un respaldo válido de DOC-TIT.");}};
+    reader.onload=()=>{
+      try{
+        const parsed=JSON.parse(reader.result);
+        if(!parsed.periods) throw new Error();
+        state=normalizeState(parsed);
+        saveState();
+        renderAll();
+        alert("Respaldo restaurado.");
+      }catch{
+        alert("El archivo no corresponde a un respaldo válido de DOC-TIT.");
+      }
+    };
     reader.readAsText(file);
   }
 
-  function renderAll(){renderPeriods();renderMenus();showView(els.dashboardView);$("#screenTitle").textContent="Gestión documental"}
+  function renderAll(){
+    renderPeriods();
+    renderMenus();
+    showView(els.dashboardView);
+    $("#screenTitle").textContent="Gestión documental";
+  }
 
   populateMonthSelectors();
 
-  els.periodSelect.addEventListener("change",e=>{state.activePeriodId=e.target.value;saveState();renderAll()});
+  els.periodSelect.addEventListener("change",e=>{
+    state.activePeriodId=e.target.value;
+    saveState();
+    renderAll();
+  });
   $("#newPeriodBtn").addEventListener("click",openPeriodDialog);
   document.querySelectorAll("[data-year-target]").forEach(btn=>btn.addEventListener("click",()=>{
-    const id=btn.dataset.yearTarget;setYearValue(id,getYearValue(id)+Number(btn.dataset.delta));updatePeriodPreview();
+    const id=btn.dataset.yearTarget;
+    setYearValue(id,getYearValue(id)+Number(btn.dataset.delta));
+    updatePeriodPreview();
   }));
   $("#startMonth").addEventListener("change",updatePeriodPreview);
   $("#endMonth").addEventListener("change",updatePeriodPreview);
-  $("#createPeriodBtn").addEventListener("click",e=>{e.preventDefault();createPeriod()});
-  $("#backBtn").addEventListener("click",()=>{showView(els.dashboardView);$("#screenTitle").textContent="Gestión documental"});
-  $("#previewBackBtn").addEventListener("click",()=>{showView(els.documentView);$("#screenTitle").textContent=activeDocument.name});
+  $("#createPeriodBtn").addEventListener("click",e=>{e.preventDefault();createPeriod();});
+  $("#backBtn").addEventListener("click",()=>{
+    showView(els.dashboardView);
+    $("#screenTitle").textContent="Gestión documental";
+  });
   $("#addDistributionRowBtn").addEventListener("click",()=>{
     $("#distributionBody").insertAdjacentHTML("beforeend",distributionRowHtml());
-    bindRemoveButtons();updateDistributionTotals();updateProgress();
+    bindRemoveButtons();
+    updateDistributionTotals();
+    updateProgress();
   });
-  els.documentForm.addEventListener("input",e=>{if(e.target.matches(".dist-count,.dist-place,.dist-career"))updateDistributionTotals();updateProgress()});
+  els.documentForm.addEventListener("input",e=>{
+    if(e.target.matches(".dist-count,.dist-place,.dist-career")) updateDistributionTotals();
+    if(e.target.id==="smartTextInput"){
+      const saved=getDocData(activeDocument.id);
+      if(saved.analysis && saved.analysis.sourceText!==e.target.value.trim()){
+        renderSmartAnalysis(null);
+      }
+    }
+    updateProgress();
+  });
   $("#logoUpload")?.addEventListener("change",e=>{
     const file=e.target.files&&e.target.files[0];
-    if(file)storeAsset("logo",file);
+    if(file) storeLogo(file);
     e.target.value="";
   });
+  $("#analyzeTextBtn")?.addEventListener("click",()=>runSmartAnalysis(true));
   $("#saveDraftBtn").addEventListener("click",saveDraft);
-  els.documentForm.addEventListener("submit",e=>{e.preventDefault();generatePreview()});
-  $("#printBtn").addEventListener("click",()=>window.print());
+  els.documentForm.addEventListener("submit",e=>{
+    e.preventDefault();
+    generatePdf();
+  });
   $("#backupBtn").addEventListener("click",exportBackup);
-  $("#restoreInput").addEventListener("change",e=>{if(e.target.files[0])restoreBackup(e.target.files[0])});
+  $("#restoreInput").addEventListener("change",e=>{
+    if(e.target.files[0]) restoreBackup(e.target.files[0]);
+  });
 
   renderAll();
 })();
