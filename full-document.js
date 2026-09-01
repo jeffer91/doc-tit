@@ -225,14 +225,19 @@
     const toc=[];
     const headerDrawn=new Set();
     const analysisInjected=new Set();
+    let tableCounter=0;
+    let figureCounter=0;
 
     function drawHeader(pageNo){
       if(headerDrawn.has(pageNo)) return;
       headerDrawn.add(pageNo);
       doc.setPage(pageNo);
+
       const x=36, top=22, totalW=pageW-72, h=58;
-      const logoW=130, codeW=98, centerW=totalW-logoW-codeW;
-      doc.setDrawColor(0); doc.setLineWidth(0.8);
+      const logoW=130, codeW=122, centerW=totalW-logoW-codeW;
+
+      doc.setDrawColor(0);
+      doc.setLineWidth(0.8);
       doc.rect(x,top,totalW,h);
       doc.line(x+logoW,top,x+logoW,top+h);
       doc.line(x+logoW+centerW,top,x+logoW+centerW,top+h);
@@ -243,21 +248,30 @@
           doc.addImage(ctx.assets.logo,imageFormat(ctx.assets.logo),x+6,top+6,logoW-12,h-12,undefined,"FAST");
         }catch(e){}
       }else{
-        doc.setFont("times","bold"); doc.setFontSize(8);
+        doc.setFont("helvetica","bold");
+        doc.setFontSize(9);
         doc.text("LOGO INSTITUCIONAL",x+logoW/2,top+h/2,{align:"center"});
       }
 
-      doc.setFont("times","normal"); doc.setFontSize(10);
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(9);
       doc.text("UNIDAD DE TITULACIÓN Y EFICIENCIA TERMINAL",x+logoW+centerW/2,top+18,{align:"center"});
-      doc.setFont("times","bold"); doc.setFontSize(9.2);
-      doc.text("Planificación De Examen Complexivo",x+logoW+centerW/2,top+h/2+11,{align:"center"});
-      doc.setFont("times","normal"); doc.setFontSize(8.5);
-      doc.text(ctx.period.name,x+logoW+centerW/2,top+h/2+23,{align:"center"});
 
-      doc.setFont("times","normal"); doc.setFontSize(8.5);
-      doc.text("Código:",x+logoW+centerW+codeW/2,top+18,{align:"center"});
-      doc.setFont("times","bold"); doc.setFontSize(7.5);
-      const codeLines=doc.splitTextToSize(ctx.code,codeW-10);
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(9);
+      doc.text("Planificación De Examen Complexivo",x+logoW+centerW/2,top+h/2+10,{align:"center"});
+
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(9);
+      doc.text(ctx.period.name,x+logoW+centerW/2,top+h/2+22,{align:"center"});
+
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(9);
+      doc.text("Código:",x+logoW+centerW+codeW/2,top+17,{align:"center"});
+
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(9);
+      const codeLines=doc.splitTextToSize(ctx.code,codeW-12);
       doc.text(codeLines,x+logoW+centerW+codeW/2,top+31,{align:"center"});
     }
 
@@ -328,14 +342,24 @@
     function heading(text,level=1,includeToc=true){
       const style=level===3?"bolditalic":"bold";
       const size=level===1?14:level===2?13:12.5;
-      const align=level===1?"center":"left";
-      doc.setFont("times",style); doc.setFontSize(size);
-      const max=bodyW;
-      const lines=doc.splitTextToSize(clean(text),max);
-      const height=lines.length*22+12;
-      ensureSpace(height+BODY.lineHeight*2);
-      if(includeToc) toc.push({title:clean(text),level,page:doc.getNumberOfPages()});
-      doc.text(lines,align==="center"?pageW/2:BODY.left,y,{align});
+      const cleaned=clean(text);
+
+      doc.setFont("times",style);
+      doc.setFontSize(size);
+
+      const lines=doc.splitTextToSize(cleaned,bodyW);
+      const titleHeight=lines.length*22+10;
+      const blankBefore=(level===1 && y>BODY.top+2)?BODY.lineHeight:0;
+
+      ensureSpace(blankBefore+titleHeight+BODY.lineHeight*2);
+
+      if(level===1 && y>BODY.top+2) y+=BODY.lineHeight;
+
+      if(includeToc) toc.push({title:cleaned,level,page:doc.getNumberOfPages()});
+
+      doc.setFont("times",style);
+      doc.setFontSize(size);
+      doc.text(lines,BODY.left,y,{align:"left"});
       y+=lines.length*22+8;
 
       const key=smartSectionKey(text);
@@ -364,6 +388,29 @@
       y+=4;
     }
 
+    function tableCaption(title){
+      ensureSpace(54);
+      tableCounter+=1;
+      doc.setFont("times","bold");
+      doc.setFontSize(11);
+      doc.text("Tabla "+tableCounter,BODY.left,y);
+      y+=17;
+      doc.setFont("times","italic");
+      doc.setFontSize(11);
+      doc.text(doc.splitTextToSize(title,bodyW),BODY.left,y);
+      y+=24;
+      return tableCounter;
+    }
+
+    function tableNote(note){
+      ensureSpace(34);
+      doc.setFont("times","italic");
+      doc.setFontSize(10);
+      const lines=doc.splitTextToSize("Nota. "+note,bodyW);
+      doc.text(lines,BODY.left,y);
+      y+=lines.length*15+18;
+    }
+
     function autoTable(options){
       if(typeof doc.autoTable!=="function") throw new Error("No se pudo cargar el módulo de tablas del PDF.");
 
@@ -373,14 +420,17 @@
       options.theme="plain";
       options.styles={font:"times",fontSize:10,cellPadding:4,textColor:0,lineWidth:0,...(options.styles||{})};
       options.headStyles={font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0,lineWidth:0,...(options.headStyles||{})};
+
       options.didDrawPage=(data)=>{
         drawHeader(doc.getNumberOfPages());
         if(userDidDrawPage) userDidDrawPage(data);
       };
+
       options.didDrawCell=(data)=>{
         const left=data.table.settings.margin.left;
         const right=pageW-data.table.settings.margin.right;
 
+        // APA 7: only top rule, header-bottom rule and final bottom rule.
         if(data.section==="head" && data.column.index===0){
           doc.setDrawColor(0);
           doc.setLineWidth(0.8);
@@ -399,13 +449,16 @@
       };
 
       doc.autoTable(options);
-      y=doc.lastAutoTable.finalY+16;
+      y=doc.lastAutoTable.finalY+12;
     }
 
     function scheduleTable(){
       heading("3.10. Cronogramas",2,true);
       paragraph("El cronograma general organiza las fechas de las principales fases del examen complexivo y constituye la referencia temporal para los documentos operativos complementarios.");
+
+      tableCaption("Cronograma general del proceso de examen complexivo");
       ensureSpace(120);
+
       autoTable({
         startY:y,
         margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
@@ -414,30 +467,42 @@
         styles:{font:"times",fontSize:10,cellPadding:5,textColor:0},
         headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
       });
+
+      tableNote("Elaboración propia con base en la planificación académica del período.");
       paragraph("Los cronogramas complementarios de desarrollo de núcleos y de rendición del examen detallarán, cuando corresponda, la distribución por carrera, lugar, fecha, hora, laboratorio y responsables, sin sustituir la planificación general del período.");
     }
 
     function distributionTables(){
       heading("7. Distribución de Estudiantes por Carrera y Nivel",1,true);
       paragraph("La distribución del período se determina a partir de la cantidad de estudiantes registrada por carrera y del lugar previsto para la ejecución del proceso. Los nombres de las carreras se conservan exactamente como constan en el registro institucional.");
+
+      tableCaption("Distribución de estudiantes por carrera y lugar de ejecución");
+
       autoTable({
         startY:y,
         margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
-        head:[["Carrera","Lugar","Cant."]],
+        head:[["Carrera","Lugar","Cantidad"]],
         body:(ctx.distribution||[]).map(r=>[r.career,r.place,String(Number(r.count)||0)]),
         columnStyles:{0:{cellWidth:bodyW*0.68},1:{cellWidth:bodyW*0.20},2:{cellWidth:bodyW*0.12,halign:"right"}},
-        styles:{font:"times",fontSize:9.5,cellPadding:4,textColor:0},
+        styles:{font:"times",fontSize:10,cellPadding:4,textColor:0},
         headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
       });
+
+      tableNote("Elaboración propia con base en la distribución registrada para el período.");
+
       const t=totals(ctx.distribution);
       const summary=Object.entries(t.byPlace).map(([p,n])=>p+": "+n).join(" · ");
       paragraph("Resumen de distribución: "+summary+". Total general: "+t.total+" estudiantes.",{indent:false,bold:true,lineHeight:20});
     }
 
     function signatureBlock(fixedTop=null){
-      const x=BODY.left, w=bodyW, col=w/3;
-      const titleH=24, signH=88, nameH=32, roleH=46;
-      const totalH=titleH+signH+nameH+roleH;
+      const x=36;
+      const w=pageW-72;
+      const col=w/3;
+      const titleAndSignH=112;
+      const nameH=34;
+      const roleH=48;
+      const totalH=titleAndSignH+nameH+roleH;
 
       if(fixedTop==null){
         ensureSpace(totalH+24);
@@ -447,12 +512,15 @@
 
       doc.setDrawColor(0);
       doc.setLineWidth(0.7);
+
       for(let i=0;i<3;i++){
         const cx=x+i*col;
         doc.rect(cx,top,col,totalH);
-        doc.line(cx,top+titleH,cx+col,top+titleH);
-        doc.line(cx,top+titleH+signH,cx+col,top+titleH+signH);
-        doc.line(cx,top+titleH+signH+nameH,cx+col,top+titleH+signH+nameH);
+
+        // No separator below ELABORADO/REVISADO/APROBADO.
+        // The first horizontal rule appears only before NOMBRE.
+        doc.line(cx,top+titleAndSignH,cx+col,top+titleAndSignH);
+        doc.line(cx,top+titleAndSignH+nameH,cx+col,top+titleAndSignH+nameH);
       }
 
       const cells=[
@@ -463,37 +531,53 @@
 
       cells.forEach((cell,i)=>{
         const cx=x+i*col;
-        doc.setFont("times","normal");
+
+        doc.setFont("helvetica","normal");
         doc.setFontSize(9);
-        doc.text(cell.title,cx+6,top+16);
+        doc.text(cell.title,cx+7,top+17);
 
-        doc.setFont("times","bold");
-        doc.text("NOMBRE:",cx+6,top+titleH+signH+20);
-        doc.setFont("times","normal");
-        const nameLines=doc.splitTextToSize(cell.name,col-58);
-        doc.text(nameLines,cx+52,top+titleH+signH+20);
+        doc.setFont("helvetica","bold");
+        doc.setFontSize(9);
+        doc.text("NOMBRE:",cx+7,top+titleAndSignH+20);
 
-        doc.setFont("times","bold");
-        doc.text("CARGO:",cx+6,top+titleH+signH+nameH+17);
-        doc.setFont("times","normal");
-        const roleLines=doc.splitTextToSize(cell.role,col-12);
-        doc.text(roleLines,cx+6,top+titleH+signH+nameH+31);
+        doc.setFont("helvetica","normal");
+        doc.setFontSize(9);
+        const nameX=cx+55;
+        const nameLines=doc.splitTextToSize(cell.name,col-62);
+        doc.text(nameLines,nameX,top+titleAndSignH+20);
+
+        doc.setFont("helvetica","bold");
+        doc.setFontSize(9);
+        doc.text("CARGO:",cx+7,top+titleAndSignH+nameH+18);
+
+        doc.setFont("helvetica","normal");
+        doc.setFontSize(9);
+        const roleLines=doc.splitTextToSize(cell.role,col-14);
+        doc.text(roleLines,cx+7,top+titleAndSignH+nameH+33);
       });
 
       if(fixedTop==null) y=top+totalH+12;
+      return totalH;
     }
 
     function cover(){
-      y=220;
-      doc.setFont("times","bold");
-      doc.setFontSize(23);
-      doc.text("Planificación De Examen Complexivo",pageW/2,y,{align:"center"});
-      y+=58;
-      doc.setFontSize(19);
-      doc.text(ctx.period.name,pageW/2,y,{align:"center"});
+      const signatureTotalH=112+34+48;
+      const signatureTop=pageH-52-signatureTotalH;
+      const contentTop=112;
+      const contentBottom=signatureTop-42;
+      const visualCenter=(contentTop+contentBottom)/2;
 
-      // Las firmas forman parte de la portada, con espacio en blanco para firma manuscrita.
-      signatureBlock(500);
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(23);
+      const titleLines=doc.splitTextToSize("Planificación De Examen Complexivo",pageW-120);
+      const titleY=visualCenter-(titleLines.length*28)/2-18;
+      doc.text(titleLines,pageW/2,titleY,{align:"center"});
+
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(17);
+      doc.text(ctx.period.name,pageW/2,titleY+titleLines.length*28+32,{align:"center"});
+
+      signatureBlock(signatureTop);
     }
 
     function reserveIndexPages(){
@@ -513,98 +597,110 @@
     }
 
     function figureCaption(number,title){
-      ensureSpace(44);
+      ensureSpace(48);
       doc.setFont("times","bold");
       doc.setFontSize(11);
       doc.text("Figura "+number,BODY.left,y);
-      y+=16;
+      y+=17;
       doc.setFont("times","italic");
       doc.setFontSize(11);
-      doc.text(title,BODY.left,y);
-      y+=18;
+      const lines=doc.splitTextToSize(title,bodyW);
+      doc.text(lines,BODY.left,y);
+      y+=lines.length*16+8;
     }
 
-    function drawVerticalBars(data,title,figureNo){
+    function nextFigure(title){
+      figureCounter+=1;
+      figureCaption(figureCounter,title);
+      return figureCounter;
+    }
+
+    function drawVerticalBars(data,title,opts={}){
       if(!data.length) return;
       const chartH=190;
       const chartW=bodyW;
-      ensureSpace(chartH+74);
-      figureCaption(figureNo,title);
+      ensureSpace(chartH+86);
+      nextFigure(title);
 
       const top=y;
       const left=BODY.left+34;
       const bottom=top+chartH-34;
       const right=BODY.left+chartW-10;
-      const max=Math.max(...data.map(d=>d.value),1);
+      const max=Math.max(...data.map(d=>Number(d.value)||0),1);
       const slot=(right-left)/data.length;
       const barW=Math.max(8,slot*0.55);
+      const suffix=opts.suffix||"";
 
       doc.setDrawColor(90);
       doc.setLineWidth(0.4);
       doc.line(left,bottom,right,bottom);
       doc.line(left,top,left,bottom);
 
-      doc.setFont("times","normal");
-      doc.setFontSize(8);
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(9);
 
       data.forEach((d,i)=>{
-        const h=(d.value/max)*(chartH-58);
+        const value=Number(d.value)||0;
+        const h=(value/max)*(chartH-58);
         const x=left+i*slot+(slot-barW)/2;
         doc.setFillColor(76,104,133);
         doc.rect(x,bottom-h,barW,h,"F");
         doc.setTextColor(0);
-        doc.text(String(d.value),x+barW/2,bottom-h-4,{align:"center"});
-        const label=doc.splitTextToSize(d.label,Math.max(slot-2,34)).slice(0,2);
+        doc.text((opts.decimals?value.toFixed(opts.decimals):String(Math.round(value)))+suffix,x+barW/2,bottom-h-4,{align:"center"});
+        const label=doc.splitTextToSize(String(d.label),Math.max(slot-2,34)).slice(0,2);
         doc.text(label,x+barW/2,bottom+12,{align:"center"});
       });
 
       y=top+chartH+18;
-      doc.setFont("times","normal");
+      doc.setFont("times","italic");
       doc.setFontSize(9);
       doc.text("Nota. Elaboración propia con base en los datos del período.",BODY.left,y);
       y+=24;
     }
 
-    function drawHorizontalBars(data,title,figureNo){
+    function drawHorizontalBars(data,title,opts={}){
       if(!data.length) return;
       const rowH=18;
       const chartH=Math.max(190,data.length*rowH+46);
-      ensureSpace(chartH+72);
-      figureCaption(figureNo,title);
+      ensureSpace(chartH+82);
+      nextFigure(title);
 
       const top=y;
-      const labelW=170;
+      const labelW=190;
       const left=BODY.left+labelW;
       const right=pageW-BODY.right;
-      const max=Math.max(...data.map(d=>d.value),1);
+      const max=Math.max(...data.map(d=>Number(d.value)||0),1);
+      const suffix=opts.suffix||"";
 
-      doc.setFont("times","normal");
-      doc.setFontSize(8.5);
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(9);
 
       data.forEach((d,i)=>{
+        const value=Number(d.value)||0;
         const yy=top+i*rowH+5;
-        const label=doc.splitTextToSize(d.label,labelW-12).slice(0,1)[0]||d.label;
+        const label=doc.splitTextToSize(String(d.label),labelW-12).slice(0,1)[0]||String(d.label);
         doc.text(label,BODY.left,yy+7);
-        const bw=((right-left-30)*d.value)/max;
+        const bw=((right-left-34)*value)/max;
         doc.setFillColor(76,104,133);
         doc.rect(left,yy,bw,9,"F");
         doc.setTextColor(0);
-        doc.text(String(d.value),Math.min(left+bw+4,right-18),yy+8);
+        const valueLabel=(opts.decimals?value.toFixed(opts.decimals):String(Math.round(value)))+suffix;
+        doc.text(valueLabel,Math.min(left+bw+4,right-22),yy+8);
       });
 
       y=top+chartH-10;
-      doc.setFont("times","normal");
+      doc.setFont("times","italic");
       doc.setFontSize(9);
       doc.text("Nota. Elaboración propia con base en los datos del período.",BODY.left,y);
       y+=24;
     }
 
-    function drawTimeline(schedule,title,figureNo){
+    function drawTimeline(schedule,title){
       const valid=(schedule||[]).filter(r=>r.start&&r.end);
       if(!valid.length) return;
       const chartH=valid.length*22+56;
-      ensureSpace(chartH+72);
-      figureCaption(figureNo,title);
+      ensureSpace(chartH+82);
+      nextFigure(title);
 
       const dates=valid.flatMap(r=>[new Date(r.start+"T12:00:00"),new Date(r.end+"T12:00:00")]);
       const min=Math.min(...dates.map(d=>d.getTime()));
@@ -620,8 +716,8 @@
       doc.setLineWidth(0.35);
       doc.line(x0,top-8,x1,top-8);
 
-      doc.setFont("times","normal");
-      doc.setFontSize(8.5);
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(9);
 
       valid.forEach((r,i)=>{
         const yy=top+i*22;
@@ -636,42 +732,134 @@
       });
 
       y=top+chartH-12;
-      doc.setFont("times","normal");
+      doc.setFont("times","italic");
       doc.setFontSize(9);
       doc.text("Nota. Las barras representan la duración planificada de cada actividad.",BODY.left,y);
       y+=24;
     }
 
+    function drawPareto(data,title){
+      const sorted=data.slice().sort((a,b)=>b.value-a.value);
+      if(!sorted.length) return;
+
+      const chartH=230;
+      ensureSpace(chartH+92);
+      nextFigure(title);
+
+      const top=y;
+      const left=BODY.left+30;
+      const bottom=top+chartH-58;
+      const right=pageW-BODY.right-8;
+      const max=Math.max(...sorted.map(d=>d.value),1);
+      const total=Math.max(sorted.reduce((s,d)=>s+d.value,0),1);
+      const slot=(right-left)/sorted.length;
+      const barW=Math.max(5,slot*0.52);
+      let cumulative=0;
+      let prev=null;
+
+      doc.setDrawColor(90);
+      doc.setLineWidth(0.4);
+      doc.line(left,bottom,right,bottom);
+      doc.line(left,top,left,bottom);
+
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(7.5);
+
+      sorted.forEach((d,i)=>{
+        const x=left+i*slot+(slot-barW)/2;
+        const h=(d.value/max)*(chartH-86);
+        doc.setFillColor(76,104,133);
+        doc.rect(x,bottom-h,barW,h,"F");
+
+        cumulative+=d.value;
+        const pct=(cumulative/total)*100;
+        const px=x+barW/2;
+        const py=bottom-(pct/100)*(chartH-86);
+
+        doc.setFillColor(30,30,30);
+        doc.circle(px,py,1.8,"F");
+        if(prev){
+          doc.setDrawColor(30);
+          doc.setLineWidth(0.8);
+          doc.line(prev.x,prev.y,px,py);
+        }
+        prev={x:px,y:py};
+
+        const short=String(d.label).length>14?String(d.label).slice(0,13)+"…":String(d.label);
+        doc.text(short,px,bottom+12,{align:"center",angle:55});
+      });
+
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(8);
+      doc.text("Línea: porcentaje acumulado",right,bottom-(chartH-86)-8,{align:"right"});
+
+      y=top+chartH+6;
+      doc.setFont("times","italic");
+      doc.setFontSize(9);
+      doc.text("Nota. Las barras muestran estudiantes por carrera y la línea representa el porcentaje acumulado.",BODY.left,y);
+      y+=24;
+    }
+
     function graphsSection(){
-      const rows=(ctx.distribution||[]).filter(r=>Number(r.count)>=0);
+      const rows=(ctx.distribution||[]).filter(r=>r.career && r.place && Number(r.count)>=0);
       if(!rows.length) return;
 
       heading("7.1. Representación Gráfica de la Distribución",2,true);
 
       const byPlace={};
-      rows.forEach(r=>{byPlace[r.place]=(byPlace[r.place]||0)+(Number(r.count)||0);});
+      const careersByPlace={};
+      rows.forEach(r=>{
+        const n=Number(r.count)||0;
+        byPlace[r.place]=(byPlace[r.place]||0)+n;
+        if(!careersByPlace[r.place]) careersByPlace[r.place]=new Set();
+        careersByPlace[r.place].add(r.career);
+      });
+
+      const total=Object.values(byPlace).reduce((s,n)=>s+n,0)||1;
+
+      // Figura 1: estudiantes por lugar.
       drawVerticalBars(
         Object.entries(byPlace).map(([label,value])=>({label,value})),
-        "Estudiantes por lugar de ejecución",
-        1
+        "Estudiantes por lugar de ejecución"
       );
 
-      const online=rows.filter(r=>/\bONLINE\b/i.test(r.career)).reduce((s,r)=>s+(Number(r.count)||0),0);
-      const other=rows.filter(r=>!/\bONLINE\b/i.test(r.career)).reduce((s,r)=>s+(Number(r.count)||0),0);
+      // Figura 2: participación porcentual por lugar.
       drawVerticalBars(
-        [{label:"Identificados como ONLINE",value:online},{label:"Resto de carreras",value:other}],
-        "Distribución según identificación ONLINE en el nombre de la carrera",
-        2
+        Object.entries(byPlace).map(([label,value])=>({label,value:(value/total)*100})),
+        "Participación porcentual de estudiantes por lugar",
+        {suffix:"%",decimals:1}
       );
 
-      const topCareers=rows
+      // Figura 3: todas las carreras, ordenadas de mayor a menor.
+      const allCareers=rows
         .slice()
         .sort((a,b)=>(Number(b.count)||0)-(Number(a.count)||0))
-        .slice(0,10)
         .map(r=>({label:r.career,value:Number(r.count)||0}));
-      drawHorizontalBars(topCareers,"Diez carreras con mayor número de estudiantes",3);
+      drawHorizontalBars(allCareers,"Estudiantes por carrera");
 
-      drawTimeline(ctx.schedule||[],"Cronograma general del proceso de examen complexivo",4);
+      // Figura 4: resumen top 10.
+      drawHorizontalBars(allCareers.slice(0,10),"Diez carreras con mayor número de estudiantes");
+
+      // Figura 5: Pareto.
+      drawPareto(allCareers,"Concentración acumulada de estudiantes por carrera");
+
+      // Figura 6: número de carreras atendidas por lugar.
+      drawVerticalBars(
+        Object.entries(careersByPlace).map(([label,set])=>({label,value:set.size})),
+        "Número de carreras por lugar de ejecución"
+      );
+
+      // Figura 7: duración de cada actividad.
+      const durationData=(ctx.schedule||[]).filter(r=>r.start&&r.end).map(r=>{
+        const start=new Date(r.start+"T12:00:00");
+        const end=new Date(r.end+"T12:00:00");
+        const days=Math.max(1,Math.round((end-start)/86400000)+1);
+        return {label:r.activity,value:days};
+      });
+      drawHorizontalBars(durationData,"Duración planificada de las actividades del cronograma",{suffix:" d"});
+
+      // Figura 8: línea temporal completa.
+      drawTimeline(ctx.schedule||[],"Cronograma general del proceso de examen complexivo");
     }
 
     function sourceContent(blocks){
@@ -743,60 +931,88 @@
       }
     }
 
+    function tocEntryHeight(entry){
+      doc.setFont("times",entry.level===1?"bold":"normal");
+      doc.setFontSize(10.5);
+      const indent=entry.level===1?0:entry.level===2?18:36;
+      const maxLabelW=bodyW-indent-44;
+      const lines=doc.splitTextToSize(entry.title,maxLabelW);
+      return Math.max(17,lines.length*17);
+    }
+
     function drawTOCPage(pageNo,title,entries){
       doc.setPage(pageNo);
       y=BODY.top;
-      doc.setFont("times","bold"); doc.setFontSize(14);
+
+      doc.setFont("times","bold");
+      doc.setFontSize(14);
       doc.text(title,pageW/2,y,{align:"center"});
       y+=34;
+
       entries.forEach(e=>{
         const indent=e.level===1?0:e.level===2?18:36;
         const fontStyle=e.level===1?"bold":"normal";
+
         doc.setFont("times",fontStyle);
         doc.setFontSize(10.5);
-        const label=e.title;
-        const pageText=String(e.page);
-        const maxLabelW=bodyW-indent-44;
-        const labelLines=doc.splitTextToSize(label,maxLabelW);
-        const first=labelLines[0]||"";
-        ensureTocSpace(labelLines.length*18+4,pageNo);
-        const yy=y;
-        doc.text(labelLines,BODY.left+indent,yy);
-        const startX=BODY.left+indent+doc.getTextWidth(first)+5;
-        const endX=BODY.left+bodyW-28;
-        doc.setLineDashPattern([1,2],0);
-        if(startX<endX) doc.line(startX,yy-2,endX,yy-2);
-        doc.setLineDashPattern([],0);
-        doc.text(pageText,BODY.left+bodyW,yy,{align:"right"});
-        y+=Math.max(17,labelLines.length*17);
-      });
 
-      function ensureTocSpace(h){
-        if(y+h>pageH-BODY.bottom){
-          // TOC is intentionally limited to two reserved pages; overflow continues on page 3.
-        }
-      }
+        const maxLabelW=bodyW-indent-44;
+        const labelLines=doc.splitTextToSize(e.title,maxLabelW);
+        const rowH=Math.max(17,labelLines.length*17);
+        const baseY=y;
+
+        doc.text(labelLines,BODY.left+indent,baseY);
+
+        const lastLine=labelLines[labelLines.length-1]||"";
+        const lastY=baseY+(labelLines.length-1)*17;
+        const startX=BODY.left+indent+doc.getTextWidth(lastLine)+5;
+        const endX=BODY.left+bodyW-28;
+
+        doc.setLineDashPattern([1,2],0);
+        if(startX<endX) doc.line(startX,lastY-2,endX,lastY-2);
+        doc.setLineDashPattern([],0);
+
+        doc.text(String(e.page),BODY.left+bodyW,lastY,{align:"right"});
+        y+=rowH;
+      });
     }
 
     function fillIndex(){
       const dedup=[];
       const seen=new Set();
+
       toc.forEach(e=>{
         const key=normalize(e.title);
         if(!key || seen.has(key)) return;
         seen.add(key);
         dedup.push(e);
       });
-      const mid=Math.ceil(dedup.length/2);
-      drawTOCPage(2,"Índice",dedup.slice(0,mid));
-      drawTOCPage(3,"Índice (continuación)",dedup.slice(mid));
+
+      const heights=dedup.map(tocEntryHeight);
+      const totalHeight=heights.reduce((s,h)=>s+h,0);
+      const target=totalHeight/2;
+
+      let cumulative=0;
+      let splitAt=1;
+      for(let i=0;i<heights.length;i++){
+        if(cumulative+heights[i]>target && i>0){
+          splitAt=i;
+          break;
+        }
+        cumulative+=heights[i];
+        splitAt=i+1;
+      }
+
+      drawTOCPage(2,"Índice",dedup.slice(0,splitAt));
+      drawTOCPage(3,"Índice (continuación)",dedup.slice(splitAt));
     }
 
     function footers(){
       const total=doc.getNumberOfPages();
       for(let p=1;p<=total;p++){
         doc.setPage(p);
-        doc.setFont("times","normal"); doc.setFontSize(9);
+        doc.setFont("helvetica","normal");
+        doc.setFontSize(9);
         doc.text("Página "+p+" de "+total,pageW-36,pageH-22,{align:"right"});
       }
       return total;
