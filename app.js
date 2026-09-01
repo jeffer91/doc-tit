@@ -1,9 +1,11 @@
 (() => {
   const STORAGE_KEY = "doc-tit-v1";
+  const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
   const catalog = {
     "PRO-56": {
-      name: "Planificación semestral del proceso de titulación",
+      name: "Planificación semestral",
+      fullName: "Planificación semestral del proceso de titulación",
       description: "Planificaciones que abren y organizan el proceso del período.",
       documents: [{
         id: "plan-examen-complexivo",
@@ -31,6 +33,7 @@
     },
     "PRO-58": {
       name: "Seguimiento de requisitos",
+      fullName: "Seguimiento de requisitos",
       description: "Verificación individual y consolidada de requisitos de titulación.",
       documents: [
         {id:"req-acta", name:"Acta de Seguimiento de Requisitos", locked:true},
@@ -40,13 +43,13 @@
     },
     "PRO-95": {
       name: "Evaluación semestral",
+      fullName: "Evaluación semestral del proceso de titulación",
       description: "Consolida resultados y cumplimiento del proceso al cierre del período.",
-      documents: [
-        {id:"informe-final", name:"Informe Final del Proceso de Titulación", locked:true}
-      ]
+      documents: [{id:"informe-final", name:"Informe Final del Proceso de Titulación", locked:true}]
     },
     "PRO-97": {
-      name: "Inducción del proceso de titulación",
+      name: "Inducción",
+      fullName: "Inducción del proceso de titulación",
       description: "Registro e informe de la inducción del período.",
       documents: [
         {id:"registro-induccion", name:"Registro de Asistencia de Inducción", locked:true},
@@ -78,21 +81,24 @@
     periodStatus: $("#periodStatus"),
     periodName: $("#periodName"),
     processMenu: $("#processMenu"),
-    processCards: $("#processCards"),
     dashboardView: $("#dashboardView"),
     documentView: $("#documentView"),
     previewView: $("#previewView"),
     documentForm: $("#documentForm"),
-    responsiblesFields: $("#responsiblesFields")
+    responsiblesFields: $("#responsiblesFields"),
+    periodDialog: $("#periodDialog")
   };
 
+  function cloneDefault(){
+    return typeof structuredClone === "function" ? structuredClone(defaultState) : JSON.parse(JSON.stringify(defaultState));
+  }
   function loadState(){
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return structuredClone(defaultState);
+      if(!raw) return cloneDefault();
       const parsed = JSON.parse(raw);
-      return {...structuredClone(defaultState), ...parsed};
-    }catch{return structuredClone(defaultState)}
+      return {...cloneDefault(), ...parsed};
+    }catch{return cloneDefault()}
   }
   function saveState(){localStorage.setItem(STORAGE_KEY, JSON.stringify(state))}
   function activePeriod(){return state.periods.find(p=>p.id===state.activePeriodId) || state.periods[0]}
@@ -107,6 +113,11 @@
   function docStoreKey(docId){return `${state.activePeriodId}::${docId}`}
   function getDocData(docId){return state.documents[docStoreKey(docId)] || {}}
   function setDocData(docId,data){state.documents[docStoreKey(docId)] = {...getDocData(docId), ...data};saveState()}
+  function allDocumentCount(){return Object.values(catalog).reduce((sum,p)=>sum+p.documents.length,0)}
+  function periodDocumentData(){
+    const prefix = state.activePeriodId + "::";
+    return Object.entries(state.documents).filter(([key])=>key.startsWith(prefix)).map(([,data])=>data);
+  }
 
   function renderPeriods(){
     els.periodSelect.innerHTML = state.periods.map(p=>`<option value="${p.id}">${p.name}</option>`).join("");
@@ -114,18 +125,19 @@
     const p = activePeriod();
     els.periodName.textContent = p.name;
     els.periodStatus.textContent = p.status || "Activo";
+    const generated = periodDocumentData().filter(d=>d.generatedAt).length;
+    $("#periodDocumentSummary").textContent = `${allDocumentCount()} documentos · ${generated} generados`;
   }
 
   function renderMenus(){
     els.processMenu.innerHTML = "";
-    els.processCards.innerHTML = "";
     Object.entries(catalog).forEach(([code,proc],index)=>{
       const group = document.createElement("div");
       group.className = "process-group" + (index===0 ? " open":"");
       group.innerHTML = `
         <button class="process-button" type="button">
           <span class="process-code">${code}</span>
-          <span>${proc.name}</span>
+          <span class="process-name">${proc.name}</span>
         </button>
         <div class="submenu">
           ${proc.documents.map(d=>`<button type="button" data-doc="${d.id}" data-proc="${code}">${d.name}${d.locked?" · próximamente":""}</button>`).join("")}
@@ -133,18 +145,7 @@
       group.querySelector(".process-button").addEventListener("click",()=>group.classList.toggle("open"));
       group.querySelectorAll("[data-doc]").forEach(btn=>btn.addEventListener("click",()=>openDocument(btn.dataset.proc,btn.dataset.doc)));
       els.processMenu.appendChild(group);
-
-      const card = document.createElement("article");
-      card.className="process-card";
-      card.innerHTML=`<span class="process-code">${code}</span><strong>${proc.name}</strong><p>${proc.description}</p><p style="margin-top:10px"><b>${proc.documents.length}</b> documento(s)</p>`;
-      card.addEventListener("click",()=>{group.classList.add("open");group.scrollIntoView({behavior:"smooth",block:"center"})});
-      els.processCards.appendChild(card);
     });
-    $("#statProcesses").textContent = Object.keys(catalog).length;
-    $("#statDocuments").textContent = Object.values(catalog).reduce((a,p)=>a+p.documents.length,0);
-    const generated = Object.values(state.documents).filter(d=>d.generatedAt).length;
-    $("#statGenerated").textContent = generated;
-    $("#statReady").textContent = Object.values(state.documents).filter(d=>d.complete).length;
   }
 
   function showView(view){
@@ -161,8 +162,8 @@
       alert("Este documento ya está ubicado en su proceso, pero todavía no se ha analizado contigo. Lo incorporaremos cuando me envíes su documento real.");
       return;
     }
-    activeDocument = {...doc, procCode, procName:proc.name};
-    $("#docProcessLabel").textContent = `${procCode} · ${proc.name}`;
+    activeDocument = {...doc, procCode, procName:proc.fullName || proc.name};
+    $("#docProcessLabel").textContent = `${procCode} · ${proc.fullName || proc.name}`;
     $("#docTitle").textContent = doc.name;
     $("#docDescription").textContent = doc.description;
     $("#docCodeBadge").textContent = documentCode(doc, activePeriod());
@@ -191,8 +192,7 @@
   }
 
   function renderRequirements(doc){
-    const box = $("#requirementsList");
-    box.innerHTML = doc.requirements.map(r=>`
+    $("#requirementsList").innerHTML = doc.requirements.map(r=>`
       <div class="requirement ${r.automatic?"done":""}" data-req="${r.id}">
         <div class="req-icon">${r.automatic?"✓":"○"}</div>
         <div><strong>${r.label}${r.optional?" · opcional":""}</strong><small>${r.source}</small></div>
@@ -238,6 +238,7 @@
     if(!activeDocument) return;
     setDocData(activeDocument.id, collectForm());
     updateProgress();
+    renderPeriods();
     alert("Borrador guardado en este navegador y asociado al período seleccionado.");
   }
 
@@ -249,7 +250,7 @@
     }
     setDocData(activeDocument.id,{...data,generatedAt:new Date().toISOString(),complete:true});
     renderPreview(data);
-    $("#statGenerated").textContent = Object.values(state.documents).filter(d=>d.generatedAt).length;
+    renderPeriods();
     showView(els.previewView);
     $("#screenTitle").textContent = "Vista del documento";
   }
@@ -297,13 +298,51 @@
     return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));
   }
 
+  function populateMonthSelectors(){
+    const options = MONTHS.map((m,i)=>`<option value="${i+1}">${m}</option>`).join("");
+    $("#startMonth").innerHTML = options;
+    $("#endMonth").innerHTML = options;
+  }
+  function getYearValue(id){return Number($("#"+id).dataset.value)}
+  function setYearValue(id,value){
+    const safe = Math.min(2100,Math.max(2000,Number(value)));
+    const out=$("#"+id);out.dataset.value=String(safe);out.textContent=String(safe);
+  }
+  function monthIndexFromDate(date){return new Date(date+"T12:00:00").getMonth()+1}
+  function yearFromDate(date){return new Date(date+"T12:00:00").getFullYear()}
+  function openPeriodDialog(){
+    const p=activePeriod();
+    $("#startMonth").value=String(monthIndexFromDate(p.start));
+    $("#endMonth").value=String(monthIndexFromDate(p.end));
+    setYearValue("startYear",yearFromDate(p.start)+1);
+    setYearValue("endYear",yearFromDate(p.end)+1);
+    $("#periodError").classList.add("hidden");
+    updatePeriodPreview();
+    els.periodDialog.showModal();
+  }
+  function updatePeriodPreview(){
+    const sm=Number($("#startMonth").value), em=Number($("#endMonth").value);
+    const sy=getYearValue("startYear"), ey=getYearValue("endYear");
+    $("#periodPreviewName").textContent=`${MONTHS[sm-1]} ${sy} – ${MONTHS[em-1]} ${ey}`;
+    const valid = ey>sy || (ey===sy && em>=sm);
+    $("#periodError").classList.toggle("hidden",valid);
+    return valid;
+  }
+  function lastDayOfMonth(year,month){return new Date(year,month,0).getDate()}
   function createPeriod(){
-    const fd=new FormData($("#periodForm"));
-    const d=Object.fromEntries(fd.entries());
-    if(!d.name||!d.start||!d.end) return;
-    const id=`${d.start}_${d.end}_${Date.now()}`;
-    state.periods.unshift({id,name:d.name,start:d.start,end:d.end,status:"Activo"});
-    state.activePeriodId=id;saveState();renderAll();$("#periodDialog").close();$("#periodForm").reset();
+    if(!updatePeriodPreview()) return;
+    const sm=Number($("#startMonth").value), em=Number($("#endMonth").value);
+    const sy=getYearValue("startYear"), ey=getYearValue("endYear");
+    const start=`${sy}-${String(sm).padStart(2,"0")}-01`;
+    const end=`${ey}-${String(em).padStart(2,"0")}-${String(lastDayOfMonth(ey,em)).padStart(2,"0")}`;
+    const name=`${MONTHS[sm-1]} ${sy} – ${MONTHS[em-1]} ${ey}`;
+    const existing=state.periods.find(p=>p.start===start && p.end===end);
+    if(existing){
+      state.activePeriodId=existing.id;saveState();renderAll();els.periodDialog.close();return;
+    }
+    const id=`${sy}-${String(sm).padStart(2,"0")}_${ey}-${String(em).padStart(2,"0")}`;
+    state.periods.unshift({id,name,start,end,status:"Activo"});
+    state.activePeriodId=id;saveState();renderAll();els.periodDialog.close();
   }
 
   function exportBackup(){
@@ -317,14 +356,29 @@
     reader.readAsText(file);
   }
 
-  function renderAll(){renderPeriods();renderMenus();showView(els.dashboardView);$("#screenTitle").textContent="Documentos por período"}
+  function renderAll(){
+    renderPeriods();
+    renderMenus();
+    showView(els.dashboardView);
+    $("#screenTitle").textContent="Gestión documental";
+  }
+
+  populateMonthSelectors();
 
   els.periodSelect.addEventListener("change",e=>{state.activePeriodId=e.target.value;saveState();renderAll()});
-  $("#newPeriodBtn").addEventListener("click",()=>$("#periodDialog").showModal());
+  $("#newPeriodBtn").addEventListener("click",openPeriodDialog);
+  document.querySelectorAll("[data-year-target]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const id=btn.dataset.yearTarget;
+      setYearValue(id,getYearValue(id)+Number(btn.dataset.delta));
+      updatePeriodPreview();
+    });
+  });
+  $("#startMonth").addEventListener("change",updatePeriodPreview);
+  $("#endMonth").addEventListener("change",updatePeriodPreview);
   $("#createPeriodBtn").addEventListener("click",e=>{e.preventDefault();createPeriod()});
-  $("#backBtn").addEventListener("click",()=>{showView(els.dashboardView);$("#screenTitle").textContent="Documentos por período"});
+  $("#backBtn").addEventListener("click",()=>{showView(els.dashboardView);$("#screenTitle").textContent="Gestión documental"});
   $("#previewBackBtn").addEventListener("click",()=>{showView(els.documentView);$("#screenTitle").textContent=activeDocument.name});
-  $("#openFirstDocBtn").addEventListener("click",()=>openDocument("PRO-56","plan-examen-complexivo"));
   els.documentForm.addEventListener("input",updateProgress);
   els.documentForm.responsiblesChanged.addEventListener("change",e=>{els.responsiblesFields.classList.toggle("hidden",e.target.value!=="yes");updateProgress()});
   $("#saveDraftBtn").addEventListener("click",saveDraft);
