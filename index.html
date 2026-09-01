@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#0b2d4f" />
   <title>DOC-TIT · Gestión documental UTET</title>
-  <link rel="stylesheet" href="styles.css?v=20260901-3" />
+  <link rel="stylesheet" href="styles.css?v=20260901-4" />
 </head>
 <body>
   <div class="app-shell">
@@ -83,11 +83,11 @@
 
         <div class="document-layout">
           <div class="content-column">
-            <section class="panel">
+            <section class="panel compact-panel">
               <div class="panel-head">
                 <div>
-                  <span class="eyebrow">Antes de generar</span>
-                  <h3>¿Qué debes ingresar?</h3>
+                  <span class="eyebrow">Datos necesarios</span>
+                  <h3>Solo debes completar esto</h3>
                 </div>
                 <span class="progress-text" id="progressText">0% completo</span>
               </div>
@@ -95,82 +95,58 @@
               <div id="requirementsList" class="requirements"></div>
             </section>
 
-            <section class="panel">
-              <div class="panel-head">
-                <div>
-                  <span class="eyebrow">Datos manuales</span>
-                  <h3>Completa solo lo necesario</h3>
+            <form id="documentForm">
+              <section class="panel">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">1. Cronograma</span>
+                    <h3>Fechas del proceso</h3>
+                    <p class="section-help">Las actividades ya están definidas. Solo completa o ajusta las fechas.</p>
+                  </div>
                 </div>
+                <div class="table-scroll">
+                  <table class="input-table schedule-table">
+                    <thead>
+                      <tr><th>Actividad</th><th>Fecha inicio</th><th>Fecha fin</th></tr>
+                    </thead>
+                    <tbody id="scheduleBody"></tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">2. Distribución</span>
+                    <h3>Carreras, lugar y cantidad</h3>
+                    <p class="section-help">Los nombres se guardan exactamente como los escribes, incluido “ONLINE”.</p>
+                  </div>
+                  <button type="button" class="secondary small-btn" id="addDistributionRowBtn">+ Agregar fila</button>
+                </div>
+
+                <div class="table-scroll">
+                  <table class="input-table distribution-table">
+                    <thead>
+                      <tr><th>Carrera</th><th>Lugar</th><th>Cant.</th><th></th></tr>
+                    </thead>
+                    <tbody id="distributionBody"></tbody>
+                  </table>
+                </div>
+
+                <div id="distributionTotals" class="distribution-totals"></div>
+              </section>
+
+              <div class="form-actions document-actions">
+                <button type="button" class="secondary" id="saveDraftBtn">Guardar borrador</button>
+                <button type="submit" class="primary" id="generateBtn">Generar planificación</button>
               </div>
-
-              <form id="documentForm" class="form-grid">
-                <label>
-                  Fecha de elaboración
-                  <input type="date" name="elaborationDate" required />
-                  <small>Se propone automáticamente a partir del período, pero puedes cambiarla.</small>
-                </label>
-
-                <label>
-                  Versión
-                  <input type="text" name="version" value="1.0" required />
-                </label>
-
-                <label class="full">
-                  ¿Cambian autoridades o responsables para este período?
-                  <select name="responsiblesChanged">
-                    <option value="no">No, usar configuración institucional</option>
-                    <option value="yes">Sí, quiero personalizarlos</option>
-                  </select>
-                </label>
-
-                <div id="responsiblesFields" class="full nested hidden">
-                  <label>
-                    Elaborado por
-                    <input type="text" name="preparedBy" placeholder="Nombre y cargo" />
-                  </label>
-                  <label>
-                    Revisado por
-                    <input type="text" name="reviewedBy" placeholder="Nombre y cargo" />
-                  </label>
-                  <label>
-                    Aprobado por
-                    <input type="text" name="approvedBy" placeholder="Nombre y cargo" />
-                  </label>
-                </div>
-
-                <label class="full">
-                  Sedes / laboratorios / recursos
-                  <textarea name="logistics" rows="4" placeholder="Solo escribe aquí si existe una particularidad del período."></textarea>
-                  <small>Si queda vacío, el documento usa el texto base de la plantilla.</small>
-                </label>
-
-                <label class="full">
-                  Observaciones o imponderables
-                  <textarea name="observations" rows="4" placeholder="Opcional"></textarea>
-                </label>
-
-                <div class="form-actions full">
-                  <button type="button" class="secondary" id="saveDraftBtn">Guardar borrador</button>
-                  <button type="submit" class="primary" id="generateBtn">Generar vista del documento</button>
-                </div>
-              </form>
-            </section>
-
-            <section class="panel">
-              <div class="panel-head">
-                <div>
-                  <span class="eyebrow">Relaciones</span>
-                  <h3>Documentos que alimentan esta planificación</h3>
-                </div>
-              </div>
-              <div id="dependenciesList" class="dependencies"></div>
-            </section>
+            </form>
           </div>
 
           <aside class="side-column">
             <section class="panel sticky">
-              <span class="eyebrow">Información automática</span>
-              <h3>La app ya conoce</h3>
+              <span class="eyebrow">Automático</span>
+              <h3>La app ya completa</h3>
               <div id="automaticData" class="auto-data"></div>
             </section>
           </aside>
@@ -186,6 +162,12 @@
       </section>
     </main>
   </div>
+
+  <datalist id="placesList">
+    <option value="Norte"></option>
+    <option value="Sur"></option>
+    <option value="Manta"></option>
+  </datalist>
 
   <dialog id="periodDialog">
     <form method="dialog" id="periodForm" class="dialog-form">
@@ -243,6 +225,6 @@
     </form>
   </dialog>
 
-  <script src="app.js?v=20260901-3"></script>
+  <script src="app.js?v=20260901-4"></script>
 </body>
 </html>
