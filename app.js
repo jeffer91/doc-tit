@@ -1,12 +1,63 @@
 (() => {
-  const STORAGE_KEY = "doc-tit-v1";
+  const STORAGE_KEY = "doc-tit-v2";
+  const LEGACY_STORAGE_KEY = "doc-tit-v1";
   const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+  const SCHEDULE_ACTIVITIES = [
+    "Fin de clases",
+    "Semana Requisitos",
+    "Núcleo 1",
+    "Núcleo 2",
+    "Núcleo 3",
+    "Núcleo 4",
+    "Notas de núcleos",
+    "Examen complexivo",
+    "Supletorio"
+  ];
+
+  const APR_SEP_2026_SCHEDULE = [
+    {activity:"Fin de clases", start:"2026-09-25", end:"2026-09-26"},
+    {activity:"Semana Requisitos", start:"2026-09-28", end:"2026-10-02"},
+    {activity:"Núcleo 1", start:"2026-10-05", end:"2026-10-08"},
+    {activity:"Núcleo 2", start:"2026-10-12", end:"2026-10-15"},
+    {activity:"Núcleo 3", start:"2026-10-16", end:"2026-10-20"},
+    {activity:"Núcleo 4", start:"2026-10-21", end:"2026-10-24"},
+    {activity:"Notas de núcleos", start:"2026-10-26", end:"2026-10-27"},
+    {activity:"Examen complexivo", start:"2026-10-28", end:"2026-10-31"},
+    {activity:"Supletorio", start:"2026-11-09", end:"2026-11-11"}
+  ];
+
+  const APR_SEP_2026_DISTRIBUTION = [
+    {career:"CONTABILIDAD", place:"Norte", count:37},
+    {career:"EDUCACION INICIAL", place:"Norte", count:30},
+    {career:"EDUCACIÓN BÁSICA", place:"Norte", count:23},
+    {career:"ADMINISTRACION", place:"Norte", count:20},
+    {career:"GESTION DEL TALENTO HUMANO", place:"Norte", count:20},
+    {career:"EDUCACION INICIAL ONLINE", place:"Norte", count:16},
+    {career:"GESTION DEL TALENTO HUMANO ONLINE", place:"Norte", count:15},
+    {career:"SEGURIDAD CIUDADANA Y ORDEN PÚBLICO ONLINE", place:"Norte", count:14},
+    {career:"ADMINISTRACION ONLINE", place:"Norte", count:12},
+    {career:"CONTABILIDAD ONLINE", place:"Norte", count:12},
+    {career:"MECÁNICA AUTOMOTRIZ", place:"Norte", count:9},
+    {career:"EDUCACIÓN BÁSICA ONLINE", place:"Norte", count:4},
+    {career:"SEGURIDAD Y PREVENCIÓN DE RIESGOS LABORALES", place:"Norte", count:4},
+    {career:"ENFERMERÍA", place:"Sur", count:63},
+    {career:"MARKETING DIGITAL Y COMERCIO ELECTRONICO", place:"Sur", count:61},
+    {career:"REDES Y TELECOMUNICACIONES", place:"Sur", count:36},
+    {career:"ESTÉTICA INTEGRAL", place:"Sur", count:35},
+    {career:"DESARROLLO DE SOFTWARE", place:"Sur", count:27},
+    {career:"REDES Y TELECOMUNICACIONES ONLINE", place:"Sur", count:13},
+    {career:"DESARROLLO DE SOFTWARE ONLINE", place:"Sur", count:6},
+    {career:"VENTAS ONLINE", place:"Sur", count:2},
+    {career:"DISEÑO MULTIMEDIA", place:"Sur", count:11},
+    {career:"MARKETING DIGITAL Y COMERCIO ELECTRONICO ONLINE", place:"Sur", count:9},
+    {career:"PROCESAMIENTO EN ALIMENTOS", place:"Manta", count:11}
+  ];
 
   const catalog = {
     "PRO-56": {
       name: "Planificación semestral",
       fullName: "Planificación semestral del proceso de titulación",
-      description: "Planificaciones que abren y organizan el proceso del período.",
       documents: [{
         id: "plan-examen-complexivo",
         name: "Planificación de Examen Complexivo",
@@ -14,27 +65,18 @@
         sequence: "01",
         process: "PRO-56",
         version: "1.0",
-        description: "Planificación integral del examen complexivo por período académico. Reutiliza la estructura institucional y solicita únicamente los datos variables del período.",
+        description: "Para generar esta planificación solo necesitas el cronograma y la distribución de estudiantes por carrera, lugar y cantidad.",
         requirements: [
-          {id:"period", label:"Período académico", source:"Automático del período", automatic:true},
-          {id:"date", label:"Fecha de elaboración", source:"Debes confirmarla", automatic:false},
-          {id:"code", label:"Código documental", source:"Generado automáticamente", automatic:true},
-          {id:"version", label:"Versión", source:"Predeterminado 1.0, editable", automatic:false},
-          {id:"responsibles", label:"Responsables", source:"Configuración institucional, salvo cambios", automatic:true},
-          {id:"logistics", label:"Particularidades logísticas", source:"Solo si cambian sedes, laboratorios o recursos", automatic:false, optional:true},
-          {id:"observations", label:"Imponderables / observaciones", source:"Opcional", automatic:false, optional:true}
-        ],
-        dependencies: [
-          {name:"Cronograma general del proceso", state:"Pendiente de incorporar"},
-          {name:"Cronograma de núcleos / seminarios", state:"Pendiente de incorporar"},
-          {name:"Cronograma de examen complexivo", state:"Pendiente de incorporar"}
+          {id:"period", label:"Período académico", source:"Automático", automatic:true},
+          {id:"schedule", label:"Cronograma", source:"Fechas de las 9 actividades", automatic:false},
+          {id:"distribution", label:"Carreras · Lugar · Cantidad", source:"Distribución del período", automatic:false},
+          {id:"code", label:"Código y fecha de elaboración", source:"Automáticos", automatic:true}
         ]
       }]
     },
     "PRO-58": {
       name: "Seguimiento de requisitos",
       fullName: "Seguimiento de requisitos",
-      description: "Verificación individual y consolidada de requisitos de titulación.",
       documents: [
         {id:"req-acta", name:"Acta de Seguimiento de Requisitos", locked:true},
         {id:"req-individual", name:"Informe Individual de Verificación de Requisitos", locked:true},
@@ -44,13 +86,11 @@
     "PRO-95": {
       name: "Evaluación semestral",
       fullName: "Evaluación semestral del proceso de titulación",
-      description: "Consolida resultados y cumplimiento del proceso al cierre del período.",
       documents: [{id:"informe-final", name:"Informe Final del Proceso de Titulación", locked:true}]
     },
     "PRO-97": {
       name: "Inducción",
       fullName: "Inducción del proceso de titulación",
-      description: "Registro e informe de la inducción del período.",
       documents: [
         {id:"registro-induccion", name:"Registro de Asistencia de Inducción", locked:true},
         {id:"informe-induccion", name:"Informe de Finalización de la Inducción", locked:true}
@@ -60,10 +100,11 @@
 
   const defaultState = {
     periods: [
+      {id:"2026-04_2026-09", name:"Abril 2026 – Septiembre 2026", start:"2026-04-01", end:"2026-09-30", status:"Activo"},
       {id:"2025-10_2026-03", name:"Octubre 2025 – Marzo 2026", start:"2025-10-01", end:"2026-03-31", status:"Cerrado"},
       {id:"2025-04_2025-09", name:"Abril 2025 – Septiembre 2025", start:"2025-04-01", end:"2025-09-30", status:"Cerrado"}
     ],
-    activePeriodId:"2025-10_2026-03",
+    activePeriodId:"2026-04_2026-09",
     institutional:{
       preparedBy:"Msg. Jefferson Villarreal · Gestor de Procesos Académicos",
       reviewedBy:"Ing. Martha Tomalá · Coordinadora General de Carreras",
@@ -85,20 +126,28 @@
     documentView: $("#documentView"),
     previewView: $("#previewView"),
     documentForm: $("#documentForm"),
-    responsiblesFields: $("#responsiblesFields"),
     periodDialog: $("#periodDialog")
   };
 
-  function cloneDefault(){
-    return typeof structuredClone === "function" ? structuredClone(defaultState) : JSON.parse(JSON.stringify(defaultState));
-  }
+  function clone(value){return JSON.parse(JSON.stringify(value))}
   function loadState(){
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return cloneDefault();
-      const parsed = JSON.parse(raw);
-      return {...cloneDefault(), ...parsed};
-    }catch{return cloneDefault()}
+      if(raw) return normalizeState(JSON.parse(raw));
+      const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if(legacy) return normalizeState(JSON.parse(legacy));
+    }catch(e){}
+    return clone(defaultState);
+  }
+  function normalizeState(parsed){
+    const base = clone(defaultState);
+    const merged = {...base, ...parsed};
+    merged.periods = Array.isArray(parsed.periods) ? parsed.periods.slice() : base.periods.slice();
+    base.periods.forEach(dp=>{if(!merged.periods.some(p=>p.id===dp.id)) merged.periods.unshift(dp)});
+    if(!merged.periods.some(p=>p.id===merged.activePeriodId)) merged.activePeriodId=base.activePeriodId;
+    merged.institutional = {...base.institutional, ...(parsed.institutional||{})};
+    merged.documents = parsed.documents || {};
+    return merged;
   }
   function saveState(){localStorage.setItem(STORAGE_KEY, JSON.stringify(state))}
   function activePeriod(){return state.periods.find(p=>p.id===state.activePeriodId) || state.periods[0]}
@@ -115,26 +164,26 @@
   function setDocData(docId,data){state.documents[docStoreKey(docId)] = {...getDocData(docId), ...data};saveState()}
   function allDocumentCount(){return Object.values(catalog).reduce((sum,p)=>sum+p.documents.length,0)}
   function periodDocumentData(){
-    const prefix = state.activePeriodId + "::";
+    const prefix=state.activePeriodId+"::";
     return Object.entries(state.documents).filter(([key])=>key.startsWith(prefix)).map(([,data])=>data);
   }
 
   function renderPeriods(){
-    els.periodSelect.innerHTML = state.periods.map(p=>`<option value="${p.id}">${p.name}</option>`).join("");
-    els.periodSelect.value = state.activePeriodId;
-    const p = activePeriod();
-    els.periodName.textContent = p.name;
-    els.periodStatus.textContent = p.status || "Activo";
-    const generated = periodDocumentData().filter(d=>d.generatedAt).length;
-    $("#periodDocumentSummary").textContent = `${allDocumentCount()} documentos · ${generated} generados`;
+    els.periodSelect.innerHTML=state.periods.map(p=>`<option value="${p.id}">${p.name}</option>`).join("");
+    els.periodSelect.value=state.activePeriodId;
+    const p=activePeriod();
+    els.periodName.textContent=p.name;
+    els.periodStatus.textContent=p.status||"Activo";
+    const generated=periodDocumentData().filter(d=>d.generatedAt).length;
+    $("#periodDocumentSummary").textContent=`${allDocumentCount()} documentos · ${generated} generados`;
   }
 
   function renderMenus(){
-    els.processMenu.innerHTML = "";
+    els.processMenu.innerHTML="";
     Object.entries(catalog).forEach(([code,proc],index)=>{
-      const group = document.createElement("div");
-      group.className = "process-group" + (index===0 ? " open":"");
-      group.innerHTML = `
+      const group=document.createElement("div");
+      group.className="process-group"+(index===0?" open":"");
+      group.innerHTML=`
         <button class="process-button" type="button">
           <span class="process-code">${code}</span>
           <span class="process-name">${proc.name}</span>
@@ -154,158 +203,246 @@
     window.scrollTo({top:0,behavior:"smooth"});
   }
 
-  function openDocument(procCode, docId){
-    const proc = catalog[procCode];
-    const doc = proc.documents.find(d=>d.id===docId);
+  function openDocument(procCode,docId){
+    const proc=catalog[procCode];
+    const doc=proc.documents.find(d=>d.id===docId);
     if(!doc) return;
     if(doc.locked){
-      alert("Este documento ya está ubicado en su proceso, pero todavía no se ha analizado contigo. Lo incorporaremos cuando me envíes su documento real.");
+      alert("Este documento todavía no se ha analizado. Lo incorporaremos cuando revisemos su documento real.");
       return;
     }
-    activeDocument = {...doc, procCode, procName:proc.fullName || proc.name};
-    $("#docProcessLabel").textContent = `${procCode} · ${proc.fullName || proc.name}`;
-    $("#docTitle").textContent = doc.name;
-    $("#docDescription").textContent = doc.description;
-    $("#docCodeBadge").textContent = documentCode(doc, activePeriod());
-    renderDocumentForm(doc);
+    activeDocument={...doc,procCode,procName:proc.fullName||proc.name};
+    $("#docProcessLabel").textContent=`${procCode} · ${proc.fullName||proc.name}`;
+    $("#docTitle").textContent=doc.name;
+    $("#docDescription").textContent=doc.description;
+    $("#docCodeBadge").textContent=documentCode(doc,activePeriod());
     renderRequirements(doc);
-    renderDependencies(doc);
     renderAutomatic(doc);
+    renderDocumentForm(doc);
     showView(els.documentView);
-    $("#screenTitle").textContent = doc.name;
+    $("#screenTitle").textContent=doc.name;
+  }
+
+  function starterSchedule(){
+    if(state.activePeriodId==="2026-04_2026-09") return clone(APR_SEP_2026_SCHEDULE);
+    return SCHEDULE_ACTIVITIES.map(activity=>({activity,start:"",end:""}));
+  }
+  function starterDistribution(){
+    if(state.activePeriodId==="2026-04_2026-09") return clone(APR_SEP_2026_DISTRIBUTION);
+    return [{career:"",place:"",count:""}];
   }
 
   function renderDocumentForm(doc){
-    const saved = getDocData(doc.id);
-    const form = els.documentForm;
-    const p = activePeriod();
-    form.elaborationDate.value = saved.elaborationDate || p.start;
-    form.version.value = saved.version || doc.version || "1.0";
-    form.responsiblesChanged.value = saved.responsiblesChanged || "no";
-    form.preparedBy.value = saved.preparedBy || "";
-    form.reviewedBy.value = saved.reviewedBy || "";
-    form.approvedBy.value = saved.approvedBy || "";
-    form.logistics.value = saved.logistics || "";
-    form.observations.value = saved.observations || "";
-    els.responsiblesFields.classList.toggle("hidden", form.responsiblesChanged.value!=="yes");
+    const saved=getDocData(doc.id);
+    renderSchedule(saved.schedule||starterSchedule());
+    renderDistribution(saved.distribution||starterDistribution());
     updateProgress();
   }
 
-  function renderRequirements(doc){
-    $("#requirementsList").innerHTML = doc.requirements.map(r=>`
-      <div class="requirement ${r.automatic?"done":""}" data-req="${r.id}">
-        <div class="req-icon">${r.automatic?"✓":"○"}</div>
-        <div><strong>${r.label}${r.optional?" · opcional":""}</strong><small>${r.source}</small></div>
-      </div>`).join("");
+  function renderSchedule(rows){
+    $("#scheduleBody").innerHTML=rows.map((row,i)=>`
+      <tr data-index="${i}">
+        <td>${escapeHtml(row.activity)}</td>
+        <td><input class="schedule-start" type="date" value="${escapeAttr(row.start||"")}" aria-label="Inicio ${escapeAttr(row.activity)}"></td>
+        <td><input class="schedule-end" type="date" value="${escapeAttr(row.end||"")}" aria-label="Fin ${escapeAttr(row.activity)}"></td>
+      </tr>`).join("");
   }
 
-  function renderDependencies(doc){
-    $("#dependenciesList").innerHTML = doc.dependencies.map(d=>`
-      <div class="dependency"><strong>${d.name}</strong><span>${d.state}</span></div>`).join("");
+  function distributionRowHtml(row={career:"",place:"",count:""}){
+    return `<tr>
+      <td><input class="dist-career" type="text" value="${escapeAttr(row.career||"")}" placeholder="Carrera"></td>
+      <td><input class="dist-place" type="text" list="placesList" value="${escapeAttr(row.place||"")}" placeholder="Lugar"></td>
+      <td><input class="dist-count" type="number" min="0" step="1" value="${row.count===""?"":Number(row.count)}" placeholder="0"></td>
+      <td><button type="button" class="row-remove" aria-label="Eliminar fila">×</button></td>
+    </tr>`;
+  }
+
+  function renderDistribution(rows){
+    $("#distributionBody").innerHTML=rows.map(r=>distributionRowHtml(r)).join("");
+    bindRemoveButtons();
+    updateDistributionTotals();
+  }
+
+  function bindRemoveButtons(){
+    document.querySelectorAll(".row-remove").forEach(btn=>{
+      btn.onclick=()=>{
+        const tbody=$("#distributionBody");
+        if(tbody.rows.length<=1){
+          tbody.innerHTML=distributionRowHtml();
+          bindRemoveButtons();
+        }else{
+          btn.closest("tr").remove();
+        }
+        updateDistributionTotals();
+        updateProgress();
+      };
+    });
+  }
+
+  function collectSchedule(){
+    return Array.from($("#scheduleBody").querySelectorAll("tr")).map((tr,i)=>({
+      activity:SCHEDULE_ACTIVITIES[i],
+      start:tr.querySelector(".schedule-start").value,
+      end:tr.querySelector(".schedule-end").value
+    }));
+  }
+
+  function collectDistribution(){
+    return Array.from($("#distributionBody").querySelectorAll("tr")).map(tr=>({
+      career:tr.querySelector(".dist-career").value.trim(),
+      place:tr.querySelector(".dist-place").value.trim(),
+      count:tr.querySelector(".dist-count").value===""?"":Number(tr.querySelector(".dist-count").value)
+    })).filter(r=>r.career||r.place||r.count!=="");
+  }
+
+  function updateDistributionTotals(){
+    const rows=collectDistribution();
+    const totals={};
+    let total=0;
+    rows.forEach(r=>{
+      const n=Number(r.count)||0;
+      const place=r.place||"Sin lugar";
+      totals[place]=(totals[place]||0)+n;
+      total+=n;
+    });
+    const chips=Object.entries(totals).map(([place,n])=>`<span class="total-chip">${escapeHtml(place)}: <strong>${n}</strong></span>`);
+    chips.push(`<span class="total-chip">Total: <strong>${total}</strong></span>`);
+    $("#distributionTotals").innerHTML=chips.join("");
+  }
+
+  function renderRequirements(doc){
+    $("#requirementsList").innerHTML=doc.requirements.map(r=>`
+      <div class="requirement ${r.automatic?"done":""}" data-req="${r.id}">
+        <div class="req-icon">${r.automatic?"✓":"○"}</div>
+        <div><strong>${r.label}</strong><small>${r.source}</small></div>
+      </div>`).join("");
   }
 
   function renderAutomatic(doc){
     const p=activePeriod();
     const data=[
-      ["Período",p.name],["Inicio",formatDate(p.start)],["Fin",formatDate(p.end)],
-      ["Proceso",doc.process],["Código",documentCode(doc,p)],
+      ["Período",p.name],
+      ["Código",documentCode(doc,p)],
+      ["Fecha de elaboración",formatDate(p.start)],
+      ["Versión","1.0"],
       ["Elaborado por",state.institutional.preparedBy],
       ["Revisado por",state.institutional.reviewedBy],
       ["Aprobado por",state.institutional.approvedBy]
     ];
-    $("#automaticData").innerHTML=data.map(([k,v])=>`<div class="auto-row"><span>${k}</span><strong>${v}</strong></div>`).join("");
+    $("#automaticData").innerHTML=data.map(([k,v])=>`<div class="auto-row"><span>${k}</span><strong>${escapeHtml(v)}</strong></div>`).join("");
   }
 
-  function collectForm(){
-    const fd = new FormData(els.documentForm);
-    return Object.fromEntries(fd.entries());
-  }
+  function scheduleComplete(schedule){return schedule.length===SCHEDULE_ACTIVITIES.length && schedule.every(r=>r.start&&r.end)}
+  function distributionComplete(rows){return rows.length>0 && rows.every(r=>r.career&&r.place&&r.count!==""&&Number(r.count)>=0)}
+
   function updateProgress(){
     if(!activeDocument) return;
-    const d = collectForm();
-    const required = ["elaborationDate","version"];
-    if(d.responsiblesChanged==="yes") required.push("preparedBy","reviewedBy","approvedBy");
-    const done = required.filter(k=>String(d[k]||"").trim()).length;
-    const pct = Math.round((done/required.length)*100);
-    $("#progressText").textContent = `${pct}% completo`;
-    $("#progressBar").style.width = pct+"%";
-    $("#docStateBadge").textContent = pct===100 ? "Listo para generar" : "Datos incompletos";
-    $("#docStateBadge").className = "badge " + (pct===100 ? "" : "neutral");
-    setDocData(activeDocument.id,{complete:pct===100});
+    const schedule=collectSchedule();
+    const distribution=collectDistribution();
+    const scheduleOk=scheduleComplete(schedule);
+    const distributionOk=distributionComplete(distribution);
+    document.querySelector('[data-req="schedule"]')?.classList.toggle("done",scheduleOk);
+    document.querySelector('[data-req="distribution"]')?.classList.toggle("done",distributionOk);
+    document.querySelector('[data-req="schedule"] .req-icon') && (document.querySelector('[data-req="schedule"] .req-icon').textContent=scheduleOk?"✓":"○");
+    document.querySelector('[data-req="distribution"] .req-icon') && (document.querySelector('[data-req="distribution"] .req-icon').textContent=distributionOk?"✓":"○");
+    const pct=Math.round(((2+(scheduleOk?1:0)+(distributionOk?1:0))/4)*100);
+    $("#progressText").textContent=`${pct}% completo`;
+    $("#progressBar").style.width=pct+"%";
+    $("#docStateBadge").textContent=pct===100?"Listo para generar":"Datos incompletos";
+    $("#docStateBadge").className="badge "+(pct===100?"":"neutral");
+  }
+
+  function collectDocumentData(){
+    return {schedule:collectSchedule(),distribution:collectDistribution()};
   }
 
   function saveDraft(){
     if(!activeDocument) return;
-    setDocData(activeDocument.id, collectForm());
-    updateProgress();
+    const data=collectDocumentData();
+    setDocData(activeDocument.id,{...data,complete:scheduleComplete(data.schedule)&&distributionComplete(data.distribution)});
     renderPeriods();
-    alert("Borrador guardado en este navegador y asociado al período seleccionado.");
+    updateProgress();
+    alert("Borrador guardado para este período.");
   }
 
   function generatePreview(){
-    const data = collectForm();
-    if(!data.elaborationDate || !data.version){alert("Completa la fecha de elaboración y la versión.");return}
-    if(data.responsiblesChanged==="yes" && (!data.preparedBy || !data.reviewedBy || !data.approvedBy)){
-      alert("Completa los tres responsables o selecciona usar la configuración institucional.");return;
+    const data=collectDocumentData();
+    if(!scheduleComplete(data.schedule)){
+      alert("Completa las fechas de las 9 actividades del cronograma.");
+      return;
+    }
+    if(!distributionComplete(data.distribution)){
+      alert("Completa Carrera, Lugar y Cantidad en todas las filas utilizadas.");
+      return;
     }
     setDocData(activeDocument.id,{...data,generatedAt:new Date().toISOString(),complete:true});
     renderPreview(data);
     renderPeriods();
     showView(els.previewView);
-    $("#screenTitle").textContent = "Vista del documento";
+    $("#screenTitle").textContent="Vista de la planificación";
   }
 
   function renderPreview(data){
-    const p=activePeriod(), doc=activeDocument;
-    const code=documentCode(doc,p);
-    const prep=data.responsiblesChanged==="yes"?data.preparedBy:state.institutional.preparedBy;
-    const rev=data.responsiblesChanged==="yes"?data.reviewedBy:state.institutional.reviewedBy;
-    const app=data.responsiblesChanged==="yes"?data.approvedBy:state.institutional.approvedBy;
-    $("#printDocument").innerHTML = `
+    const p=activePeriod(),doc=activeDocument;
+    const totals={};let total=0;
+    data.distribution.forEach(r=>{const n=Number(r.count)||0;totals[r.place]=(totals[r.place]||0)+n;total+=n});
+    const scheduleRows=data.schedule.map(r=>`<tr><td>${escapeHtml(r.activity)}</td><td>${formatDateShort(r.start)}</td><td>${formatDateShort(r.end)}</td></tr>`).join("");
+    const distributionRows=data.distribution.map(r=>`<tr><td>${escapeHtml(r.career)}</td><td>${escapeHtml(r.place)}</td><td>${Number(r.count)||0}</td></tr>`).join("");
+    const totalsText=Object.entries(totals).map(([place,n])=>`${escapeHtml(place)}: ${n}`).join(" · ");
+
+    $("#printDocument").innerHTML=`
       <div class="paper-header">
         <div><strong>UNIDAD TITULACIÓN Y EFICIENCIA TERMINAL</strong></div>
-        <div><strong>${doc.name}</strong><br>${p.name}</div>
-        <div><strong>Código:</strong><br>${code}<br><strong>Versión:</strong> ${escapeHtml(data.version)}</div>
+        <div><strong>PLANIFICACIÓN DE EXAMEN COMPLEXIVO</strong><br>${escapeHtml(p.name)}</div>
+        <div><strong>Código:</strong><br>${documentCode(doc,p)}<br><strong>Versión:</strong> 1.0</div>
       </div>
-      <p><strong>Fecha de elaboración:</strong> ${formatDate(data.elaborationDate)}</p>
-      <h1>${doc.name}<br>${p.name}</h1>
+      <p><strong>Fecha de elaboración:</strong> ${formatDate(p.start)}</p>
+      <h1>Planificación de Examen Complexivo<br>${escapeHtml(p.name)}</h1>
+
       <h2>1. Introducción</h2>
-      <p>El examen complexivo es una evaluación integral orientada a validar los conocimientos teóricos y prácticos adquiridos por los estudiantes durante su formación. Esta planificación organiza el proceso del período académico seleccionado y articula sus fases, requisitos, responsables, cronogramas y recursos.</p>
-      <h2>2. Base legal</h2>
-      <p>La base legal se mantiene como contenido institucional de la plantilla. En la versión definitiva se conservará y actualizará desde una única fuente para evitar que cada período duplique normativa.</p>
-      <h2>3. Metodología</h2>
-      <p>La planificación se estructura en fases de inducción, diseño del examen, organización y distribución, preparación mediante seminarios, aplicación, evaluación, retroalimentación y mejora continua.</p>
-      <h2>4. Datos operativos del período</h2>
-      <p><strong>Período:</strong> ${p.name}. <strong>Inicio:</strong> ${formatDate(p.start)}. <strong>Fin:</strong> ${formatDate(p.end)}.</p>
-      <p><strong>Particularidades logísticas:</strong> ${escapeHtml(data.logistics || "Sin particularidades adicionales registradas para este período.")}</p>
-      <h2>5. Imponderables y observaciones</h2>
-      <p>${escapeHtml(data.observations || "No se registran observaciones adicionales al momento de generar esta versión.")}</p>
-      <h2>6. Documentos relacionados</h2>
-      <p>Esta planificación se vinculará con el cronograma general, el cronograma de núcleos o seminarios y el cronograma de examen complexivo del mismo período. Estos documentos se incorporarán progresivamente al sistema y compartirán la misma referencia de período.</p>
+      <p>El presente documento establece la planificación técnica del proceso de titulación mediante examen complexivo para el período académico ${escapeHtml(p.name)}. La planificación articula las fases operativas, el cronograma general y la distribución de estudiantes por carrera y lugar.</p>
+
+      <h2>2. Cronograma general del proceso</h2>
+      <table><thead><tr><th>Actividad</th><th>Fecha inicio</th><th>Fecha fin</th></tr></thead><tbody>${scheduleRows}</tbody></table>
+
+      <h2>3. Distribución de estudiantes por carrera y lugar</h2>
+      <p>La distribución se organiza de acuerdo con la cantidad de estudiantes registrada para cada carrera y el lugar previsto para la ejecución del proceso.</p>
+      <table><thead><tr><th>Carrera</th><th>Lugar</th><th>Cantidad</th></tr></thead><tbody>${distributionRows}</tbody></table>
+      <div class="summary-box"><strong>Resumen:</strong> ${totalsText} · <strong>Total general: ${total}</strong></div>
+
+      <h2>4. Organización del examen complexivo</h2>
+      <p>La ejecución del examen complexivo se organizará conforme al cronograma definido para el período y a la distribución de estudiantes registrada en esta planificación. Los detalles operativos de fecha, hora, laboratorio y docentes responsables se gestionarán en los cronogramas complementarios correspondientes.</p>
+
+      <h2>5. Criterios institucionales</h2>
+      <p>Se mantienen los lineamientos institucionales vigentes para requisitos, seminarios de titulación, imponderables, evaluación, accesibilidad y demás componentes definidos para el proceso de examen complexivo.</p>
+
       <div class="signature-grid">
-        <div><strong>ELABORADO POR</strong><br><br>${escapeHtml(prep)}</div>
-        <div><strong>REVISADO POR</strong><br><br>${escapeHtml(rev)}</div>
-        <div><strong>APROBADO POR</strong><br><br>${escapeHtml(app)}</div>
+        <div><strong>ELABORADO POR</strong><br><br>${escapeHtml(state.institutional.preparedBy)}</div>
+        <div><strong>REVISADO POR</strong><br><br>${escapeHtml(state.institutional.reviewedBy)}</div>
+        <div><strong>APROBADO POR</strong><br><br>${escapeHtml(state.institutional.approvedBy)}</div>
       </div>`;
   }
 
   function formatDate(v){
-    if(!v) return "—";
+    if(!v)return"—";
     const d=new Date(v+"T12:00:00");
     return new Intl.DateTimeFormat("es-EC",{day:"2-digit",month:"long",year:"numeric"}).format(d);
   }
-  function escapeHtml(v){
-    return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));
+  function formatDateShort(v){
+    if(!v)return"";
+    const d=new Date(v+"T12:00:00");
+    return new Intl.DateTimeFormat("es-EC",{day:"2-digit",month:"2-digit",year:"numeric"}).format(d);
   }
+  function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
+  function escapeAttr(v){return escapeHtml(v)}
 
   function populateMonthSelectors(){
-    const options = MONTHS.map((m,i)=>`<option value="${i+1}">${m}</option>`).join("");
-    $("#startMonth").innerHTML = options;
-    $("#endMonth").innerHTML = options;
+    const options=MONTHS.map((m,i)=>`<option value="${i+1}">${m}</option>`).join("");
+    $("#startMonth").innerHTML=options;$("#endMonth").innerHTML=options;
   }
   function getYearValue(id){return Number($("#"+id).dataset.value)}
   function setYearValue(id,value){
-    const safe = Math.min(2100,Math.max(2000,Number(value)));
+    const safe=Math.min(2100,Math.max(2000,Number(value)));
     const out=$("#"+id);out.dataset.value=String(safe);out.textContent=String(safe);
   }
   function monthIndexFromDate(date){return new Date(date+"T12:00:00").getMonth()+1}
@@ -321,28 +458,30 @@
     els.periodDialog.showModal();
   }
   function updatePeriodPreview(){
-    const sm=Number($("#startMonth").value), em=Number($("#endMonth").value);
-    const sy=getYearValue("startYear"), ey=getYearValue("endYear");
+    const sm=Number($("#startMonth").value),em=Number($("#endMonth").value);
+    const sy=getYearValue("startYear"),ey=getYearValue("endYear");
     $("#periodPreviewName").textContent=`${MONTHS[sm-1]} ${sy} – ${MONTHS[em-1]} ${ey}`;
-    const valid = ey>sy || (ey===sy && em>=sm);
+    const valid=ey>sy||(ey===sy&&em>=sm);
     $("#periodError").classList.toggle("hidden",valid);
     return valid;
   }
   function lastDayOfMonth(year,month){return new Date(year,month,0).getDate()}
   function createPeriod(){
-    if(!updatePeriodPreview()) return;
-    const sm=Number($("#startMonth").value), em=Number($("#endMonth").value);
-    const sy=getYearValue("startYear"), ey=getYearValue("endYear");
+    if(!updatePeriodPreview())return;
+    const sm=Number($("#startMonth").value),em=Number($("#endMonth").value);
+    const sy=getYearValue("startYear"),ey=getYearValue("endYear");
     const start=`${sy}-${String(sm).padStart(2,"0")}-01`;
     const end=`${ey}-${String(em).padStart(2,"0")}-${String(lastDayOfMonth(ey,em)).padStart(2,"0")}`;
     const name=`${MONTHS[sm-1]} ${sy} – ${MONTHS[em-1]} ${ey}`;
-    const existing=state.periods.find(p=>p.start===start && p.end===end);
+    const existing=state.periods.find(p=>p.start===start&&p.end===end);
     if(existing){
-      state.activePeriodId=existing.id;saveState();renderAll();els.periodDialog.close();return;
+      state.activePeriodId=existing.id;
+    }else{
+      const id=`${sy}-${String(sm).padStart(2,"0")}_${ey}-${String(em).padStart(2,"0")}`;
+      state.periods.unshift({id,name,start,end,status:"Activo"});
+      state.activePeriodId=id;
     }
-    const id=`${sy}-${String(sm).padStart(2,"0")}_${ey}-${String(em).padStart(2,"0")}`;
-    state.periods.unshift({id,name,start,end,status:"Activo"});
-    state.activePeriodId=id;saveState();renderAll();els.periodDialog.close();
+    saveState();renderAll();els.periodDialog.close();
   }
 
   function exportBackup(){
@@ -352,40 +491,34 @@
   }
   function restoreBackup(file){
     const reader=new FileReader();
-    reader.onload=()=>{try{const parsed=JSON.parse(reader.result);if(!parsed.periods) throw new Error();state=parsed;saveState();renderAll();alert("Respaldo restaurado.");}catch{alert("El archivo no corresponde a un respaldo válido de DOC-TIT.");}};
+    reader.onload=()=>{try{const parsed=JSON.parse(reader.result);if(!parsed.periods)throw new Error();state=normalizeState(parsed);saveState();renderAll();alert("Respaldo restaurado.");}catch{alert("El archivo no corresponde a un respaldo válido de DOC-TIT.");}};
     reader.readAsText(file);
   }
 
-  function renderAll(){
-    renderPeriods();
-    renderMenus();
-    showView(els.dashboardView);
-    $("#screenTitle").textContent="Gestión documental";
-  }
+  function renderAll(){renderPeriods();renderMenus();showView(els.dashboardView);$("#screenTitle").textContent="Gestión documental"}
 
   populateMonthSelectors();
 
   els.periodSelect.addEventListener("change",e=>{state.activePeriodId=e.target.value;saveState();renderAll()});
   $("#newPeriodBtn").addEventListener("click",openPeriodDialog);
-  document.querySelectorAll("[data-year-target]").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      const id=btn.dataset.yearTarget;
-      setYearValue(id,getYearValue(id)+Number(btn.dataset.delta));
-      updatePeriodPreview();
-    });
-  });
+  document.querySelectorAll("[data-year-target]").forEach(btn=>btn.addEventListener("click",()=>{
+    const id=btn.dataset.yearTarget;setYearValue(id,getYearValue(id)+Number(btn.dataset.delta));updatePeriodPreview();
+  }));
   $("#startMonth").addEventListener("change",updatePeriodPreview);
   $("#endMonth").addEventListener("change",updatePeriodPreview);
   $("#createPeriodBtn").addEventListener("click",e=>{e.preventDefault();createPeriod()});
   $("#backBtn").addEventListener("click",()=>{showView(els.dashboardView);$("#screenTitle").textContent="Gestión documental"});
   $("#previewBackBtn").addEventListener("click",()=>{showView(els.documentView);$("#screenTitle").textContent=activeDocument.name});
-  els.documentForm.addEventListener("input",updateProgress);
-  els.documentForm.responsiblesChanged.addEventListener("change",e=>{els.responsiblesFields.classList.toggle("hidden",e.target.value!=="yes");updateProgress()});
+  $("#addDistributionRowBtn").addEventListener("click",()=>{
+    $("#distributionBody").insertAdjacentHTML("beforeend",distributionRowHtml());
+    bindRemoveButtons();updateDistributionTotals();updateProgress();
+  });
+  els.documentForm.addEventListener("input",e=>{if(e.target.matches(".dist-count,.dist-place,.dist-career"))updateDistributionTotals();updateProgress()});
   $("#saveDraftBtn").addEventListener("click",saveDraft);
   els.documentForm.addEventListener("submit",e=>{e.preventDefault();generatePreview()});
   $("#printBtn").addEventListener("click",()=>window.print());
   $("#backupBtn").addEventListener("click",exportBackup);
-  $("#restoreInput").addEventListener("change",e=>{if(e.target.files[0]) restoreBackup(e.target.files[0])});
+  $("#restoreInput").addEventListener("change",e=>{if(e.target.files[0])restoreBackup(e.target.files[0])});
 
   renderAll();
 })();
