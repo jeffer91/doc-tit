@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#0b2d4f" />
   <title>DOC-TIT · Gestión documental UTET</title>
-  <link rel="stylesheet" href="styles.css?v=20260901-4" />
+  <link rel="stylesheet" href="styles.css?v=20260901-5" />
 </head>
 <body>
   <div class="app-shell">
@@ -136,6 +136,39 @@
                 <div id="distributionTotals" class="distribution-totals"></div>
               </section>
 
+              <section class="panel">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">3. Imágenes</span>
+                    <h3>Imágenes del documento</h3>
+                    <p class="section-help">Sube el logo institucional y, cuando corresponda, las imágenes de firma/QR. El logo se repetirá en el encabezado de las 45 páginas.</p>
+                  </div>
+                </div>
+                <div class="asset-grid">
+                  <label class="asset-card">
+                    <span class="asset-title">Logo institucional <b>*</b></span>
+                    <span class="asset-preview" id="logoPreview">Sin imagen</span>
+                    <input type="file" id="logoUpload" accept="image/png,image/jpeg,image/webp">
+                    <small>Se utiliza en todas las páginas.</small>
+                  </label>
+                  <label class="asset-card">
+                    <span class="asset-title">Firma / QR · Elaborado por</span>
+                    <span class="asset-preview" id="preparedSignaturePreview">Opcional</span>
+                    <input type="file" id="preparedSignatureUpload" accept="image/png,image/jpeg,image/webp">
+                  </label>
+                  <label class="asset-card">
+                    <span class="asset-title">Firma / QR · Revisado por</span>
+                    <span class="asset-preview" id="reviewedSignaturePreview">Opcional</span>
+                    <input type="file" id="reviewedSignatureUpload" accept="image/png,image/jpeg,image/webp">
+                  </label>
+                  <label class="asset-card">
+                    <span class="asset-title">Firma / QR · Aprobado por</span>
+                    <span class="asset-preview" id="approvedSignaturePreview">Opcional</span>
+                    <input type="file" id="approvedSignatureUpload" accept="image/png,image/jpeg,image/webp">
+                  </label>
+                </div>
+              </section>
+
               <div class="form-actions document-actions">
                 <button type="button" class="secondary" id="saveDraftBtn">Guardar borrador</button>
                 <button type="submit" class="primary" id="generateBtn">Generar planificación</button>
@@ -158,7 +191,7 @@
           <button class="back-link" id="previewBackBtn">← Editar datos</button>
           <button class="secondary" id="printBtn">Imprimir / Guardar PDF</button>
         </div>
-        <article id="printDocument" class="paper"></article>
+        <div id="printDocument" class="document-preview"></div>
       </section>
     </main>
   </div>
@@ -225,6 +258,11 @@
     </form>
   </dialog>
 
-  <script src="app.js?v=20260901-4"></script>
+  <script src="template-chunk-1.js?v=20260901-5"></script>
+  <script src="template-chunk-2.js?v=20260901-5"></script>
+  <script src="template-chunk-3.js?v=20260901-5"></script>
+  <script src="template-chunk-4.js?v=20260901-5"></script>
+  <script src="full-document.js?v=20260901-5"></script>
+  <script src="app.js?v=20260901-5"></script>
 </body>
 </html>
