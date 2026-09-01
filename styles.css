@@ -78,3 +78,33 @@ dialog::backdrop{background:rgba(4,17,30,.52)}
 @media(max-width:1050px){.app-shell{grid-template-columns:235px 1fr}.document-layout{grid-template-columns:1fr}.sticky{position:static}}
 @media(max-width:720px){.app-shell{display:block}.sidebar{position:static;height:auto}.main{padding:18px}.sidebar-footer{grid-template-columns:1fr}.period-summary,.doc-heading,.topbar{flex-direction:column;align-items:flex-start}.period-summary>p{text-align:left}.form-grid,.nested{grid-template-columns:1fr}.full{grid-column:auto}.period-builder{grid-template-columns:1fr}.period-arrow{transform:rotate(90deg);text-align:center}.paper{padding:32px 22px}.paper-header{grid-template-columns:1fr}.paper-header>div{border-right:0;border-bottom:1px solid #444}}
 @media print{body{background:#fff}.sidebar,.topbar,.preview-toolbar{display:none!important}.app-shell{display:block}.main{padding:0}.view{display:none!important}#previewView{display:block!important}.paper{box-shadow:none;border:0;max-width:none;padding:18mm 18mm;min-height:auto}@page{size:A4;margin:0}}
+
+/* PRO-56 input simplification */
+.compact-panel{padding-bottom:16px}
+.section-help{margin:5px 0 0;color:var(--muted);font-size:12px;line-height:1.45}
+.table-scroll{overflow:auto;border:1px solid var(--line);border-radius:12px}
+.input-table{width:100%;border-collapse:collapse;background:#fff;min-width:620px}
+.input-table th{background:#f6f8fb;color:#536174;font-size:11px;text-transform:uppercase;letter-spacing:.04em;text-align:left;padding:10px 11px;border-bottom:1px solid var(--line)}
+.input-table td{padding:7px 8px;border-bottom:1px solid #edf1f5;vertical-align:middle}
+.input-table tr:last-child td{border-bottom:0}
+.input-table input{width:100%;border:1px solid #cbd5df;border-radius:8px;padding:8px 9px;background:#fff;color:var(--text);font-size:12px}
+.schedule-table td:first-child{font-weight:750;font-size:12px;color:#2b3c50;width:45%}
+.distribution-table td:nth-child(1){width:62%}
+.distribution-table td:nth-child(2){width:18%}
+.distribution-table td:nth-child(3){width:13%}
+.distribution-table td:nth-child(4){width:44px;text-align:center}
+.row-remove{width:30px;height:30px;border:0;border-radius:8px;background:#f7e9e8;color:#a22;font-weight:900}
+.row-remove:hover{background:#f2d8d6}
+.small-btn{font-size:11px;padding:8px 10px;white-space:nowrap}
+.distribution-totals{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.total-chip{background:#f3f6f9;border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:11px;color:#536174}
+.total-chip strong{color:#172033}
+.document-actions{margin-top:4px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}
+.paper table{width:100%;border-collapse:collapse;margin:12px 0 22px;font-family:Georgia,serif;font-size:11px}
+.paper th,.paper td{border:1px solid #777;padding:6px 7px;text-align:left}
+.paper th{background:#f1f1f1}
+.paper .summary-box{border:1px solid #aaa;padding:10px 12px;margin:12px 0 18px;font-family:Georgia,serif;font-size:11px;line-height:1.6}
+@media(max-width:720px){
+  .input-table{min-width:560px}
+  .panel-head{align-items:flex-start}
+}
