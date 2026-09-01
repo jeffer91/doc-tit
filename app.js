@@ -243,10 +243,7 @@
 
   function renderAssetPreviews(assets){
     const configs=[
-      ["logoPreview",assets.logo,"Sin imagen"],
-      ["preparedSignaturePreview",assets.preparedSignature,"Opcional"],
-      ["reviewedSignaturePreview",assets.reviewedSignature,"Opcional"],
-      ["approvedSignaturePreview",assets.approvedSignature,"Opcional"]
+      ["logoPreview",assets.logo,"Sin imagen"]
     ];
     configs.forEach(([id,src,empty])=>{
       const el=$("#"+id);
@@ -539,17 +536,10 @@
     bindRemoveButtons();updateDistributionTotals();updateProgress();
   });
   els.documentForm.addEventListener("input",e=>{if(e.target.matches(".dist-count,.dist-place,.dist-career"))updateDistributionTotals();updateProgress()});
-  [
-    ["logoUpload","logo"],
-    ["preparedSignatureUpload","preparedSignature"],
-    ["reviewedSignatureUpload","reviewedSignature"],
-    ["approvedSignatureUpload","approvedSignature"]
-  ].forEach(([id,key])=>{
-    $("#"+id)?.addEventListener("change",e=>{
-      const file=e.target.files&&e.target.files[0];
-      if(file)storeAsset(key,file);
-      e.target.value="";
-    });
+  $("#logoUpload")?.addEventListener("change",e=>{
+    const file=e.target.files&&e.target.files[0];
+    if(file)storeAsset("logo",file);
+    e.target.value="";
   });
   $("#saveDraftBtn").addEventListener("click",saveDraft);
   els.documentForm.addEventListener("submit",e=>{e.preventDefault();generatePreview()});
