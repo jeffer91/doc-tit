@@ -19,16 +19,19 @@
       </div>
 
       <div class="period-box">
-        <label for="periodSelect">Período académico</label>
+        <div class="period-label-row">
+          <label for="periodSelect">Período académico</label>
+          <button class="period-add" id="newPeriodBtn" type="button" aria-label="Nuevo período">+</button>
+        </div>
         <select id="periodSelect"></select>
-        <button class="ghost small" id="newPeriodBtn">+ Nuevo período</button>
       </div>
 
+      <div class="menu-heading">Procesos</div>
       <nav id="processMenu" class="process-menu"></nav>
 
       <div class="sidebar-footer">
-        <button class="ghost" id="backupBtn">Exportar respaldo</button>
-        <label class="ghost file-label">
+        <button class="ghost compact" id="backupBtn">Exportar respaldo</button>
+        <label class="ghost compact file-label">
           Restaurar respaldo
           <input id="restoreInput" type="file" accept=".json,application/json" hidden />
         </label>
@@ -39,36 +42,27 @@
       <header class="topbar">
         <div>
           <span class="eyebrow">Unidad de Titulación y Eficiencia Terminal</span>
-          <h1 id="screenTitle">Documentos por período</h1>
+          <h1 id="screenTitle">Gestión documental</h1>
         </div>
-        <div class="status-pill" id="periodStatus">Activo</div>
       </header>
 
       <section id="dashboardView" class="view active">
-        <div class="hero-card">
+        <section class="period-summary">
           <div>
             <span class="eyebrow">Período seleccionado</span>
             <h2 id="periodName"></h2>
-            <p>Los procesos y documentos se gestionan dentro de este período. Cada documento reutiliza la información ya disponible y solo solicita los datos que realmente faltan.</p>
-          </div>
-          <button class="primary" id="openFirstDocBtn">Abrir primer documento</button>
-        </div>
-
-        <div class="stats-grid">
-          <article class="stat"><span>Procesos</span><strong id="statProcesses">0</strong></article>
-          <article class="stat"><span>Documentos</span><strong id="statDocuments">0</strong></article>
-          <article class="stat"><span>Listos</span><strong id="statReady">0</strong></article>
-          <article class="stat"><span>Generados</span><strong id="statGenerated">0</strong></article>
-        </div>
-
-        <section class="panel">
-          <div class="panel-head">
-            <div>
-              <span class="eyebrow">Mapa documental</span>
-              <h3>Procesos disponibles</h3>
+            <div class="summary-meta">
+              <span id="periodStatus" class="status-dot">Activo</span>
+              <span id="periodDocumentSummary">0 documentos · 0 generados</span>
             </div>
           </div>
-          <div id="processCards" class="cards"></div>
+          <p>Selecciona un documento del menú de procesos para continuar.</p>
+        </section>
+
+        <section class="start-panel">
+          <div class="start-icon">DOC</div>
+          <h3>Elige un documento</h3>
+          <p>La app reutiliza los datos del período y solo te pedirá la información necesaria para cada documento.</p>
         </section>
       </section>
 
@@ -186,9 +180,7 @@
       <section id="previewView" class="view">
         <div class="preview-toolbar">
           <button class="back-link" id="previewBackBtn">← Editar datos</button>
-          <div>
-            <button class="secondary" id="printBtn">Imprimir / Guardar PDF</button>
-          </div>
+          <button class="secondary" id="printBtn">Imprimir / Guardar PDF</button>
         </div>
         <article id="printDocument" class="paper"></article>
       </section>
@@ -197,14 +189,53 @@
 
   <dialog id="periodDialog">
     <form method="dialog" id="periodForm" class="dialog-form">
-      <h3>Nuevo período académico</h3>
-      <label>Nombre del período
-        <input name="name" placeholder="Ej. Octubre 2026 – Marzo 2027" required />
-      </label>
-      <div class="two-cols">
-        <label>Fecha inicio<input type="date" name="start" required /></label>
-        <label>Fecha fin<input type="date" name="end" required /></label>
+      <div class="dialog-title-row">
+        <div>
+          <span class="eyebrow">Períodos</span>
+          <h3>Nuevo período académico</h3>
+        </div>
+        <button class="dialog-close" value="cancel" aria-label="Cerrar" type="submit">×</button>
       </div>
+
+      <div class="period-builder">
+        <section class="period-side">
+          <span class="period-side-title">Inicio</span>
+          <label>Mes
+            <select name="startMonth" id="startMonth"></select>
+          </label>
+          <label>Año
+            <div class="year-stepper">
+              <button type="button" data-year-target="startYear" data-delta="-1">−</button>
+              <output id="startYear" data-value="2026">2026</output>
+              <button type="button" data-year-target="startYear" data-delta="1">+</button>
+            </div>
+          </label>
+        </section>
+
+        <div class="period-arrow">→</div>
+
+        <section class="period-side">
+          <span class="period-side-title">Fin</span>
+          <label>Mes
+            <select name="endMonth" id="endMonth"></select>
+          </label>
+          <label>Año
+            <div class="year-stepper">
+              <button type="button" data-year-target="endYear" data-delta="-1">−</button>
+              <output id="endYear" data-value="2027">2027</output>
+              <button type="button" data-year-target="endYear" data-delta="1">+</button>
+            </div>
+          </label>
+        </section>
+      </div>
+
+      <div class="period-preview">
+        <span>Período generado</span>
+        <strong id="periodPreviewName">Octubre 2026 – Marzo 2027</strong>
+      </div>
+
+      <p id="periodError" class="form-error hidden">La fecha final debe ser posterior a la fecha inicial.</p>
+
       <div class="dialog-actions">
         <button value="cancel" class="secondary">Cancelar</button>
         <button value="default" class="primary" id="createPeriodBtn">Crear período</button>
