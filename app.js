@@ -70,7 +70,8 @@
           {id:"period", label:"Período académico", source:"Automático", automatic:true},
           {id:"schedule", label:"Cronograma", source:"Fechas de las 9 actividades", automatic:false},
           {id:"distribution", label:"Carreras · Lugar · Cantidad", source:"Distribución del período", automatic:false},
-          {id:"code", label:"Código y fecha de elaboración", source:"Automáticos", automatic:true}
+          {id:"logo", label:"Logo institucional", source:"Se usa en el encabezado de las 45 páginas", automatic:false},
+          {id:"code", label:"Código, fecha y versión", source:"Automáticos", automatic:true}
         ]
       }]
     },
@@ -236,7 +237,37 @@
     const saved=getDocData(doc.id);
     renderSchedule(saved.schedule||starterSchedule());
     renderDistribution(saved.distribution||starterDistribution());
+    renderAssetPreviews(saved.assets||{});
     updateProgress();
+  }
+
+  function renderAssetPreviews(assets){
+    const configs=[
+      ["logoPreview",assets.logo,"Sin imagen"],
+      ["preparedSignaturePreview",assets.preparedSignature,"Opcional"],
+      ["reviewedSignaturePreview",assets.reviewedSignature,"Opcional"],
+      ["approvedSignaturePreview",assets.approvedSignature,"Opcional"]
+    ];
+    configs.forEach(([id,src,empty])=>{
+      const el=$("#"+id);
+      if(el) el.innerHTML=src?`<img src="${src}" alt="Imagen cargada">`:`<span>${empty}</span>`;
+    });
+  }
+
+  async function storeAsset(key,file){
+    if(!activeDocument||!file) return;
+    try{
+      const maxW=key==="logo"?900:700;
+      const maxH=key==="logo"?320:360;
+      const dataUrl=await window.DocTitFullDocument.resizeImage(file,maxW,maxH);
+      const saved=getDocData(activeDocument.id);
+      const assets={...(saved.assets||{}),[key]:dataUrl};
+      setDocData(activeDocument.id,{assets});
+      renderAssetPreviews(assets);
+      updateProgress();
+    }catch(err){
+      alert(err.message||"No se pudo cargar la imagen.");
+    }
   }
 
   function renderSchedule(rows){
@@ -339,13 +370,21 @@
     if(!activeDocument) return;
     const schedule=collectSchedule();
     const distribution=collectDistribution();
+    const assets=getDocData(activeDocument.id).assets||{};
     const scheduleOk=scheduleComplete(schedule);
     const distributionOk=distributionComplete(distribution);
-    document.querySelector('[data-req="schedule"]')?.classList.toggle("done",scheduleOk);
-    document.querySelector('[data-req="distribution"]')?.classList.toggle("done",distributionOk);
-    document.querySelector('[data-req="schedule"] .req-icon') && (document.querySelector('[data-req="schedule"] .req-icon').textContent=scheduleOk?"✓":"○");
-    document.querySelector('[data-req="distribution"] .req-icon') && (document.querySelector('[data-req="distribution"] .req-icon').textContent=distributionOk?"✓":"○");
-    const pct=Math.round(((2+(scheduleOk?1:0)+(distributionOk?1:0))/4)*100);
+    const logoOk=!!assets.logo;
+    const setReq=(id,ok)=>{
+      const row=document.querySelector('[data-req="'+id+'"]');
+      if(!row)return;
+      row.classList.toggle("done",ok);
+      const icon=row.querySelector(".req-icon");
+      if(icon)icon.textContent=ok?"✓":"○";
+    };
+    setReq("schedule",scheduleOk);
+    setReq("distribution",distributionOk);
+    setReq("logo",logoOk);
+    const pct=Math.round(((2+(scheduleOk?1:0)+(distributionOk?1:0)+(logoOk?1:0))/5)*100);
     $("#progressText").textContent=`${pct}% completo`;
     $("#progressBar").style.width=pct+"%";
     $("#docStateBadge").textContent=pct===100?"Listo para generar":"Datos incompletos";
@@ -353,19 +392,21 @@
   }
 
   function collectDocumentData(){
-    return {schedule:collectSchedule(),distribution:collectDistribution()};
+    const saved=activeDocument?getDocData(activeDocument.id):{};
+    return {schedule:collectSchedule(),distribution:collectDistribution(),assets:saved.assets||{}};
   }
 
   function saveDraft(){
     if(!activeDocument) return;
     const data=collectDocumentData();
-    setDocData(activeDocument.id,{...data,complete:scheduleComplete(data.schedule)&&distributionComplete(data.distribution)});
+    const complete=scheduleComplete(data.schedule)&&distributionComplete(data.distribution)&&!!data.assets.logo;
+    setDocData(activeDocument.id,{...data,complete});
     renderPeriods();
     updateProgress();
     alert("Borrador guardado para este período.");
   }
 
-  function generatePreview(){
+  async function generatePreview(){
     const data=collectDocumentData();
     if(!scheduleComplete(data.schedule)){
       alert("Completa las fechas de las 9 actividades del cronograma.");
@@ -375,52 +416,36 @@
       alert("Completa Carrera, Lugar y Cantidad en todas las filas utilizadas.");
       return;
     }
-    setDocData(activeDocument.id,{...data,generatedAt:new Date().toISOString(),complete:true});
-    renderPreview(data);
-    renderPeriods();
-    showView(els.previewView);
-    $("#screenTitle").textContent="Vista de la planificación";
-  }
-
-  function renderPreview(data){
-    const p=activePeriod(),doc=activeDocument;
-    const totals={};let total=0;
-    data.distribution.forEach(r=>{const n=Number(r.count)||0;totals[r.place]=(totals[r.place]||0)+n;total+=n});
-    const scheduleRows=data.schedule.map(r=>`<tr><td>${escapeHtml(r.activity)}</td><td>${formatDateShort(r.start)}</td><td>${formatDateShort(r.end)}</td></tr>`).join("");
-    const distributionRows=data.distribution.map(r=>`<tr><td>${escapeHtml(r.career)}</td><td>${escapeHtml(r.place)}</td><td>${Number(r.count)||0}</td></tr>`).join("");
-    const totalsText=Object.entries(totals).map(([place,n])=>`${escapeHtml(place)}: ${n}`).join(" · ");
-
-    $("#printDocument").innerHTML=`
-      <div class="paper-header">
-        <div><strong>UNIDAD TITULACIÓN Y EFICIENCIA TERMINAL</strong></div>
-        <div><strong>PLANIFICACIÓN DE EXAMEN COMPLEXIVO</strong><br>${escapeHtml(p.name)}</div>
-        <div><strong>Código:</strong><br>${documentCode(doc,p)}<br><strong>Versión:</strong> 1.0</div>
-      </div>
-      <p><strong>Fecha de elaboración:</strong> ${formatDate(p.start)}</p>
-      <h1>Planificación de Examen Complexivo<br>${escapeHtml(p.name)}</h1>
-
-      <h2>1. Introducción</h2>
-      <p>El presente documento establece la planificación técnica del proceso de titulación mediante examen complexivo para el período académico ${escapeHtml(p.name)}. La planificación articula las fases operativas, el cronograma general y la distribución de estudiantes por carrera y lugar.</p>
-
-      <h2>2. Cronograma general del proceso</h2>
-      <table><thead><tr><th>Actividad</th><th>Fecha inicio</th><th>Fecha fin</th></tr></thead><tbody>${scheduleRows}</tbody></table>
-
-      <h2>3. Distribución de estudiantes por carrera y lugar</h2>
-      <p>La distribución se organiza de acuerdo con la cantidad de estudiantes registrada para cada carrera y el lugar previsto para la ejecución del proceso.</p>
-      <table><thead><tr><th>Carrera</th><th>Lugar</th><th>Cantidad</th></tr></thead><tbody>${distributionRows}</tbody></table>
-      <div class="summary-box"><strong>Resumen:</strong> ${totalsText} · <strong>Total general: ${total}</strong></div>
-
-      <h2>4. Organización del examen complexivo</h2>
-      <p>La ejecución del examen complexivo se organizará conforme al cronograma definido para el período y a la distribución de estudiantes registrada en esta planificación. Los detalles operativos de fecha, hora, laboratorio y docentes responsables se gestionarán en los cronogramas complementarios correspondientes.</p>
-
-      <h2>5. Criterios institucionales</h2>
-      <p>Se mantienen los lineamientos institucionales vigentes para requisitos, seminarios de titulación, imponderables, evaluación, accesibilidad y demás componentes definidos para el proceso de examen complexivo.</p>
-
-      <div class="signature-grid">
-        <div><strong>ELABORADO POR</strong><br><br>${escapeHtml(state.institutional.preparedBy)}</div>
-        <div><strong>REVISADO POR</strong><br><br>${escapeHtml(state.institutional.reviewedBy)}</div>
-        <div><strong>APROBADO POR</strong><br><br>${escapeHtml(state.institutional.approvedBy)}</div>
-      </div>`;
+    if(!data.assets.logo){
+      alert("Sube el logo institucional. Se utilizará en el encabezado de las 45 páginas.");
+      return;
+    }
+    const button=$("#generateBtn");
+    const oldText=button.textContent;
+    button.disabled=true;
+    button.textContent="Generando 45 páginas…";
+    try{
+      const p=activePeriod(),doc=activeDocument;
+      $("#printDocument").innerHTML=await window.DocTitFullDocument.render({
+        period:p,
+        doc,
+        schedule:data.schedule,
+        distribution:data.distribution,
+        assets:data.assets,
+        institutional:state.institutional,
+        code:documentCode(doc,p)
+      });
+      setDocData(activeDocument.id,{...data,generatedAt:new Date().toISOString(),complete:true});
+      renderPeriods();
+      showView(els.previewView);
+      $("#screenTitle").textContent="Vista de la planificación · 45 páginas";
+    }catch(err){
+      console.error(err);
+      alert("No se pudo generar el documento completo: "+(err.message||err));
+    }finally{
+      button.disabled=false;
+      button.textContent=oldText;
+    }
   }
 
   function formatDate(v){
@@ -514,6 +539,18 @@
     bindRemoveButtons();updateDistributionTotals();updateProgress();
   });
   els.documentForm.addEventListener("input",e=>{if(e.target.matches(".dist-count,.dist-place,.dist-career"))updateDistributionTotals();updateProgress()});
+  [
+    ["logoUpload","logo"],
+    ["preparedSignatureUpload","preparedSignature"],
+    ["reviewedSignatureUpload","reviewedSignature"],
+    ["approvedSignatureUpload","approvedSignature"]
+  ].forEach(([id,key])=>{
+    $("#"+id)?.addEventListener("change",e=>{
+      const file=e.target.files&&e.target.files[0];
+      if(file)storeAsset(key,file);
+      e.target.value="";
+    });
+  });
   $("#saveDraftBtn").addEventListener("click",saveDraft);
   els.documentForm.addEventListener("submit",e=>{e.preventDefault();generatePreview()});
   $("#printBtn").addEventListener("click",()=>window.print());
