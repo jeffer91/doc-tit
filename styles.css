@@ -174,3 +174,310 @@ dialog::backdrop{background:rgba(4,17,30,.52)}
   .paper-page:last-child{page-break-after:auto;break-after:auto}
   @page{size:A4;margin:0}
 }
+
+
+/* ===== Documento institucional v3 · APA 7 ===== */
+.asset-grid-single{grid-template-columns:minmax(0,520px)}
+.asset-grid-single .asset-preview{height:120px}
+
+/* Cada hoja se previsualiza como A4 real */
+.paper-page{
+  width:210mm;
+  height:297mm;
+  margin:0 auto 18px;
+  background:#fff;
+  color:#000;
+  box-shadow:0 8px 28px rgba(0,0,0,.14);
+  position:relative;
+  overflow:hidden;
+  font-family:"Times New Roman",Times,serif;
+}
+
+/* Cabecera tomada del formato institucional de ejemplo:
+   logo a la izquierda, unidad/documento al centro, código a la derecha. */
+.institutional-header-v3{
+  position:absolute;
+  left:12mm;
+  right:12mm;
+  top:8mm;
+  height:26mm;
+  border:1px solid #000;
+  display:grid;
+  grid-template-columns:26% 56% 18%;
+  grid-template-rows:13mm 13mm;
+  font-family:Arial,Helvetica,sans-serif;
+  font-size:8.6pt;
+  line-height:1.08;
+  background:#fff;
+}
+.ih3-logo{
+  grid-column:1;
+  grid-row:1 / 3;
+  border-right:1px solid #000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:1.5mm;
+  overflow:hidden;
+}
+.ih3-logo img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+.ih3-logo span{
+  color:#777;
+  font-size:7pt;
+  text-align:center;
+  font-weight:700;
+}
+.ih3-unit{
+  grid-column:2;
+  grid-row:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:1.5mm 2mm;
+  font-size:10pt;
+  border-bottom:1px solid #000;
+}
+.ih3-document{
+  grid-column:2;
+  grid-row:2;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:1mm 2mm;
+  font-family:"Times New Roman",Times,serif;
+  font-size:9.5pt;
+  line-height:1.05;
+}
+.ih3-code{
+  grid-column:3;
+  grid-row:1 / 3;
+  border-left:1px solid #000;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:1.5mm;
+  font-family:"Times New Roman",Times,serif;
+  font-size:9.2pt;
+  overflow-wrap:anywhere;
+}
+.apa-page-number{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:7mm;
+  text-align:center;
+  font-family:"Times New Roman",Times,serif;
+  font-size:10pt;
+}
+
+/* El cuerpo mantiene márgenes de 1 pulgada compatibles con APA 7. */
+.page-body-v3{
+  position:absolute;
+  left:25.4mm;
+  right:25.4mm;
+  top:43mm;
+  bottom:17mm;
+  overflow:hidden;
+}
+.apa-content{
+  font-family:"Times New Roman",Times,serif;
+  font-size:12pt;
+  line-height:2;
+  color:#000;
+  text-align:left;
+}
+.apa-p{
+  margin:0;
+  text-indent:12.7mm;
+  text-align:left;
+  line-height:2;
+}
+.apa-h1{
+  font-family:"Times New Roman",Times,serif;
+  font-size:12pt;
+  line-height:2;
+  font-weight:700;
+  text-align:center;
+  margin:0 0 0;
+}
+.apa-h2{
+  font-family:"Times New Roman",Times,serif;
+  font-size:12pt;
+  line-height:2;
+  font-weight:700;
+  text-align:left;
+  margin:0;
+}
+.apa-h3{
+  font-family:"Times New Roman",Times,serif;
+  font-size:12pt;
+  line-height:2;
+  font-weight:700;
+  font-style:italic;
+  text-align:left;
+  margin:0;
+}
+.apa-emphasis{
+  font-family:"Times New Roman",Times,serif;
+  font-size:12pt;
+  line-height:2;
+  font-weight:700;
+  margin:0;
+}
+.apa-bullet{
+  font-family:"Times New Roman",Times,serif;
+  font-size:12pt;
+  line-height:2;
+  margin-left:12.7mm;
+  padding-left:6mm;
+  text-indent:-6mm;
+}
+.apa-reference{
+  font-family:"Times New Roman",Times,serif;
+  font-size:12pt;
+  line-height:2;
+  margin:0;
+  padding-left:12.7mm;
+  text-indent:-12.7mm;
+}
+
+/* Portada sin firmas. */
+.cover-v3{
+  min-height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  padding-top:42mm;
+  font-family:"Times New Roman",Times,serif;
+}
+.cover-v3 h1{
+  max-width:155mm;
+  font-size:22pt;
+  line-height:1.35;
+  margin:0 0 12mm;
+  font-weight:700;
+}
+.cover-v3 h2{
+  font-size:18pt;
+  line-height:1.35;
+  margin:0 0 24mm;
+  font-weight:700;
+}
+.cover-meta{
+  font-size:12pt;
+  line-height:2;
+}
+.cover-v3 p{
+  margin-top:auto;
+  margin-bottom:25mm;
+  font-size:12pt;
+  line-height:2;
+}
+
+/* Índice limpio: texto normal, sangría por nivel y líderes de puntos. */
+.toc-v3{
+  font-family:"Times New Roman",Times,serif;
+  font-size:12pt;
+  line-height:1.55;
+  padding-top:4mm;
+}
+.toc-v3 h1{
+  text-align:center;
+  font-size:12pt;
+  font-weight:700;
+  margin:0 0 8mm;
+}
+.toc-row{
+  display:flex;
+  align-items:flex-end;
+  min-height:6.5mm;
+  white-space:nowrap;
+}
+.toc-label{
+  white-space:normal;
+  max-width:135mm;
+}
+.toc-dots{
+  flex:1 1 auto;
+  border-bottom:1px dotted #555;
+  margin:0 2mm 1.7mm;
+  min-width:8mm;
+}
+.toc-page{
+  min-width:8mm;
+  text-align:right;
+}
+.toc-level-2 .toc-label{padding-left:7mm}
+.toc-level-3 .toc-label{padding-left:14mm}
+.toc-level-1 .toc-label{font-weight:700}
+
+/* Tablas bajo criterio APA: sin cuadrícula vertical, reglas horizontales. */
+.apa-table{
+  width:100%;
+  border-collapse:collapse;
+  margin:4mm 0 5mm;
+  font-family:"Times New Roman",Times,serif;
+  font-size:10.5pt;
+  line-height:1.25;
+}
+.apa-table thead{
+  border-top:1.5px solid #000;
+  border-bottom:1px solid #000;
+}
+.apa-table tbody{
+  border-bottom:1.5px solid #000;
+}
+.apa-table th,
+.apa-table td{
+  border:0;
+  padding:1.4mm 2mm;
+  text-align:left;
+  vertical-align:top;
+}
+.apa-table th{font-weight:700}
+.apa-table tbody tr+tr td{border-top:.35px solid #bbb}
+.apa-compact-table-page .apa-p{line-height:1.5}
+.table-summary{
+  font-family:"Times New Roman",Times,serif;
+  font-size:10.5pt;
+  line-height:1.4;
+  margin:2mm 0 5mm;
+}
+
+/* El visor viejo ya no controla la tipografía del documento v3. */
+.document-preview{background:#dfe4ea;padding:24px 0}
+
+@media(max-width:900px){
+  .paper-page{margin-left:12px;margin-right:12px}
+  .document-preview{overflow:auto}
+}
+@media print{
+  html,body{background:#fff!important}
+  .sidebar,.topbar,.preview-toolbar{display:none!important}
+  .app-shell{display:block!important}
+  .main{padding:0!important}
+  .view{display:none!important}
+  #previewView{display:block!important}
+  .document-preview{padding:0!important;background:#fff!important}
+  .paper-page{
+    margin:0!important;
+    box-shadow:none!important;
+    page-break-after:always;
+    break-after:page;
+  }
+  .paper-page:last-child{
+    page-break-after:auto;
+    break-after:auto;
+  }
+  @page{size:A4;margin:0}
+}
