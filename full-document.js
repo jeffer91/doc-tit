@@ -224,6 +224,7 @@
     let y=BODY.top;
     const toc=[];
     const headerDrawn=new Set();
+    const analysisInjected=new Set();
 
     function drawHeader(pageNo){
       if(headerDrawn.has(pageNo)) return;
@@ -338,7 +339,8 @@
       y+=lines.length*22+8;
 
       const key=smartSectionKey(text);
-      if(key){
+      if(key && !analysisInjected.has(key)){
+        analysisInjected.add(key);
         getAnalysisSentences(ctx,key).forEach(s=>paragraph(s));
       }
     }
@@ -473,22 +475,43 @@
 
     function sourceContent(blocks){
       const inserted={schedule:false,distribution:false};
+      let skipMode=null;
+
       for(const b of blocks){
         const n=normalize(b.text);
+
+        if(skipMode==="schedule"){
+          if(b.type==="h1" && n.startsWith("4 requisitos")){
+            skipMode=null;
+          }else{
+            continue;
+          }
+        }
+        if(skipMode==="distribution"){
+          if(b.type==="h1" && n.startsWith("8 asignacion de laboratorios")){
+            skipMode=null;
+          }else{
+            continue;
+          }
+        }
+
         if(n.startsWith("3 10 cronogramas")){
           scheduleTable();
           inserted.schedule=true;
+          skipMode="schedule";
           continue;
         }
+
         if(n.startsWith("7 distribucion de estudiantes")){
           distributionTables();
           inserted.distribution=true;
+          skipMode="distribution";
           continue;
         }
+
         if(n.startsWith("8 asignacion de laboratorios")){
           heading(b.text,1,true);
           paragraph("La asignación de espacios se realizará considerando la cantidad de estudiantes, los requerimientos técnicos de cada carrera y la disponibilidad institucional. La definición exacta de laboratorio, fecha, hora y responsables corresponde al cronograma operativo de rendición.");
-          getAnalysisSentences(ctx,"logistica").forEach(s=>paragraph(s));
           continue;
         }
 
@@ -510,6 +533,7 @@
           }
         }
       }
+
       if(!inserted.schedule) scheduleTable();
       if(!inserted.distribution) distributionTables();
     }
