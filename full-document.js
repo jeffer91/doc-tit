@@ -327,7 +327,7 @@
 
     function heading(text,level=1,includeToc=true){
       const style=level===3?"bolditalic":"bold";
-      const size=12;
+      const size=level===1?14:level===2?13:12.5;
       const align=level===1?"center":"left";
       doc.setFont("times",style); doc.setFontSize(size);
       const max=bodyW;
@@ -366,9 +366,38 @@
 
     function autoTable(options){
       if(typeof doc.autoTable!=="function") throw new Error("No se pudo cargar el módulo de tablas del PDF.");
-      options.didDrawPage=()=>{
+
+      const userDidDrawPage=options.didDrawPage;
+      const userDidDrawCell=options.didDrawCell;
+
+      options.theme="plain";
+      options.styles={font:"times",fontSize:10,cellPadding:4,textColor:0,lineWidth:0,...(options.styles||{})};
+      options.headStyles={font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0,lineWidth:0,...(options.headStyles||{})};
+      options.didDrawPage=(data)=>{
         drawHeader(doc.getNumberOfPages());
+        if(userDidDrawPage) userDidDrawPage(data);
       };
+      options.didDrawCell=(data)=>{
+        const left=data.table.settings.margin.left;
+        const right=pageW-data.table.settings.margin.right;
+
+        if(data.section==="head" && data.column.index===0){
+          doc.setDrawColor(0);
+          doc.setLineWidth(0.8);
+          doc.line(left,data.cell.y,right,data.cell.y);
+          doc.setLineWidth(0.45);
+          doc.line(left,data.cell.y+data.cell.height,right,data.cell.y+data.cell.height);
+        }
+
+        if(data.section==="body" && data.row.index===data.table.body.length-1 && data.column.index===0){
+          doc.setDrawColor(0);
+          doc.setLineWidth(0.8);
+          doc.line(left,data.cell.y+data.cell.height,right,data.cell.y+data.cell.height);
+        }
+
+        if(userDidDrawCell) userDidDrawCell(data);
+      };
+
       doc.autoTable(options);
       y=doc.lastAutoTable.finalY+16;
     }
@@ -382,11 +411,8 @@
         margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
         head:[["Actividad","Fecha inicio","Fecha fin"]],
         body:(ctx.schedule||[]).map(r=>[r.activity,formatDateShort(r.start),formatDateShort(r.end)]),
-        styles:{font:"times",fontSize:10,cellPadding:5,textColor:0,lineColor:[170,170,170],lineWidth:0.25},
-        headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0,lineColor:[0,0,0],lineWidth:0.6},
-        theme:"plain",
-        tableLineColor:[0,0,0],
-        tableLineWidth:0.4
+        styles:{font:"times",fontSize:10,cellPadding:5,textColor:0},
+        headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
       });
       paragraph("Los cronogramas complementarios de desarrollo de núcleos y de rendición del examen detallarán, cuando corresponda, la distribución por carrera, lugar, fecha, hora, laboratorio y responsables, sin sustituir la planificación general del período.");
     }
@@ -400,67 +426,80 @@
         head:[["Carrera","Lugar","Cant."]],
         body:(ctx.distribution||[]).map(r=>[r.career,r.place,String(Number(r.count)||0)]),
         columnStyles:{0:{cellWidth:bodyW*0.68},1:{cellWidth:bodyW*0.20},2:{cellWidth:bodyW*0.12,halign:"right"}},
-        styles:{font:"times",fontSize:9.5,cellPadding:4,textColor:0,lineColor:[190,190,190],lineWidth:0.2},
-        headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0,lineColor:[0,0,0],lineWidth:0.6},
-        theme:"plain"
+        styles:{font:"times",fontSize:9.5,cellPadding:4,textColor:0},
+        headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
       });
       const t=totals(ctx.distribution);
       const summary=Object.entries(t.byPlace).map(([p,n])=>p+": "+n).join(" · ");
       paragraph("Resumen de distribución: "+summary+". Total general: "+t.total+" estudiantes.",{indent:false,bold:true,lineHeight:20});
     }
 
-    function signatureBlock(){
-      const needed=190;
-      ensureSpace(needed);
-      y+=8;
+    function signatureBlock(fixedTop=null){
       const x=BODY.left, w=bodyW, col=w/3;
       const titleH=24, signH=88, nameH=32, roleH=46;
-      const top=y;
-      doc.setDrawColor(0); doc.setLineWidth(0.7);
+      const totalH=titleH+signH+nameH+roleH;
+
+      if(fixedTop==null){
+        ensureSpace(totalH+24);
+        y+=8;
+      }
+      const top=fixedTop==null?y:fixedTop;
+
+      doc.setDrawColor(0);
+      doc.setLineWidth(0.7);
       for(let i=0;i<3;i++){
         const cx=x+i*col;
-        doc.rect(cx,top,col,titleH+signH+nameH+roleH);
+        doc.rect(cx,top,col,totalH);
         doc.line(cx,top+titleH,cx+col,top+titleH);
         doc.line(cx,top+titleH+signH,cx+col,top+titleH+signH);
         doc.line(cx,top+titleH+signH+nameH,cx+col,top+titleH+signH+nameH);
       }
+
       const cells=[
-        {title:"ELABORADO POR:",name:"Msg. Jefferson Villarreal",role:"COORDINADOR DE CARRERAS"},
-        {title:"REVISADO POR:",name:"Mgde. Martha Tomalá",role:"COORDINADORA GENERAL DE CARRERAS"},
-        {title:"APROBADO POR:",name:"Mgt. Alex León",role:"VICERRECTOR"}
+        {title:"ELABORADO POR:",name:ctx.institutional?.preparedBy||"Msg. Jefferson Villarreal",role:ctx.institutional?.preparedRole||"COORDINADOR DE CARRERAS"},
+        {title:"REVISADO POR:",name:ctx.institutional?.reviewedBy||"Mgde. Martha Tomalá",role:ctx.institutional?.reviewedRole||"COORDINADORA GENERAL DE CARRERAS"},
+        {title:"APROBADO POR:",name:ctx.institutional?.approvedBy||"Mgt. Alex León",role:ctx.institutional?.approvedRole||"VICERRECTOR"}
       ];
-      cells.forEach((c,i)=>{
+
+      cells.forEach((cell,i)=>{
         const cx=x+i*col;
-        doc.setFont("times","normal"); doc.setFontSize(9);
-        doc.text(c.title,cx+6,top+16);
-        doc.setFont("times","bold"); doc.setFontSize(9);
+        doc.setFont("times","normal");
+        doc.setFontSize(9);
+        doc.text(cell.title,cx+6,top+16);
+
+        doc.setFont("times","bold");
         doc.text("NOMBRE:",cx+6,top+titleH+signH+20);
         doc.setFont("times","normal");
-        const nameLines=doc.splitTextToSize(c.name,col-58);
+        const nameLines=doc.splitTextToSize(cell.name,col-58);
         doc.text(nameLines,cx+52,top+titleH+signH+20);
+
         doc.setFont("times","bold");
         doc.text("CARGO:",cx+6,top+titleH+signH+nameH+17);
         doc.setFont("times","normal");
-        const roleLines=doc.splitTextToSize(c.role,col-12);
+        const roleLines=doc.splitTextToSize(cell.role,col-12);
         doc.text(roleLines,cx+6,top+titleH+signH+nameH+31);
       });
-      y=top+titleH+signH+nameH+roleH+12;
+
+      if(fixedTop==null) y=top+totalH+12;
     }
 
     function cover(){
-      y=215;
-      doc.setFont("times","bold"); doc.setFontSize(23);
+      y=220;
+      doc.setFont("times","bold");
+      doc.setFontSize(23);
       doc.text("Planificación De Examen Complexivo",pageW/2,y,{align:"center"});
-      y+=60;
+      y+=58;
       doc.setFontSize(19);
       doc.text(ctx.period.name,pageW/2,y,{align:"center"});
-      y+=80;
-      doc.setFont("times","normal"); doc.setFontSize(12);
-      doc.text("Unidad de Titulación y Eficiencia Terminal",pageW/2,y,{align:"center"});
+
+      // Las firmas forman parte de la portada, con espacio en blanco para firma manuscrita.
+      signatureBlock(500);
     }
 
     function reserveIndexPages(){
       newPage();
+      newPage();
+      // La introducción debe iniciar en una página nueva, nunca sobre el índice.
       newPage();
     }
 
@@ -471,6 +510,168 @@
 
       heading("2. Base Legal",1,true);
       legalParagraphs(ctx).forEach(p=>paragraph(p));
+    }
+
+    function figureCaption(number,title){
+      ensureSpace(44);
+      doc.setFont("times","bold");
+      doc.setFontSize(11);
+      doc.text("Figura "+number,BODY.left,y);
+      y+=16;
+      doc.setFont("times","italic");
+      doc.setFontSize(11);
+      doc.text(title,BODY.left,y);
+      y+=18;
+    }
+
+    function drawVerticalBars(data,title,figureNo){
+      if(!data.length) return;
+      const chartH=190;
+      const chartW=bodyW;
+      ensureSpace(chartH+74);
+      figureCaption(figureNo,title);
+
+      const top=y;
+      const left=BODY.left+34;
+      const bottom=top+chartH-34;
+      const right=BODY.left+chartW-10;
+      const max=Math.max(...data.map(d=>d.value),1);
+      const slot=(right-left)/data.length;
+      const barW=Math.max(8,slot*0.55);
+
+      doc.setDrawColor(90);
+      doc.setLineWidth(0.4);
+      doc.line(left,bottom,right,bottom);
+      doc.line(left,top,left,bottom);
+
+      doc.setFont("times","normal");
+      doc.setFontSize(8);
+
+      data.forEach((d,i)=>{
+        const h=(d.value/max)*(chartH-58);
+        const x=left+i*slot+(slot-barW)/2;
+        doc.setFillColor(76,104,133);
+        doc.rect(x,bottom-h,barW,h,"F");
+        doc.setTextColor(0);
+        doc.text(String(d.value),x+barW/2,bottom-h-4,{align:"center"});
+        const label=doc.splitTextToSize(d.label,Math.max(slot-2,34)).slice(0,2);
+        doc.text(label,x+barW/2,bottom+12,{align:"center"});
+      });
+
+      y=top+chartH+18;
+      doc.setFont("times","normal");
+      doc.setFontSize(9);
+      doc.text("Nota. Elaboración propia con base en los datos del período.",BODY.left,y);
+      y+=24;
+    }
+
+    function drawHorizontalBars(data,title,figureNo){
+      if(!data.length) return;
+      const rowH=18;
+      const chartH=Math.max(190,data.length*rowH+46);
+      ensureSpace(chartH+72);
+      figureCaption(figureNo,title);
+
+      const top=y;
+      const labelW=170;
+      const left=BODY.left+labelW;
+      const right=pageW-BODY.right;
+      const max=Math.max(...data.map(d=>d.value),1);
+
+      doc.setFont("times","normal");
+      doc.setFontSize(8.5);
+
+      data.forEach((d,i)=>{
+        const yy=top+i*rowH+5;
+        const label=doc.splitTextToSize(d.label,labelW-12).slice(0,1)[0]||d.label;
+        doc.text(label,BODY.left,yy+7);
+        const bw=((right-left-30)*d.value)/max;
+        doc.setFillColor(76,104,133);
+        doc.rect(left,yy,bw,9,"F");
+        doc.setTextColor(0);
+        doc.text(String(d.value),Math.min(left+bw+4,right-18),yy+8);
+      });
+
+      y=top+chartH-10;
+      doc.setFont("times","normal");
+      doc.setFontSize(9);
+      doc.text("Nota. Elaboración propia con base en los datos del período.",BODY.left,y);
+      y+=24;
+    }
+
+    function drawTimeline(schedule,title,figureNo){
+      const valid=(schedule||[]).filter(r=>r.start&&r.end);
+      if(!valid.length) return;
+      const chartH=valid.length*22+56;
+      ensureSpace(chartH+72);
+      figureCaption(figureNo,title);
+
+      const dates=valid.flatMap(r=>[new Date(r.start+"T12:00:00"),new Date(r.end+"T12:00:00")]);
+      const min=Math.min(...dates.map(d=>d.getTime()));
+      const max=Math.max(...dates.map(d=>d.getTime()));
+      const span=Math.max(max-min,86400000);
+
+      const top=y;
+      const labelW=145;
+      const x0=BODY.left+labelW;
+      const x1=pageW-BODY.right;
+
+      doc.setDrawColor(130);
+      doc.setLineWidth(0.35);
+      doc.line(x0,top-8,x1,top-8);
+
+      doc.setFont("times","normal");
+      doc.setFontSize(8.5);
+
+      valid.forEach((r,i)=>{
+        const yy=top+i*22;
+        doc.text(r.activity,BODY.left,yy+8);
+        const s=new Date(r.start+"T12:00:00").getTime();
+        const e=new Date(r.end+"T12:00:00").getTime();
+        const bx=x0+((s-min)/span)*(x1-x0);
+        const ex=x0+((e-min)/span)*(x1-x0);
+        const bw=Math.max(5,ex-bx);
+        doc.setFillColor(76,104,133);
+        doc.rect(bx,yy,bw,10,"F");
+      });
+
+      y=top+chartH-12;
+      doc.setFont("times","normal");
+      doc.setFontSize(9);
+      doc.text("Nota. Las barras representan la duración planificada de cada actividad.",BODY.left,y);
+      y+=24;
+    }
+
+    function graphsSection(){
+      const rows=(ctx.distribution||[]).filter(r=>Number(r.count)>=0);
+      if(!rows.length) return;
+
+      heading("7.1. Representación Gráfica de la Distribución",2,true);
+
+      const byPlace={};
+      rows.forEach(r=>{byPlace[r.place]=(byPlace[r.place]||0)+(Number(r.count)||0);});
+      drawVerticalBars(
+        Object.entries(byPlace).map(([label,value])=>({label,value})),
+        "Estudiantes por lugar de ejecución",
+        1
+      );
+
+      const online=rows.filter(r=>/\bONLINE\b/i.test(r.career)).reduce((s,r)=>s+(Number(r.count)||0),0);
+      const other=rows.filter(r=>!/\bONLINE\b/i.test(r.career)).reduce((s,r)=>s+(Number(r.count)||0),0);
+      drawVerticalBars(
+        [{label:"Identificados como ONLINE",value:online},{label:"Resto de carreras",value:other}],
+        "Distribución según identificación ONLINE en el nombre de la carrera",
+        2
+      );
+
+      const topCareers=rows
+        .slice()
+        .sort((a,b)=>(Number(b.count)||0)-(Number(a.count)||0))
+        .slice(0,10)
+        .map(r=>({label:r.career,value:Number(r.count)||0}));
+      drawHorizontalBars(topCareers,"Diez carreras con mayor número de estudiantes",3);
+
+      drawTimeline(ctx.schedule||[],"Cronograma general del proceso de examen complexivo",4);
     }
 
     function sourceContent(blocks){
@@ -504,6 +705,7 @@
 
         if(n.startsWith("7 distribucion de estudiantes")){
           distributionTables();
+          graphsSection();
           inserted.distribution=true;
           skipMode="distribution";
           continue;
@@ -535,20 +737,23 @@
       }
 
       if(!inserted.schedule) scheduleTable();
-      if(!inserted.distribution) distributionTables();
+      if(!inserted.distribution){
+        distributionTables();
+        graphsSection();
+      }
     }
 
     function drawTOCPage(pageNo,title,entries){
       doc.setPage(pageNo);
       y=BODY.top;
-      doc.setFont("times","bold"); doc.setFontSize(12);
+      doc.setFont("times","bold"); doc.setFontSize(14);
       doc.text(title,pageW/2,y,{align:"center"});
-      y+=36;
+      y+=34;
       entries.forEach(e=>{
         const indent=e.level===1?0:e.level===2?18:36;
         const fontStyle=e.level===1?"bold":"normal";
         doc.setFont("times",fontStyle);
-        doc.setFontSize(11);
+        doc.setFontSize(10.5);
         const label=e.title;
         const pageText=String(e.page);
         const maxLabelW=bodyW-indent-44;
@@ -563,7 +768,7 @@
         if(startX<endX) doc.line(startX,yy-2,endX,yy-2);
         doc.setLineDashPattern([],0);
         doc.text(pageText,BODY.left+bodyW,yy,{align:"right"});
-        y+=Math.max(18,labelLines.length*18);
+        y+=Math.max(17,labelLines.length*17);
       });
 
       function ensureTocSpace(h){
@@ -592,7 +797,7 @@
       for(let p=1;p<=total;p++){
         doc.setPage(p);
         doc.setFont("times","normal"); doc.setFontSize(9);
-        doc.text("Página "+p+" de "+total,pageW/2,pageH-24,{align:"center"});
+        doc.text("Página "+p+" de "+total,pageW-36,pageH-22,{align:"right"});
       }
       return total;
     }
@@ -604,9 +809,6 @@
     reserveIndexPages();
     introAndLegal();
     sourceContent(blocks);
-
-    heading("Firmas de responsabilidad",1,false);
-    signatureBlock();
 
     fillIndex();
     const totalPages=footers();
