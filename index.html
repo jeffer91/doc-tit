@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b2d4f" />
+  <title>DOC-TIT · Gestión documental UTET</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">UTET</div>
+        <div>
+          <strong>DOC-TIT</strong>
+          <span>Gestión documental</span>
+        </div>
+      </div>
+
+      <div class="period-box">
+        <label for="periodSelect">Período académico</label>
+        <select id="periodSelect"></select>
+        <button class="ghost small" id="newPeriodBtn">+ Nuevo período</button>
+      </div>
+
+      <nav id="processMenu" class="process-menu"></nav>
+
+      <div class="sidebar-footer">
+        <button class="ghost" id="backupBtn">Exportar respaldo</button>
+        <label class="ghost file-label">
+          Restaurar respaldo
+          <input id="restoreInput" type="file" accept=".json,application/json" hidden />
+        </label>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <span class="eyebrow">Unidad de Titulación y Eficiencia Terminal</span>
+          <h1 id="screenTitle">Documentos por período</h1>
+        </div>
+        <div class="status-pill" id="periodStatus">Activo</div>
+      </header>
+
+      <section id="dashboardView" class="view active">
+        <div class="hero-card">
+          <div>
+            <span class="eyebrow">Período seleccionado</span>
+            <h2 id="periodName"></h2>
+            <p>Los procesos y documentos se gestionan dentro de este período. Cada documento reutiliza la información ya disponible y solo solicita los datos que realmente faltan.</p>
+          </div>
+          <button class="primary" id="openFirstDocBtn">Abrir primer documento</button>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat"><span>Procesos</span><strong id="statProcesses">0</strong></article>
+          <article class="stat"><span>Documentos</span><strong id="statDocuments">0</strong></article>
+          <article class="stat"><span>Listos</span><strong id="statReady">0</strong></article>
+          <article class="stat"><span>Generados</span><strong id="statGenerated">0</strong></article>
+        </div>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <span class="eyebrow">Mapa documental</span>
+              <h3>Procesos disponibles</h3>
+            </div>
+          </div>
+          <div id="processCards" class="cards"></div>
+        </section>
+      </section>
+
+      <section id="documentView" class="view">
+        <button class="back-link" id="backBtn">← Volver al período</button>
+
+        <div class="doc-heading">
+          <div>
+            <span class="eyebrow" id="docProcessLabel"></span>
+            <h2 id="docTitle"></h2>
+            <p id="docDescription"></p>
+          </div>
+          <div class="doc-badges">
+            <span class="badge" id="docCodeBadge"></span>
+            <span class="badge neutral" id="docStateBadge">No iniciado</span>
+          </div>
+        </div>
+
+        <div class="document-layout">
+          <div class="content-column">
+            <section class="panel">
+              <div class="panel-head">
+                <div>
+                  <span class="eyebrow">Antes de generar</span>
+                  <h3>¿Qué debes ingresar?</h3>
+                </div>
+                <span class="progress-text" id="progressText">0% completo</span>
+              </div>
+              <div class="progress"><span id="progressBar"></span></div>
+              <div id="requirementsList" class="requirements"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div>
+                  <span class="eyebrow">Datos manuales</span>
+                  <h3>Completa solo lo necesario</h3>
+                </div>
+              </div>
+
+              <form id="documentForm" class="form-grid">
+                <label>
+                  Fecha de elaboración
+                  <input type="date" name="elaborationDate" required />
+                  <small>Se propone automáticamente a partir del período, pero puedes cambiarla.</small>
+                </label>
+
+                <label>
+                  Versión
+                  <input type="text" name="version" value="1.0" required />
+                </label>
+
+                <label class="full">
+                  ¿Cambian autoridades o responsables para este período?
+                  <select name="responsiblesChanged">
+                    <option value="no">No, usar configuración institucional</option>
+                    <option value="yes">Sí, quiero personalizarlos</option>
+                  </select>
+                </label>
+
+                <div id="responsiblesFields" class="full nested hidden">
+                  <label>
+                    Elaborado por
+                    <input type="text" name="preparedBy" placeholder="Nombre y cargo" />
+                  </label>
+                  <label>
+                    Revisado por
+                    <input type="text" name="reviewedBy" placeholder="Nombre y cargo" />
+                  </label>
+                  <label>
+                    Aprobado por
+                    <input type="text" name="approvedBy" placeholder="Nombre y cargo" />
+                  </label>
+                </div>
+
+                <label class="full">
+                  Sedes / laboratorios / recursos
+                  <textarea name="logistics" rows="4" placeholder="Solo escribe aquí si existe una particularidad del período."></textarea>
+                  <small>Si queda vacío, el documento usa el texto base de la plantilla.</small>
+                </label>
+
+                <label class="full">
+                  Observaciones o imponderables
+                  <textarea name="observations" rows="4" placeholder="Opcional"></textarea>
+                </label>
+
+                <div class="form-actions full">
+                  <button type="button" class="secondary" id="saveDraftBtn">Guardar borrador</button>
+                  <button type="submit" class="primary" id="generateBtn">Generar vista del documento</button>
+                </div>
+              </form>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div>
+                  <span class="eyebrow">Relaciones</span>
+                  <h3>Documentos que alimentan esta planificación</h3>
+                </div>
+              </div>
+              <div id="dependenciesList" class="dependencies"></div>
+            </section>
+          </div>
+
+          <aside class="side-column">
+            <section class="panel sticky">
+              <span class="eyebrow">Información automática</span>
+              <h3>La app ya conoce</h3>
+              <div id="automaticData" class="auto-data"></div>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+      <section id="previewView" class="view">
+        <div class="preview-toolbar">
+          <button class="back-link" id="previewBackBtn">← Editar datos</button>
+          <div>
+            <button class="secondary" id="printBtn">Imprimir / Guardar PDF</button>
+          </div>
+        </div>
+        <article id="printDocument" class="paper"></article>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="periodDialog">
+    <form method="dialog" id="periodForm" class="dialog-form">
+      <h3>Nuevo período académico</h3>
+      <label>Nombre del período
+        <input name="name" placeholder="Ej. Octubre 2026 – Marzo 2027" required />
+      </label>
+      <div class="two-cols">
+        <label>Fecha inicio<input type="date" name="start" required /></label>
+        <label>Fecha fin<input type="date" name="end" required /></label>
+      </div>
+      <div class="dialog-actions">
+        <button value="cancel" class="secondary">Cancelar</button>
+        <button value="default" class="primary" id="createPeriodBtn">Crear período</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
