@@ -70,7 +70,7 @@
           {id:"period", label:"Período académico", source:"Automático", automatic:true},
           {id:"schedule", label:"Cronograma", source:"Fechas de las 9 actividades", automatic:false},
           {id:"distribution", label:"Carreras · Lugar · Cantidad", source:"Distribución del período", automatic:false},
-          {id:"logo", label:"Logo institucional", source:"Se usa en el encabezado de las 45 páginas", automatic:false},
+          {id:"logo", label:"Logo institucional", source:"Se usa en la cabecera de todas las páginas", automatic:false},
           {id:"code", label:"Código, fecha y versión", source:"Automáticos", automatic:true}
         ]
       }]
@@ -414,13 +414,13 @@
       return;
     }
     if(!data.assets.logo){
-      alert("Sube el logo institucional. Se utilizará en el encabezado de las 45 páginas.");
+      alert("Sube el logo institucional. Se utilizará en la cabecera de todas las páginas.");
       return;
     }
     const button=$("#generateBtn");
     const oldText=button.textContent;
     button.disabled=true;
-    button.textContent="Generando 45 páginas…";
+    button.textContent="Generando documento completo…";
     try{
       const p=activePeriod(),doc=activeDocument;
       $("#printDocument").innerHTML=await window.DocTitFullDocument.render({
@@ -435,7 +435,8 @@
       setDocData(activeDocument.id,{...data,generatedAt:new Date().toISOString(),complete:true});
       renderPeriods();
       showView(els.previewView);
-      $("#screenTitle").textContent="Vista de la planificación · 45 páginas";
+      const pageCount=$("#printDocument").querySelectorAll(".paper-page").length;
+      $("#screenTitle").textContent=`Vista de la planificación · ${pageCount} páginas`;
     }catch(err){
       console.error(err);
       alert("No se pudo generar el documento completo: "+(err.message||err));
