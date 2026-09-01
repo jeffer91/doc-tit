@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#0b2d4f" />
   <title>DOC-TIT · Gestión documental UTET</title>
-  <link rel="stylesheet" href="styles.css?v=20260901-6" />
+  <link rel="stylesheet" href="styles.css?v=20260901-7" />
 </head>
 <body>
   <div class="app-shell">
@@ -136,10 +136,26 @@
                 <div id="distributionTotals" class="distribution-totals"></div>
               </section>
 
+              <section class="panel smart-panel">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">3. Información adicional</span>
+                    <h3>Escribe lo que necesites agregar</h3>
+                    <p class="section-help">Puedes escribir de forma libre. La app analizará el texto, detectará fechas, lugares, temas y la sección del documento donde corresponde.</p>
+                  </div>
+                  <button type="button" class="secondary small-btn" id="analyzeTextBtn">Analizar información</button>
+                </div>
+                <textarea id="smartTextInput" class="smart-textarea" rows="9" placeholder="Ejemplo: Para este período los estudiantes online rendirán junto con los presenciales. Enfermería requiere laboratorio específico. El examen teórico tendrá 40 preguntas y una duración de 90 minutos."></textarea>
+                <div id="smartAnalysisResult" class="smart-analysis empty">
+                  <strong>Análisis inteligente</strong>
+                  <p>Escribe información y pulsa “Analizar información”.</p>
+                </div>
+              </section>
+
               <section class="panel">
                 <div class="panel-head">
                   <div>
-                    <span class="eyebrow">3. Identidad institucional</span>
+                    <span class="eyebrow">4. Identidad institucional</span>
                     <h3>Logo del documento</h3>
                     <p class="section-help">Carga únicamente el logo institucional. Se colocará en la cabecera de todas las páginas.</p>
                   </div>
@@ -156,7 +172,8 @@
 
               <div class="form-actions document-actions">
                 <button type="button" class="secondary" id="saveDraftBtn">Guardar borrador</button>
-                <button type="submit" class="primary" id="generateBtn">Generar planificación</button>
+                <button type="submit" class="primary" id="generateBtn">Generar PDF</button>
+                <div id="generationStatus" class="generation-status hidden" role="status"></div>
               </div>
             </form>
           </div>
@@ -171,13 +188,6 @@
         </div>
       </section>
 
-      <section id="previewView" class="view">
-        <div class="preview-toolbar">
-          <button class="back-link" id="previewBackBtn">← Editar datos</button>
-          <button class="secondary" id="printBtn">Imprimir / Guardar PDF</button>
-        </div>
-        <div id="printDocument" class="document-preview"></div>
-      </section>
     </main>
   </div>
 
@@ -243,11 +253,13 @@
     </form>
   </dialog>
 
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
   <script src="template-chunk-1.js?v=20260901-5"></script>
   <script src="template-chunk-2.js?v=20260901-5"></script>
   <script src="template-chunk-3.js?v=20260901-5"></script>
   <script src="template-chunk-4.js?v=20260901-5"></script>
-  <script src="full-document.js?v=20260901-6"></script>
-  <script src="app.js?v=20260901-6"></script>
+  <script src="full-document.js?v=20260901-7"></script>
+  <script src="app.js?v=20260901-7"></script>
 </body>
 </html>
