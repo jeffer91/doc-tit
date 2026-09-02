@@ -30,6 +30,25 @@ function blankPayload(){
     return {activity:def.activity,responsible:def.responsible||"",description:def.description||"",route:def.route||"",start:"",end:""};
   }),tables,notes:""};
 }
+function normalizePayloadData(data){
+  const base=blankPayload();
+  if(!data||typeof data!=="object") return base;
+
+  const existingSchedule=Array.isArray(data.schedule)?data.schedule:[];
+  const byActivity=new Map(existingSchedule.map(r=>[norm(r.activity),r]));
+  base.schedule=base.schedule.map(def=>{
+    const old=byActivity.get(norm(def.activity))||{};
+    return {...def,...old,activity:def.activity,responsible:old.responsible||def.responsible||"",description:def.description||old.description||"",route:def.route||old.route||""};
+  });
+
+  const tables={...base.tables};
+  Object.entries(data.tables||{}).forEach(([key,rows])=>{
+    if(Array.isArray(rows)&&rows.length) tables[key]=rows;
+  });
+
+  return {...base,...data,schedule:base.schedule,tables,notes:data.notes||""};
+}
+
 function code(){
   const p=activePeriod(); const d=new Date(p.start+"T12:00:00");
   return CONFIG.codePrefix+d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
@@ -42,7 +61,7 @@ function localLoad(){
   try{
     activePeriodId=localStorage.getItem(ACTIVE_KEY)||activePeriodId;
     const x=JSON.parse(localStorage.getItem(STORAGE_KEY+"::"+activePeriodId)||"null");
-    if(x) payload=x;
+    if(x) payload=normalizePayloadData(x);
   }catch(_){}
 }
 function setCloud(mode,msg){
@@ -114,11 +133,11 @@ async function storeImage(key,file){
 }
 async function loadCurrent(){
   payload=blankPayload();assets={};
-  const cache=JSON.parse(localStorage.getItem(STORAGE_KEY+"::"+activePeriodId)||"null"); if(cache)payload=cache;
+  const cache=JSON.parse(localStorage.getItem(STORAGE_KEY+"::"+activePeriodId)||"null"); if(cache)payload=normalizePayloadData(cache);
   if(cloudReady){
     try{
       const doc=await window.DocTitCloud.loadDocument(activePeriodId,CONFIG.documentKey);
-      if(doc?.payload) payload={...blankPayload(),...doc.payload,tables:{...blankPayload().tables,...(doc.payload.tables||{})}};
+      if(doc?.payload) payload=normalizePayloadData(doc.payload);
       assets=await window.DocTitCloud.loadAssets(activePeriodId,CONFIG.documentKey);
     }catch(e){console.warn(e);}
   }
