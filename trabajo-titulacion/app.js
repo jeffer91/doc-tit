@@ -7,7 +7,8 @@ const FALLBACK_PERIODS=[
 {id:"2025-10_2026-03",name:"Octubre 2025 – Marzo 2026",start:"2025-10-01",end:"2026-03-31",status:"Cerrado"},
 {id:"2025-04_2025-09",name:"Abril 2025 – Septiembre 2025",start:"2025-04-01",end:"2025-09-30",status:"Cerrado"}
 ];
-const STORAGE_KEY="doc-tit-"+CONFIG.documentKey+"-v1";\nconst ACTIVE_KEY=STORAGE_KEY+"::active";
+const STORAGE_KEY="doc-tit-"+CONFIG.documentKey+"-v1";
+const ACTIVE_KEY=STORAGE_KEY+"::active";
 let periods=FALLBACK_PERIODS.slice();
 let activePeriodId=periods[0].id;
 let payload=blankPayload();
