@@ -1276,8 +1276,10 @@
     const totalPages=footers();
 
     const safeName=(filename||"documento.pdf").replace(/[\\/:*?"<>|]+/g," ").replace(/\s+/g," ").trim();
-    doc.save(safeName.endsWith(".pdf")?safeName:safeName+".pdf");
-    return {pages:totalPages,filename:safeName};
+    const finalName=safeName.endsWith(".pdf")?safeName:safeName+".pdf";
+    const blob=doc.output("blob");
+    doc.save(finalName);
+    return {pages:totalPages,filename:finalName,blob};
   }
 
   window.DocTitFullDocument={
