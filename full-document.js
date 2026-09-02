@@ -789,7 +789,7 @@
           styles:{font:"times",fontSize:9,cellPadding:4,textColor:0},
           headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
         });
-        tableNote("La duración operativa de cada núcleo se rige por la ventana del cronograma del período. Este documento no establece un total fijo de 18 horas por núcleo.");
+        tableNote("La duración operativa de cada núcleo se rige exclusivamente por la ventana definida en el cronograma del período.");
       }
 
       heading("6.1. Organización Académica",2,true);
@@ -946,8 +946,6 @@
         "Instituto Tecnológico Superior Quito Metropolitano. (2022). Reglamento del Área de Titulación del ITSQMET."
       ].forEach(reference);
     }
-
-    const insertedSectionImages=new Set();
 
     const insertedSectionImages=new Set();
 
