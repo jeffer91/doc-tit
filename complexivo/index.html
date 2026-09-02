@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b2d4f" />
+  <title>DOC-TIT · Gestión documental UTET</title>
+  <link rel="stylesheet" href="styles.css?v=20260902-17" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">UTET</div>
+        <div>
+          <strong>DOC-TIT</strong>
+          <span>Gestión documental</span>
+        </div>
+      </div>
+
+      <div class="period-box">
+        <div class="period-label-row">
+          <label for="periodSelect">Período académico</label>
+          <button class="period-add" id="newPeriodBtn" type="button" aria-label="Nuevo período">+</button>
+        </div>
+        <select id="periodSelect"></select>
+      </div>
+
+      <div class="menu-heading">Procesos</div>
+      <nav id="processMenu" class="process-menu"></nav>
+
+      <div class="cloud-status-card" id="cloudStatusCard">
+        <span class="cloud-dot"></span>
+        <div>
+          <strong id="cloudStatusText">Base de datos</strong>
+          <small id="cloudStatusDetail">Conectando automáticamente…</small>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="ghost compact" id="backupBtn">Exportar respaldo</button>
+        <label class="ghost compact file-label">
+          Restaurar respaldo
+          <input id="restoreInput" type="file" accept=".json,application/json" hidden />
+        </label>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <span class="eyebrow">Unidad de Titulación y Eficiencia Terminal</span>
+          <h1 id="screenTitle">Gestión documental</h1>
+        </div>
+      </header>
+
+      <section id="dashboardView" class="view active">
+        <section class="period-summary">
+          <div>
+            <span class="eyebrow">Período seleccionado</span>
+            <h2 id="periodName"></h2>
+            <div class="summary-meta">
+              <span id="periodStatus" class="status-dot">Activo</span>
+              <span id="periodDocumentSummary">0 documentos · 0 generados</span>
+            </div>
+          </div>
+          <p>Selecciona un documento del menú de procesos para continuar.</p>
+        </section>
+
+        <section class="start-panel">
+          <div class="start-icon">DOC</div>
+          <h3>Elige un documento</h3>
+          <p>La app reutiliza los datos del período y solo te pedirá la información necesaria para cada documento.</p>
+        </section>
+      </section>
+
+      <section id="documentView" class="view">
+        <button class="back-link" id="backBtn">← Volver al período</button>
+
+        <div class="doc-heading">
+          <div>
+            <span class="eyebrow" id="docProcessLabel"></span>
+            <h2 id="docTitle"></h2>
+            <p id="docDescription"></p>
+          </div>
+          <div class="doc-badges">
+            <span class="badge" id="docCodeBadge"></span>
+            <span class="badge neutral" id="docStateBadge">No iniciado</span>
+          </div>
+        </div>
+
+        <div class="document-layout">
+          <div class="content-column">
+            <section class="panel compact-panel">
+              <div class="panel-head">
+                <div>
+                  <span class="eyebrow">Datos necesarios</span>
+                  <h3>Solo debes completar esto</h3>
+                </div>
+                <span class="progress-text" id="progressText">0% completo</span>
+              </div>
+              <div class="progress"><span id="progressBar"></span></div>
+              <div id="requirementsList" class="requirements"></div>
+            </section>
+
+            <form id="documentForm">
+              <section class="panel">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">1. Cronograma</span>
+                    <h3>Fechas del proceso</h3>
+                    <p class="section-help">Las actividades ya están definidas. Solo completa o ajusta las fechas.</p>
+                  </div>
+                </div>
+                <div class="table-scroll">
+                  <table class="input-table schedule-table">
+                    <thead>
+                      <tr><th>Actividad</th><th>Fecha inicio</th><th>Fecha fin</th></tr>
+                    </thead>
+                    <tbody id="scheduleBody"></tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">2. Distribución</span>
+                    <h3>Carreras, lugar y cantidad</h3>
+                    <p class="section-help">Los nombres se guardan exactamente como los escribes, incluido “ONLINE”.</p>
+                  </div>
+                  <button type="button" class="secondary small-btn" id="addDistributionRowBtn">+ Agregar fila</button>
+                </div>
+
+                <div class="table-scroll">
+                  <table class="input-table distribution-table">
+                    <thead>
+                      <tr><th>Carrera</th><th>Lugar</th><th>Cant.</th><th></th></tr>
+                    </thead>
+                    <tbody id="distributionBody"></tbody>
+                  </table>
+                </div>
+
+                <div id="distributionTotals" class="distribution-totals"></div>
+              </section>
+
+              <section class="panel smart-panel">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">3. Información adicional</span>
+                    <h3>Escribe lo que necesites agregar</h3>
+                    <p class="section-help">Puedes escribir de forma libre. La app analizará el texto, detectará fechas, lugares, temas y la sección del documento donde corresponde.</p>
+                  </div>
+                  <button type="button" class="secondary small-btn" id="analyzeTextBtn">Analizar información</button>
+                </div>
+                <textarea id="smartTextInput" class="smart-textarea" rows="9" placeholder="Ejemplo: Para este período los estudiantes online rendirán junto con los presenciales. Enfermería requiere laboratorio específico. El examen teórico tendrá 40 preguntas y una duración de 90 minutos."></textarea>
+                <div id="smartAnalysisResult" class="smart-analysis empty">
+                  <strong>Análisis inteligente</strong>
+                  <p>Escribe información y pulsa “Analizar información”.</p>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">4. Identidad institucional</span>
+                    <h3>Logo del documento</h3>
+                    <p class="section-help">Carga únicamente el logo institucional. Se colocará en la cabecera de todas las páginas.</p>
+                  </div>
+                </div>
+                <div class="asset-grid asset-grid-single">
+                  <label class="asset-card">
+                    <span class="asset-title">Logo institucional <b>*</b></span>
+                    <span class="asset-preview" id="logoPreview">Sin imagen</span>
+                    <input type="file" id="logoUpload" accept="image/png,image/jpeg,image/webp">
+                    <small>Se utiliza en la cabecera institucional de todo el documento.</small>
+                  </label>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <div>
+                    <span class="eyebrow">5. Imágenes del documento</span>
+                    <h3>Imágenes genéricas opcionales</h3>
+                    <p class="section-help">Puedes cargar hasta seis imágenes horizontales, institucionales y reutilizables para cualquier período. Si no cargas una imagen, esa figura simplemente no aparecerá en el PDF.</p>
+                  </div>
+                </div>
+
+                <div class="asset-grid document-image-grid">
+                  <label class="asset-card">
+                    <span class="asset-title">Después de 1. Introducción</span>
+                    <span class="asset-preview" id="introImagePreview">Opcional</span>
+                    <input type="file" id="introImageUpload" accept="image/png,image/jpeg,image/webp">
+                    <small>Contexto académico: aula, laboratorio u orientación académica.</small>
+                  </label>
+
+                  <label class="asset-card">
+                    <span class="asset-title">Después de 3. Metodología</span>
+                    <span class="asset-preview" id="methodologyImagePreview">Opcional</span>
+                    <input type="file" id="methodologyImageUpload" accept="image/png,image/jpeg,image/webp">
+                    <small>Proceso, planificación, organización, ejecución y mejora continua.</small>
+                  </label>
+
+                  <label class="asset-card">
+                    <span class="asset-title">Después de 4. Requisitos</span>
+                    <span class="asset-preview" id="requirementsImagePreview">Opcional</span>
+                    <input type="file" id="requirementsImageUpload" accept="image/png,image/jpeg,image/webp">
+                    <small>Checklist, documentación, expediente o verificación académica.</small>
+                  </label>
+
+                  <label class="asset-card">
+                    <span class="asset-title">Después de 5. Descripción del examen</span>
+                    <span class="asset-preview" id="examImagePreview">Opcional</span>
+                    <input type="file" id="examImageUpload" accept="image/png,image/jpeg,image/webp">
+                    <small>Evaluación teórica-práctica, examen en computador o exposición.</small>
+                  </label>
+
+                  <label class="asset-card">
+                    <span class="asset-title">Después de 6. Seminarios</span>
+                    <span class="asset-preview" id="seminarsImagePreview">Opcional</span>
+                    <input type="file" id="seminarsImageUpload" accept="image/png,image/jpeg,image/webp">
+                    <small>Capacitación, taller académico, docente y estudiantes.</small>
+                  </label>
+
+                  <label class="asset-card">
+                    <span class="asset-title">Después de 10. Criterios de evaluación</span>
+                    <span class="asset-preview" id="evaluationImagePreview">Opcional</span>
+                    <input type="file" id="evaluationImageUpload" accept="image/png,image/jpeg,image/webp">
+                    <small>Rúbrica, evaluación, calificación o revisión académica.</small>
+                  </label>
+                </div>
+              </section>
+
+              <div class="form-actions document-actions">
+                <button type="button" class="secondary" id="saveDraftBtn">Guardar borrador</button>
+                <button type="submit" class="primary" id="generateBtn">Generar PDF</button>
+                <div id="generationStatus" class="generation-status hidden" role="status"></div>
+              </div>
+            </form>
+          </div>
+
+          <aside class="side-column">
+            <section class="panel sticky">
+              <span class="eyebrow">Automático</span>
+              <h3>La app ya completa</h3>
+              <div id="automaticData" class="auto-data"></div>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <datalist id="placesList">
+    <option value="Norte"></option>
+    <option value="Sur"></option>
+    <option value="Manta"></option>
+  </datalist>
+
+  <dialog id="periodDialog">
+    <form method="dialog" id="periodForm" class="dialog-form">
+      <div class="dialog-title-row">
+        <div>
+          <span class="eyebrow">Períodos</span>
+          <h3>Nuevo período académico</h3>
+        </div>
+        <button class="dialog-close" value="cancel" aria-label="Cerrar" type="submit">×</button>
+      </div>
+
+      <div class="period-builder">
+        <section class="period-side">
+          <span class="period-side-title">Inicio</span>
+          <label>Mes
+            <select name="startMonth" id="startMonth"></select>
+          </label>
+          <label>Año
+            <div class="year-stepper">
+              <button type="button" data-year-target="startYear" data-delta="-1">−</button>
+              <output id="startYear" data-value="2026">2026</output>
+              <button type="button" data-year-target="startYear" data-delta="1">+</button>
+            </div>
+          </label>
+        </section>
+
+        <div class="period-arrow">→</div>
+
+        <section class="period-side">
+          <span class="period-side-title">Fin</span>
+          <label>Mes
+            <select name="endMonth" id="endMonth"></select>
+          </label>
+          <label>Año
+            <div class="year-stepper">
+              <button type="button" data-year-target="endYear" data-delta="-1">−</button>
+              <output id="endYear" data-value="2027">2027</output>
+              <button type="button" data-year-target="endYear" data-delta="1">+</button>
+            </div>
+          </label>
+        </section>
+      </div>
+
+      <div class="period-preview">
+        <span>Período generado</span>
+        <strong id="periodPreviewName">Octubre 2026 – Marzo 2027</strong>
+      </div>
+
+      <p id="periodError" class="form-error hidden">La fecha final debe ser posterior a la fecha inicial.</p>
+
+      <div class="dialog-actions">
+        <button value="cancel" class="secondary">Cancelar</button>
+        <button value="default" class="primary" id="createPeriodBtn">Crear período</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+  <script src="template-chunk-1.js?v=20260901-5"></script>
+  <script src="template-chunk-2.js?v=20260901-5"></script>
+  <script src="template-chunk-3.js?v=20260901-5"></script>
+  <script src="template-chunk-4.js?v=20260901-5"></script>
+  <script src="full-document.js?v=20260902-16"></script>
+  <script src="cloud.js?v=20260902-5"></script>
+  <script src="app.js?v=20260902-17"></script>
+</body>
+</html>
