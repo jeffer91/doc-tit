@@ -656,7 +656,7 @@ dialog::backdrop{background:rgba(4,17,30,.52)}
   border-radius:12px;
   background:rgba(255,255,255,.06);
   display:grid;
-  grid-template-columns:auto 1fr auto;
+  grid-template-columns:auto 1fr;
   align-items:center;
   gap:9px;
 }
@@ -685,62 +685,4 @@ dialog::backdrop{background:rgba(4,17,30,.52)}
   font-size:9.5px;
   margin-top:2px;
   line-height:1.25;
-}
-.cloud-login-link{
-  border:0;
-  background:transparent;
-  color:#9fdaf5;
-  font:inherit;
-  font-size:9.5px;
-  font-weight:700;
-  cursor:pointer;
-  padding:4px 2px;
-}
-.cloud-login-dialog{
-  width:min(440px,calc(100vw - 28px));
-  border:0;
-  border-radius:16px;
-  padding:0;
-  box-shadow:0 24px 70px rgba(0,0,0,.28);
-}
-.cloud-login-dialog::backdrop{
-  background:rgba(7,20,34,.66);
-  backdrop-filter:blur(2px);
-}
-.cloud-login-form{
-  padding:22px;
-}
-.cloud-login-form>label{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  font-size:12px;
-  font-weight:700;
-  color:#26384a;
-  margin-top:13px;
-}
-.cloud-login-form input{
-  width:100%;
-  border:1px solid #c8d4df;
-  border-radius:10px;
-  padding:11px 12px;
-  font:inherit;
-  font-size:14px;
-  outline:none;
-}
-.cloud-login-form input:focus{
-  border-color:#2499d0;
-  box-shadow:0 0 0 3px rgba(36,153,208,.12);
-}
-.cloud-login-copy{
-  margin:8px 0 2px;
-  color:#647487;
-  font-size:12px;
-  line-height:1.5;
-}
-.cloud-login-form .dialog-actions{
-  margin-top:18px;
-}
-.cloud-login-form .dialog-actions .primary{
-  width:100%;
 }
