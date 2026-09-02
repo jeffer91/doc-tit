@@ -158,16 +158,9 @@ async function generateAndDownload(ctx,filename){
   function renderOptionalData(){
     const tables=ctx.payload.tables||{};
     if(hasRows(tables.carreras)){
+      heading("Datos Operativos Por Carrera",2,true);
+      paragraph("La siguiente tabla se incluye únicamente porque el usuario registró información por carrera en la plantilla. No constituye un requisito obligatorio para generar esta planificación.",{indent:false});
       apaTable("Datos operativos por carrera",["Carrera","Modalidad","Lugar","Cantidad"],tables.carreras.filter(r=>Object.values(r).some(Boolean)).map(r=>[r.career||"",r.modality||"",r.place||"",String(r.count??"")]),{0:{cellWidth:bodyW*.48},1:{cellWidth:bodyW*.18},2:{cellWidth:bodyW*.18},3:{cellWidth:bodyW*.16}});
-    }
-    if(hasRows(tables.refuerzos)){
-      apaTable("Clases de refuerzo registradas para el período",["Carrera","Responsable","Inicio","Fin","Observaciones"],tables.refuerzos.filter(r=>Object.values(r).some(Boolean)).map(r=>[r.career||"",r.responsible||"",fmtDate(r.start),fmtDate(r.end),r.observations||""]),{0:{cellWidth:bodyW*.26},1:{cellWidth:bodyW*.24},2:{cellWidth:bodyW*.14},3:{cellWidth:bodyW*.14},4:{cellWidth:bodyW*.22}});
-    }
-    if(hasRows(tables.defensas)){
-      apaTable("Organización de defensas",["Tipo","Carrera","Inicio","Fin","Modalidad","Observaciones"],tables.defensas.filter(r=>Object.values(r).some(Boolean)).map(r=>[r.type||"",r.career||"",fmtDate(r.start),fmtDate(r.end),r.mode||"",r.observations||""]),{0:{cellWidth:bodyW*.13},1:{cellWidth:bodyW*.24},2:{cellWidth:bodyW*.12},3:{cellWidth:bodyW*.12},4:{cellWidth:bodyW*.14},5:{cellWidth:bodyW*.25}});
-    }
-    if(hasRows(tables.evaluacion)){
-      apaTable("Ponderación de evaluación registrada para el período",["Componente","Ponderación %","Condición / criterio"],tables.evaluacion.filter(r=>Object.values(r).some(Boolean)).map(r=>[r.component||"",String(r.weight??""),r.condition||""]),{0:{cellWidth:bodyW*.30},1:{cellWidth:bodyW*.20},2:{cellWidth:bodyW*.50}});
     }
   }
   function renderNotes(){
