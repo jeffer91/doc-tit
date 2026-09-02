@@ -16,8 +16,12 @@
 
   function clean(v){ return String(v == null ? "" : v).replace(/\s+/g," ").trim(); }
 
+  function collapseSpacedCharacters(v){
+    return String(v||"").replace(/(?:\b[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]\b\s+){3,}\b[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]\b/g,m=>m.replace(/\s+/g,""));
+  }
+
   function cleanLegacyText(v){
-    return clean(v)
+    return collapseSpacedCharacters(clean(v)
       .replace(/%ª/g,"•")
       .replace(/\bo\s+A los estudiantes\b/gi,"A los estudiantes")
       .replace(/\bo\s+Criterios de evaluación:/gi,"Criterios de evaluación:")
@@ -25,7 +29,9 @@
       .replace(/\bo\s+Los requerimientos técnicos o de software\b/gi,"• Los requerimientos técnicos o de software")
       .replace(/\bo\s+Pruebas técnicas previas\b/gi,"• Pruebas técnicas previas")
       .replace(/\bo\s+Presencia de personal de soporte\b/gi,"• Presencia de personal de soporte")
-      .replace(/\bo\s+Coordinación con la unidad de infraestructura tecnológica institucional\b/gi,"• Coordinación con la unidad de infraestructura tecnológica institucional");
+      .replace(/\bo\s+Coordinación con la unidad de infraestructura tecnológica institucional\b/gi,"• Coordinación con la unidad de infraestructura tecnológica institucional")
+      .replace(/\s+%\s*/g," ")
+      .replace(/\s+•\s+/g," • "));
   }
 
   function sourceProse(v){
@@ -241,7 +247,7 @@
       title:"Planificación De Examen Complexivo",
       subject:ctx.period.name,
       author:"Unidad de Titulación y Eficiencia Terminal",
-      keywords:"titulación, examen complexivo, planificación, DOC-TIT v10"
+      keywords:"titulación, examen complexivo, planificación, DOC-TIT v12"
     });
 
     const pageW=doc.internal.pageSize.getWidth();
@@ -370,23 +376,24 @@
       const size=level===1?14:level===2?13:12.5;
       const cleaned=clean(text);
 
+      // Regla editorial: todo título de primer nivel inicia una página nueva.
+      if(level===1 && y>BODY.top+2) newPage();
+
       doc.setFont("times",style);
       doc.setFontSize(size);
 
       const lines=doc.splitTextToSize(cleaned,bodyW);
       const titleHeight=lines.length*22+10;
-      const blankBefore=(level===1 && y>BODY.top+2)?BODY.lineHeight:0;
 
-      ensureSpace(blankBefore+titleHeight+BODY.lineHeight*2);
-
-      if(level===1 && y>BODY.top+2) y+=BODY.lineHeight;
+      // Nunca dejar un título huérfano: reservar el título + al menos dos líneas de contenido.
+      ensureSpace(titleHeight+(BODY.lineHeight*2)+12);
 
       if(includeToc) toc.push({title:cleaned,level,page:doc.getNumberOfPages()});
 
       doc.setFont("times",style);
       doc.setFontSize(size);
       doc.text(lines,BODY.left,y,{align:"left"});
-      y+=lines.length*22+8;
+      y+=lines.length*22+10;
 
       const key=smartSectionKey(text);
       if(key && !analysisInjected.has(key)){
@@ -396,7 +403,7 @@
     }
 
     function label(text){
-      ensureSpace(32);
+      ensureSpace(32+(BODY.lineHeight*2));
       doc.setFont("times","bold"); doc.setFontSize(12);
       doc.text(clean(text),BODY.left,y);
       y+=BODY.lineHeight;
@@ -444,8 +451,9 @@
       const userDidDrawCell=options.didDrawCell;
 
       options.theme="plain";
-      options.styles={font:"times",fontSize:10,cellPadding:4,textColor:0,lineWidth:0,...(options.styles||{})};
-      options.headStyles={font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0,lineWidth:0,...(options.headStyles||{})};
+      options.styles={font:"times",fontSize:10,cellPadding:{top:5,right:6,bottom:5,left:6},textColor:0,lineWidth:0,overflow:"linebreak",valign:"top",...((options.styles)||{})};
+      options.headStyles={font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0,lineWidth:0,halign:"left",...((options.headStyles)||{})};
+      options.showHead="everyPage";
 
       options.didDrawPage=(data)=>{
         drawHeader(doc.getNumberOfPages());
@@ -618,6 +626,7 @@
       heading("1. Introducción",1,true);
       introParagraphs(ctx).forEach(p=>paragraph(p));
       getAnalysisSentences(ctx,"general").forEach(p=>paragraph(p));
+      insertSectionImage("introImage","Contexto académico del proceso de titulación");
 
       heading("2. Base Legal",1,true);
       legalParagraphs(ctx).forEach(p=>paragraph(p));
@@ -704,28 +713,25 @@
     function summarySection(){
       const t=totals(ctx.distribution);
       const places=Object.entries(t.byPlace);
-      heading("11. Resumen General",1,true);
-      paragraph("La presente planificación organiza el proceso de examen complexivo del período "+lowerPeriod(ctx.period.name)+" y articula cronograma, requisitos, preparación, evaluación, distribución estudiantil, logística e imponderables.");
+      const schedule=ctx.schedule||[];
+      const exam=schedule.find(r=>normalize(r.activity).includes("examen complexivo"));
+      const supplementary=schedule.find(r=>normalize(r.activity).includes("supletorio"));
 
-      heading("11.1. Modalidad de Aplicación",2,true);
-      bullet("• La rendición se planifica de forma presencial. Una aplicación virtual solo procede de manera excepcional, con solicitud formal, justificación y autorización institucional.");
+      heading("11. Resumen Ejecutivo",1,true);
 
-      heading("11.2. Fases del Proceso",2,true);
-      bullet("• El proceso contempla cierre de clases, revisión de requisitos, cuatro núcleos de preparación, registro de notas, examen complexivo y supletorio, conforme al cronograma del período.");
+      paragraph(
+        "La planificación del examen complexivo del período "+lowerPeriod(ctx.period.name)+
+        " integra cronograma, requisitos, preparación académica, evaluación y organización logística para su ejecución institucional.",
+        {indent:false,after:10}
+      );
 
-      heading("11.3. Organización por Lugares",2,true);
-      paragraph("La distribución registrada comprende "+t.total+" estudiantes. Los lugares y cantidades son: "+places.map(([p,n])=>p+" ("+n+")").join(", ")+". La planificación logística debe conservar esta distribución o documentar formalmente cualquier cambio.");
-
-      heading("11.4. Evaluación Integral",2,true);
-      bullet("• El componente teórico representa el 40% de la nota final.");
-      bullet("• El componente práctico representa el 60% de la nota final.");
-      bullet("• La planificación base establece una calificación mínima de 7/10 para la aprobación de cada componente.");
-
-      heading("11.5. Gestión de Imponderables",2,true);
-      bullet("• Se contemplan actuaciones frente a fallas técnicas, inasistencia justificada y ausencia de personal asignado, dejando registro de los incidentes que afecten la jornada.");
-
-      heading("11.6. Inclusión y Accesibilidad",2,true);
-      bullet("• Se deben prever condiciones adecuadas para estudiantes con necesidades específicas, manteniendo los criterios académicos del proceso.");
+      bullet("• Estudiantes planificados: "+t.total+".");
+      bullet("• Lugares de ejecución: "+places.map(([p,n])=>p+" ("+n+" estudiantes)").join(", ")+".");
+      if(exam) bullet("• Examen complexivo: "+formatDateShort(exam.start)+(exam.end&&exam.end!==exam.start?" al "+formatDateShort(exam.end):"")+".");
+      if(supplementary) bullet("• Supletorio: "+formatDateShort(supplementary.start)+(supplementary.end&&supplementary.end!==supplementary.start?" al "+formatDateShort(supplementary.end):"")+".");
+      bullet("• Aplicación: presencial; la virtualidad se reserva para casos excepcionales formalmente autorizados.");
+      bullet("• Evaluación: componente teórico 40% y componente práctico 60%; la planificación base establece 7/10 como calificación mínima de aprobación.");
+      bullet("• Control operativo: verificación de requisitos, soporte tecnológico, registro de incidencias y trazabilidad de resultados.");
     }
 
     function referencesSection(){
@@ -739,6 +745,58 @@
         "Instituto Tecnológico Superior Quito Metropolitano. (2022). Reglamento del Área de Titulación del ITSQMET.",
         "Secretaría Nacional de Planificación y Desarrollo. (2021). Plan Nacional de Desarrollo 2021-2025."
       ].forEach(reference);
+    }
+
+    const insertedSectionImages=new Set();
+
+    function insertSectionImage(assetKey,title){
+      if(insertedSectionImages.has(assetKey)) return;
+      const dataUrl=ctx.assets && ctx.assets[assetKey];
+      if(!dataUrl) return;
+      insertedSectionImages.add(assetKey);
+
+      let props;
+      try{
+        props=doc.getImageProperties(dataUrl);
+      }catch(e){
+        return;
+      }
+
+      const maxW=bodyW;
+      const maxH=220;
+      const ratio=(props.width&&props.height)?props.width/props.height:1.7;
+      let imgW=maxW;
+      let imgH=imgW/ratio;
+      if(imgH>maxH){
+        imgH=maxH;
+        imgW=imgH*ratio;
+      }
+
+      const totalNeeded=imgH+112;
+      if(y+totalNeeded>pageH-BODY.bottom) newPage();
+
+      nextFigure(title);
+      const x=BODY.left+(bodyW-imgW)/2;
+      try{
+        doc.addImage(dataUrl,imageFormat(dataUrl),x,y,imgW,imgH,undefined,"FAST");
+      }catch(e){
+        return;
+      }
+      y+=imgH+16;
+
+      doc.setFont("times","italic");
+      doc.setFontSize(9);
+      const note=doc.splitTextToSize("Nota. Imagen institucional proporcionada para uso genérico en la planificación.",bodyW);
+      doc.text(note,BODY.left,y);
+      y+=note.length*14+20;
+    }
+
+    function maybeInsertSectionImageBeforeHeading(normalizedHeading){
+      if(normalizedHeading.startsWith("4 requisitos")) insertSectionImage("methodologyImage","Representación del proceso metodológico");
+      if(normalizedHeading.startsWith("5 descripcion del examen")) insertSectionImage("requirementsImage","Verificación de requisitos de titulación");
+      if(normalizedHeading.startsWith("6 seminarios")) insertSectionImage("examImage","Proceso de evaluación del examen complexivo");
+      if(normalizedHeading.startsWith("7 distribucion de estudiantes")) insertSectionImage("seminarsImage","Preparación académica mediante seminarios de titulación");
+      if(normalizedHeading.startsWith("11 resumen")) insertSectionImage("evaluationImage","Evaluación y calificación del proceso");
     }
 
     function figureCaption(number,title){
@@ -807,7 +865,7 @@
       if(!data.length) return;
       const rowH=18;
       const chartH=Math.max(190,data.length*rowH+46);
-      ensureSpace(chartH+82);
+      ensureSpace(chartH+96);
       nextFigure(title);
 
       const top=y;
@@ -890,62 +948,57 @@
       const sorted=data.slice().sort((a,b)=>b.value-a.value);
       if(!sorted.length) return;
 
-      const chartH=230;
-      ensureSpace(chartH+92);
+      const display=sorted.slice(0,15);
+      const rowH=22;
+      const chartH=display.length*rowH+56;
+      ensureSpace(chartH+88);
       nextFigure(title);
 
       const top=y;
-      const left=BODY.left+30;
-      const bottom=top+chartH-58;
-      const right=pageW-BODY.right-8;
-      const max=Math.max(...sorted.map(d=>d.value),1);
-      const total=Math.max(sorted.reduce((s,d)=>s+d.value,0),1);
-      const slot=(right-left)/sorted.length;
-      const barW=Math.max(5,slot*0.52);
+      const labelW=205;
+      const valueW=34;
+      const pctW=54;
+      const barLeft=BODY.left+labelW;
+      const barRight=pageW-BODY.right-valueW-pctW;
+      const max=Math.max(...display.map(d=>Number(d.value)||0),1);
+      const grandTotal=Math.max(sorted.reduce((s,d)=>s+(Number(d.value)||0),0),1);
       let cumulative=0;
-      let prev=null;
 
-      doc.setDrawColor(90);
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(8.5);
+      doc.text("Carrera",BODY.left,top);
+      doc.text("Est.",barRight+8,top);
+      doc.text("% acum.",pageW-BODY.right,top,{align:"right"});
+      doc.setDrawColor(110);
       doc.setLineWidth(0.4);
-      doc.line(left,bottom,right,bottom);
-      doc.line(left,top,left,bottom);
+      doc.line(BODY.left,top+5,pageW-BODY.right,top+5);
 
       doc.setFont("helvetica","normal");
-      doc.setFontSize(7.5);
+      doc.setFontSize(8.5);
 
-      sorted.forEach((d,i)=>{
-        const x=left+i*slot+(slot-barW)/2;
-        const h=(d.value/max)*(chartH-86);
+      display.forEach((d,i)=>{
+        const value=Number(d.value)||0;
+        cumulative+=value;
+        const pct=(cumulative/grandTotal)*100;
+        const yy=top+18+(i*rowH);
+        const label=doc.splitTextToSize(String(d.label),labelW-12).slice(0,1)[0]||String(d.label);
+        doc.text(label,BODY.left,yy+7);
+
+        const bw=((barRight-barLeft-8)*value)/max;
         doc.setFillColor(76,104,133);
-        doc.rect(x,bottom-h,barW,h,"F");
+        doc.rect(barLeft,yy,bw,9,"F");
 
-        cumulative+=d.value;
-        const pct=(cumulative/total)*100;
-        const px=x+barW/2;
-        const py=bottom-(pct/100)*(chartH-86);
-
-        doc.setFillColor(30,30,30);
-        doc.circle(px,py,1.8,"F");
-        if(prev){
-          doc.setDrawColor(30);
-          doc.setLineWidth(0.8);
-          doc.line(prev.x,prev.y,px,py);
-        }
-        prev={x:px,y:py};
-
-        const short=String(d.label).length>14?String(d.label).slice(0,13)+"…":String(d.label);
-        doc.text(short,px,bottom+12,{align:"center",angle:55});
+        doc.setTextColor(0);
+        doc.text(String(value),barRight+8,yy+8);
+        doc.text(pct.toFixed(1)+"%",pageW-BODY.right,yy+8,{align:"right"});
       });
 
-      doc.setFont("helvetica","normal");
-      doc.setFontSize(8);
-      doc.text("Línea: porcentaje acumulado",right,bottom-(chartH-86)-8,{align:"right"});
-
-      y=top+chartH+6;
+      y=top+chartH-6;
       doc.setFont("times","italic");
       doc.setFontSize(9);
-      doc.text("Nota. Las barras muestran estudiantes por carrera y la línea representa el porcentaje acumulado.",BODY.left,y);
-      y+=24;
+      const note=doc.splitTextToSize("Nota. Se muestran las 15 carreras con mayor número de estudiantes; el porcentaje acumulado se calcula respecto del total del período.",bodyW);
+      doc.text(note,BODY.left,y);
+      y+=note.length*14+22;
     }
 
     function graphsSection(){
@@ -1018,6 +1071,8 @@
       for(const b of blocks){
         const n=normalize(b.text);
 
+        if(b.type==="h1") maybeInsertSectionImageBeforeHeading(n);
+
         // The curated Introduction and Base Legal are already rendered.
         // Ignore residual text from the old template until section 3 starts.
         if(!started){
@@ -1086,7 +1141,7 @@
           continue;
         }
 
-        if(n.startsWith("11 resumen general")){
+        if(n.startsWith("11 resumen general") || n.startsWith("11 resumen ejecutivo")){
           summarySection();
           skipMode="summary";
           continue;
