@@ -482,8 +482,8 @@
       heading("3.10. Cronogramas",2,true);
       paragraph("El cronograma general organiza las fechas de las principales fases del examen complexivo y constituye la referencia temporal para los documentos operativos complementarios.");
 
+      ensureSpace(190);
       tableCaption("Cronograma general del proceso de examen complexivo");
-      ensureSpace(120);
 
       autoTable({
         startY:y,
@@ -502,6 +502,7 @@
       heading("7. Distribución de Estudiantes por Carrera y Nivel",1,true);
       paragraph("La distribución del período se determina a partir de la cantidad de estudiantes registrada por carrera y del lugar previsto para la ejecución del proceso. Los nombres de las carreras se conservan exactamente como constan en el registro institucional.");
 
+      ensureSpace(190);
       tableCaption("Distribución de estudiantes por carrera y lugar de ejecución");
 
       autoTable({
@@ -626,6 +627,7 @@
       heading("3.9. Responsables por Fase del Proceso",2,true);
       paragraph("La correcta ejecución del examen complexivo requiere una asignación clara de responsabilidades para cada fase del proceso. La siguiente tabla organiza la información institucional de la planificación base y evita que los responsables aparezcan como texto corrido.");
 
+      ensureSpace(190);
       tableCaption("Responsables institucionales por fase del proceso");
       autoTable({
         startY:y,
@@ -660,6 +662,7 @@
       heading("4.3.1. Cronograma de Pagos del Proceso de Titulación",3,true);
       paragraph("El proceso de titulación contempla pagos escalonados destinados a cubrir los costos administrativos y operativos asociados. La planificación base organiza estas obligaciones por cuotas y momentos de pago, sin establecer en este documento montos específicos.");
 
+      ensureSpace(190);
       tableCaption("Cronograma referencial de pagos del proceso de titulación");
       autoTable({
         startY:y,
