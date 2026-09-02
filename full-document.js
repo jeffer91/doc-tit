@@ -200,17 +200,12 @@
   function legalParagraphs(ctx){
     const p=lowerPeriod(ctx.period.name);
     return [
-      "La planificación del examen complexivo para el período "+p+" se enmarca en la normativa nacional de educación superior y en la regulación institucional aplicable al proceso de titulación. La base legal permite vincular la planificación operativa con los derechos del estudiante, las finalidades del sistema de educación superior y las obligaciones institucionales relacionadas con la evaluación, egreso, titulación y registro de títulos.",
-      "La Constitución de la República del Ecuador constituye el marco superior de referencia. El documento institucional de base identifica el artículo 344 dentro del régimen educativo y el artículo 350 como fundamento de las finalidades de la educación superior, entre ellas la formación académica y profesional, la investigación, la innovación y la generación de soluciones para los problemas del país. Estos principios orientan la organización de procesos académicos que deben asegurar calidad, pertinencia y formación integral.",
-      "En relación con los derechos estudiantiles, la Ley Orgánica de Educación Superior reconoce el derecho a acceder, permanecer, egresar y titularse conforme a los méritos académicos y sin discriminación. Para la planificación del examen complexivo, este principio exige que las condiciones de participación, evaluación, información y acceso a los recursos se definan previamente y se apliquen de manera consistente.",
-      "La planificación institucional de referencia incorpora además la responsabilidad de las instituciones de educación superior respecto de la validez y pertinencia de los procesos académicos y de titulación. Bajo esta lógica, el examen complexivo debe responder al perfil de egreso de cada carrera y permitir una comprobación integral de los aprendizajes alcanzados.",
-      "El Reglamento General a la Ley Orgánica de Educación Superior también forma parte del marco utilizado por la planificación, especialmente en lo relacionado con la información académica, el egreso y el registro de títulos en los sistemas nacionales correspondientes. Esta obligación refuerza la necesidad de mantener trazabilidad desde la habilitación del estudiante hasta la consolidación final de resultados y documentación.",
-      "En el ámbito institucional, el Reglamento del Área de Titulación establece la finalidad y alcance del proceso y orienta la titulación hacia la validación de competencias adquiridas durante la formación profesional y su relación con el perfil de egreso, la resolución de problemas y el desarrollo de propuestas aplicadas.",
-      "La normativa institucional define el examen complexivo como una evaluación integral de la preparación teórico-práctica del estudiante. La planificación adopta esta estructura al diferenciar el componente teórico y el componente práctico, manteniendo mecanismos específicos de preparación, aplicación y evaluación para cada uno.",
-      "La aplicación de este marco normativo implica que el proceso no puede limitarse al momento de rendición del examen. Debe incluir la verificación previa de requisitos académicos, documentales y financieros; el cumplimiento de las obligaciones institucionales relacionadas con vinculación, prácticas preprofesionales y lengua extranjera cuando correspondan; la preparación académica; la organización logística; la evaluación; el registro de resultados; y la atención de situaciones excepcionales debidamente justificadas.",
-      "La normativa institucional también exige que las responsabilidades sean identificables. Por ello, la planificación distribuye funciones entre la Unidad de Titulación y Eficiencia Terminal, coordinaciones de carrera, Secretaría Académica, unidades de apoyo, docentes y demás actores que intervienen en el proceso. Esta asignación permite mantener control, seguimiento y evidencia sobre cada fase.",
-      "En concordancia con los principios de calidad y transparencia, los cronogramas, listados de estudiantes, registros de asistencia, instrumentos de evaluación, resultados e incidencias deben conservar una relación verificable con el período académico correspondiente. De este modo, la base legal no se presenta únicamente como una enumeración normativa, sino como el fundamento que orienta las decisiones académicas y operativas contenidas en el presente documento.",
-      "En consecuencia, cualquier procedimiento complementario que se derive de esta planificación deberá observar la normativa vigente y los reglamentos institucionales aplicables al momento de su ejecución. Cuando exista una actualización normativa, la institución deberá aplicar la disposición vigente y dejar constancia de los ajustes que correspondan en los documentos operativos del proceso."
+      "La planificación del examen complexivo para el período "+p+" se enmarca en la normativa nacional de educación superior y en la regulación institucional aplicable al proceso de titulación. La base legal permite vincular la planificación operativa con los derechos del estudiante, las finalidades del sistema de educación superior y las obligaciones institucionales relacionadas con evaluación, egreso, titulación y registro de títulos.",
+      "La Constitución de la República del Ecuador constituye el marco superior de referencia para el sistema educativo y para las finalidades de la educación superior. Estos principios orientan la organización de procesos académicos que deben asegurar calidad, pertinencia, igualdad de oportunidades y formación integral.",
+      "La Ley Orgánica de Educación Superior reconoce los derechos de los estudiantes y regula las responsabilidades de las instituciones de educación superior respecto del acceso, permanencia, egreso y titulación. Para el examen complexivo, esto exige condiciones previamente definidas, verificables y aplicadas de manera consistente.",
+      "El Reglamento a la Ley Orgánica de Educación Superior fue expedido por la Presidencia de la República mediante Decreto Ejecutivo No. 494 y publicado en el Suplemento del Registro Oficial No. 110 de 21 de julio de 2022. Su aplicación refuerza la necesidad de mantener trazabilidad sobre información académica, egreso, titulación y registro de títulos.",
+      "En el ámbito institucional, el Reglamento del Área de Titulación establece la finalidad y alcance del proceso y orienta la titulación hacia la validación integral de competencias adquiridas durante la formación profesional y su relación con el perfil de egreso.",
+      "La planificación adopta una evaluación teórico-práctica y articula requisitos, preparación académica, aplicación del examen, registro de resultados, atención de contingencias y cierre documental. Las disposiciones complementarias que se apliquen durante el período deberán observar la normativa vigente al momento de su ejecución."
     ];
   }
 
@@ -247,7 +242,7 @@
       title:"Planificación De Examen Complexivo",
       subject:ctx.period.name,
       author:"Unidad de Titulación y Eficiencia Terminal",
-      keywords:"titulación, examen complexivo, planificación, DOC-TIT v14"
+      keywords:"titulación, examen complexivo, planificación, DOC-TIT v15"
     });
 
     const pageW=doc.internal.pageSize.getWidth();
@@ -536,7 +531,7 @@
     }
 
     function distributionTables(){
-      heading("7. Distribución de Estudiantes por Carrera y Nivel",1,true);
+      heading("7. Distribución de estudiantes por carrera y lugar de ejecución",1,true);
       paragraph("La distribución del período se determina a partir de la cantidad de estudiantes registrada por carrera y del lugar previsto para la ejecución del proceso. Los nombres de las carreras se conservan exactamente como constan en el registro institucional.");
 
       ensureSpace(190);
@@ -653,12 +648,167 @@
 
     function introAndLegal(){
       heading("1. Introducción",1,true);
-      introParagraphs(ctx).forEach(p=>paragraph(p));
+      const intro=introParagraphs(ctx);
+      intro.slice(0,3).forEach(p=>paragraph(p));
+      insertSectionImage("introImage");
+      intro.slice(3).forEach(p=>paragraph(p));
       getAnalysisSentences(ctx,"general").forEach(p=>paragraph(p));
-      insertSectionImage("introImage","Contexto académico del proceso de titulación");
 
       heading("2. Base Legal",1,true);
       legalParagraphs(ctx).forEach(p=>paragraph(p));
+    }
+
+    function methodologySection(){
+      heading("3. Metodología",1,true);
+
+      paragraph(
+        "La metodología del examen complexivo organiza el proceso de manera secuencial y verificable, desde la habilitación del estudiante hasta el registro final de resultados. La aplicación es individual y se desarrolla principalmente mediante recursos informáticos, de acuerdo con los instrumentos definidos para cada carrera.",
+        {indent:false,after:10}
+      );
+      insertSectionImage("methodologyImage");
+
+      heading("3.1. Enfoque Metodológico",2,true);
+      paragraph("El proceso integra planificación, preparación académica, aplicación, evaluación y mejora continua. Cada fase se vincula con responsables, evidencias y fechas del período para asegurar trazabilidad.");
+
+      heading("3.2. Fase de Inducción al Proceso",2,true);
+      paragraph("La inducción comunica a los estudiantes el alcance del examen complexivo, los requisitos de habilitación, la estructura de los componentes teórico y práctico, el cronograma y las condiciones de aplicación.");
+
+      heading("3.3. Fase de Diseño del Examen Complexivo",2,true);
+      paragraph("Los instrumentos se diseñan con base en el perfil de egreso y en los contenidos priorizados por cada carrera. El componente práctico debe resolverse individualmente en equipo informático mediante caso, ejercicio, simulación, desarrollo o resolución técnica, según corresponda.");
+
+      heading("3.4. Fase de Organización y Distribución",2,true);
+      paragraph("La organización considera cantidad de estudiantes, lugar de ejecución, disponibilidad de equipos, conectividad, software requerido y soporte tecnológico.");
+
+      heading("3.5. Fase de Preparación: Núcleos de Titulación",2,true);
+      paragraph("La preparación se desarrolla mediante cuatro núcleos temáticos articulados por la asignatura de Integración Curricular o Titulación. Las sesiones se realizan en jornada nocturna, de forma presencial, y quedan grabadas como recurso de consulta.");
+
+      heading("3.6. Fase de Aplicación del Examen Complexivo",2,true);
+      paragraph("La aplicación se realiza de forma individual. Cada estudiante utiliza un equipo informático y desarrolla los instrumentos definidos para el componente teórico y práctico bajo condiciones de control, identificación y registro.");
+
+      heading("3.7. Fase de Evaluación y Retroalimentación",2,true);
+      paragraph("Los resultados se valoran mediante criterios previamente establecidos y se registran en los sistemas institucionales. Cuando corresponda, se habilita la instancia de supletorio conforme al cronograma.");
+
+      heading("3.8. Coordinación y Mejora Continua",2,true);
+      paragraph("Las incidencias, resultados y observaciones del período se utilizan como insumo para mejorar instrumentos, logística y coordinación de períodos posteriores.");
+
+      responsibilitiesTable();
+      scheduleTable();
+    }
+
+    function requirementsSection(){
+      heading("4. Requisitos para Titulación",1,true);
+
+      paragraph(
+        "La habilitación para el examen complexivo se verifica mediante una matriz ejecutiva de requisitos. El estudiante debe cumplir todos los requisitos institucionales aplicables a su carrera, excepto el módulo, asignatura o requisito identificado específicamente como «Titulación», debido a que forma parte del proceso que se encuentra en ejecución.",
+        {indent:false,after:10}
+      );
+      insertSectionImage("requirementsImage");
+
+      ensureSpace(210);
+      tableCaption("Matriz de requisitos para habilitación al examen complexivo");
+      autoTable({
+        startY:y,
+        margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
+        head:[["Requisito","Responsable de validación","Evidencia","Condición"]],
+        body:[
+          ["Cumplimiento académico de la malla aplicable","Secretaría Académica / Coordinación de Carrera","Registro académico institucional","Cumplido, excepto el requisito denominado específicamente «Titulación»"],
+          ["Documentación habilitante","Secretaría Académica","Expediente o registro documental","Completo y vigente"],
+          ["Obligaciones financieras aplicables","Unidad de Recaudación y Cartera","Estado financiero institucional","Sin pendientes que impidan la habilitación"],
+          ["Vinculación con la sociedad","Unidad responsable / Coordinación de Carrera","Registro o certificación institucional","Cumplido según el plan de estudios aplicable"],
+          ["Prácticas preprofesionales","Unidad responsable / Coordinación de Carrera","Registro o certificación institucional","Cumplido según el plan de estudios aplicable"],
+          ["Lengua extranjera","Unidad o instancia responsable","Registro institucional","Cumplido según el requisito vigente de la carrera"],
+          ["Actualización de datos","Secretaría Académica / sistema institucional","Registro actualizado","Completo"]
+        ],
+        columnStyles:{
+          0:{cellWidth:bodyW*0.24},
+          1:{cellWidth:bodyW*0.25},
+          2:{cellWidth:bodyW*0.23},
+          3:{cellWidth:bodyW*0.28}
+        },
+        styles:{font:"times",fontSize:8.8,cellPadding:4,textColor:0},
+        headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
+      });
+      tableNote("La condición específica de cada requisito debe verificarse con la normativa y los registros institucionales vigentes del período.");
+
+      paragraph("La modalidad académica de la carrera —presencial, en línea u otra autorizada— no determina por sí sola la modalidad de aplicación del examen complexivo. La rendición se planifica presencialmente para todos los estudiantes; cualquier aplicación virtual requiere justificación y autorización institucional expresa.");
+    }
+
+    function examDescriptionSection(){
+      heading("5. Descripción del Examen Complexivo",1,true);
+
+      paragraph(
+        "El examen complexivo es una evaluación individual realizada en equipo informático. Integra un componente teórico y un componente práctico diseñados para comprobar conocimientos, análisis y aplicación técnica de acuerdo con el perfil de egreso de cada carrera.",
+        {indent:false,after:10}
+      );
+      insertSectionImage("examImage");
+
+      heading("5.1. Componente Teórico",2,true);
+      paragraph("El componente teórico representa el 40% de la nota final. Se desarrolla individualmente en computador mediante un instrumento estructurado de preguntas. La planificación contempla 40 preguntas y un tiempo máximo de 1 hora y 30 minutos.");
+
+      heading("5.2. Componente Práctico",2,true);
+      paragraph("El componente práctico representa el 60% de la nota final y se resuelve individualmente en equipo informático. Según la carrera, puede consistir en un caso, ejercicio, simulación, desarrollo, configuración, análisis o resolución técnica.");
+      paragraph("Como regla general, el componente práctico no contempla defensa oral ante tribunal. Si una carrera requiere una actividad adicional de exposición o sustentación, esta deberá constar expresamente en el instrumento específico aprobado para esa carrera y no se asumirá como condición general del examen complexivo.");
+
+      heading("5.3. Condiciones de Aplicación",2,true);
+      paragraph("La aplicación debe asegurar identificación del estudiante, disponibilidad del equipo y software requerido, control del tiempo, respaldo de evidencias y trazabilidad del resultado.");
+    }
+
+    function seminarsSection(){
+      heading("6. Seminarios de Titulación",1,true);
+
+      paragraph(
+        "La preparación académica se organiza en cuatro núcleos temáticos. La asignatura de Integración Curricular o Titulación aglutina directamente estos núcleos y articula su desarrollo, seguimiento y evaluación. Los núcleos se desarrollan en jornada nocturna; las sesiones presenciales quedan grabadas para consulta de los estudiantes.",
+        {indent:false,after:10}
+      );
+      insertSectionImage("seminarsImage");
+
+      const nucleusRows=(ctx.schedule||[])
+        .filter(r=>/^Núcleo\s+[1-4]$/i.test(r.activity||""))
+        .map(r=>{
+          const start=new Date(r.start+"T12:00:00");
+          const end=new Date(r.end+"T12:00:00");
+          const days=(r.start&&r.end)?Math.max(1,Math.round((end-start)/86400000)+1):"";
+          return [r.activity,formatDateShort(r.start),formatDateShort(r.end),String(days),"Nocturna · presencial · grabada"];
+        });
+
+      if(nucleusRows.length){
+        ensureSpace(180);
+        tableCaption("Ventana programada para los cuatro núcleos");
+        autoTable({
+          startY:y,
+          margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
+          head:[["Núcleo","Inicio","Fin","Días calendario","Condición"]],
+          body:nucleusRows,
+          columnStyles:{
+            0:{cellWidth:bodyW*0.14},
+            1:{cellWidth:bodyW*0.16},
+            2:{cellWidth:bodyW*0.16},
+            3:{cellWidth:bodyW*0.16,halign:"center"},
+            4:{cellWidth:bodyW*0.38}
+          },
+          styles:{font:"times",fontSize:9,cellPadding:4,textColor:0},
+          headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
+        });
+        tableNote("La duración operativa de cada núcleo se rige por la ventana del cronograma del período. Este documento no establece un total fijo de 18 horas por núcleo.");
+      }
+
+      heading("6.1. Organización Académica",2,true);
+      paragraph("Los contenidos de cada núcleo se definen de acuerdo con las competencias y áreas prioritarias de las carreras. La preparación busca reforzar conocimientos y familiarizar al estudiante con la lógica de resolución individual que se utilizará en el examen.");
+    }
+
+    function imponderablesSection(){
+      heading("9. Imponderables",1,true);
+
+      paragraph(
+        "La planificación contempla mecanismos de respuesta frente a incidencias que puedan afectar la aplicación del examen complexivo, procurando continuidad, equidad y trazabilidad documental.",
+        {indent:false,after:10}
+      );
+
+      bullet("• Fallas de equipo, conectividad o software: activar soporte tecnológico, reemplazo de equipo o mecanismo de respaldo según disponibilidad.");
+      bullet("• Interrupciones institucionales o de infraestructura: documentar la incidencia y reprogramar cuando corresponda.");
+      bullet("• Inasistencia justificada del estudiante: aplicar el procedimiento institucional vigente y conservar el respaldo de la justificación.");
+      bullet("• Ausencia de personal responsable: activar la sustitución o contingencia definida por la coordinación.");
+      bullet("• Toda incidencia relevante debe quedar registrada para efectos de seguimiento y mejora continua.");
     }
 
     function responsibilitiesTable(){
@@ -743,36 +893,23 @@
       heading("10. Criterios de Evaluación",1,true);
 
       paragraph(
-        "La evaluación del examen complexivo integra un componente teórico y un componente práctico. Ambos componentes se valoran con criterios previamente definidos y se combinan mediante la ponderación institucional establecida para obtener la nota final.",
+        "La evaluación del examen complexivo integra dos componentes individuales: teórico y práctico. Ambos se aplican mediante equipo informático y se valoran con criterios previamente definidos para obtener la nota final.",
         {indent:false,after:10}
       );
+      insertSectionImage("evaluationImage");
 
       heading("10.1. Componente Teórico",2,true);
-      paragraph(
-        "El componente teórico representa el 40% de la nota final del examen complexivo. Su propósito es verificar el dominio de conocimientos fundamentales, la comprensión de los contenidos trabajados en los cuatro núcleos y la capacidad del estudiante para aplicar conceptos y criterios propios de su área de formación."
-      );
-      paragraph(
-        "La evaluación teórica se realiza de manera individual mediante un instrumento estructurado de preguntas. La planificación base contempla 40 preguntas y un tiempo máximo de 1 hora y 30 minutos. La aplicación debe desarrollarse bajo condiciones uniformes de control, identificación del estudiante, registro de respuestas y trazabilidad de resultados."
-      );
+      paragraph("El componente teórico representa el 40% de la nota final. Evalúa conocimientos fundamentales, comprensión y capacidad de análisis mediante un instrumento estructurado de 40 preguntas, con un tiempo máximo de 1 hora y 30 minutos.");
+      paragraph("La calificación se obtiene a partir de las respuestas registradas individualmente y debe conservar trazabilidad con el instrumento aplicado.");
 
       heading("10.2. Componente Práctico",2,true);
-      paragraph(
-        "El componente práctico representa el 60% de la nota final. Evalúa la capacidad del estudiante para resolver una situación, caso, ejercicio o taller relacionado con su campo profesional, integrando los conocimientos adquiridos durante la preparación académica."
-      );
-      paragraph(
-        "La defensa práctica se organiza en un bloque de 25 minutos por estudiante: 15 minutos para la presentación de la solución o producto desarrollado, 5 minutos para preparación y organización, y 5 minutos para preguntas del tribunal evaluador."
-      );
-      paragraph(
-        "Los criterios de valoración consideran la calidad técnica de la solución propuesta, la aplicación pertinente de conocimientos, la capacidad de análisis y reflexión crítica, y la comunicación y defensa de las decisiones adoptadas."
-      );
+      paragraph("El componente práctico representa el 60% de la nota final. Se desarrolla individualmente en computador mediante un caso, ejercicio, simulación, desarrollo, configuración, análisis o resolución técnica, de acuerdo con la naturaleza de la carrera.");
+      paragraph("Los criterios de valoración consideran exactitud o calidad técnica, aplicación pertinente de conocimientos, capacidad de análisis, resolución del problema, uso adecuado de herramientas y cumplimiento de los requerimientos establecidos en el instrumento.");
+      paragraph("No se contempla una defensa oral ante tribunal como regla general del examen complexivo. Cualquier excepción deberá estar expresamente definida y aprobada para la carrera correspondiente.");
 
       heading("10.3. Nota Final del Examen Complexivo",2,true);
-      paragraph(
-        "La nota final se obtiene mediante la ponderación de los dos componentes: 40% correspondiente al componente teórico y 60% correspondiente al componente práctico. La planificación base establece una calificación mínima de 7/10 para la aprobación."
-      );
-      paragraph(
-        "El resultado final debe registrarse en los sistemas institucionales correspondientes y conservar trazabilidad con los instrumentos, actas, registros de evaluación y demás evidencias generadas durante el proceso."
-      );
+      paragraph("La nota final se calcula con una ponderación de 40% para el componente teórico y 60% para el componente práctico. La planificación base establece 7/10 como calificación mínima de aprobación.");
+      paragraph("El resultado final debe registrarse en los sistemas institucionales y vincularse con las evidencias de aplicación y evaluación.");
     }
 
     function summarySection(){
@@ -782,39 +919,39 @@
       const exam=schedule.find(r=>normalize(r.activity).includes("examen complexivo"));
       const supplementary=schedule.find(r=>normalize(r.activity).includes("supletorio"));
 
-      heading("11. Resumen Ejecutivo",1,true);
+      heading("Resumen Ejecutivo",1,true);
 
       paragraph(
-        "La planificación del examen complexivo del período "+lowerPeriod(ctx.period.name)+
-        " integra cronograma, requisitos, preparación académica, evaluación y organización logística para su ejecución institucional.",
+        "La planificación organiza la preparación y aplicación individual del examen complexivo del período "+lowerPeriod(ctx.period.name)+", con ejecución en equipo informático y articulación de requisitos, núcleos de preparación, logística, evaluación y registro de resultados.",
         {indent:false,after:10}
       );
 
       bullet("• Estudiantes planificados: "+t.total+".");
-      bullet("• Lugares de ejecución: "+places.map(([p,n])=>p+" ("+n+" estudiantes)").join(", ")+".");
+      bullet("• Lugares de ejecución: "+places.map(([p,n])=>p+" ("+n+")").join(", ")+".");
       if(exam) bullet("• Examen complexivo: "+formatDateShort(exam.start)+(exam.end&&exam.end!==exam.start?" al "+formatDateShort(exam.end):"")+".");
       if(supplementary) bullet("• Supletorio: "+formatDateShort(supplementary.start)+(supplementary.end&&supplementary.end!==supplementary.start?" al "+formatDateShort(supplementary.end):"")+".");
-      bullet("• Aplicación: presencial; la virtualidad se reserva para casos excepcionales formalmente autorizados.");
-      bullet("• Evaluación: componente teórico 40% y componente práctico 60%; la planificación base establece 7/10 como calificación mínima de aprobación.");
-      bullet("• Control operativo: verificación de requisitos, soporte tecnológico, registro de incidencias y trazabilidad de resultados.");
+      bullet("• Preparación: cuatro núcleos articulados por Integración Curricular o Titulación, en jornada nocturna; las sesiones presenciales quedan grabadas.");
+      bullet("• Evaluación: componente teórico 40% y componente práctico 60%, ambos de carácter individual.");
+      bullet("• Modalidad de aplicación: presencial como regla general; la virtualidad requiere autorización institucional excepcional.");
     }
 
     function referencesSection(){
-      heading("12. Bibliografía",1,true);
+      heading("11. Bibliografía",1,true);
       paragraph("Las referencias normativas e institucionales se presentan en formato APA 7 con sangría francesa.",{indent:false});
 
       [
-        "Asamblea Nacional del Ecuador. (2008). Constitución de la República del Ecuador.",
+        "Asamblea Constituyente del Ecuador. (2008). Constitución de la República del Ecuador.",
         "Asamblea Nacional del Ecuador. (2010). Ley Orgánica de Educación Superior.",
-        "Asamblea Nacional del Ecuador. (2010). Reglamento General a la Ley Orgánica de Educación Superior.",
-        "Instituto Tecnológico Superior Quito Metropolitano. (2022). Reglamento del Área de Titulación del ITSQMET.",
-        "Secretaría Nacional de Planificación y Desarrollo. (2021). Plan Nacional de Desarrollo 2021-2025."
+        "Presidencia de la República del Ecuador. (2022). Reglamento a la Ley Orgánica de Educación Superior (Decreto Ejecutivo No. 494, Suplemento del Registro Oficial No. 110, 21 de julio de 2022).",
+        "Instituto Tecnológico Superior Quito Metropolitano. (2022). Reglamento del Área de Titulación del ITSQMET."
       ].forEach(reference);
     }
 
     const insertedSectionImages=new Set();
 
-    function insertSectionImage(assetKey,title){
+    const insertedSectionImages=new Set();
+
+    function insertSectionImage(assetKey){
       if(insertedSectionImages.has(assetKey)) return;
       const dataUrl=ctx.assets && ctx.assets[assetKey];
       if(!dataUrl) return;
@@ -827,21 +964,21 @@
         return;
       }
 
-      const maxW=bodyW;
-      const maxH=220;
+      const maxW=bodyW*0.92;
+      const maxH=175;
       const ratio=(props.width&&props.height)?props.width/props.height:1.7;
       let imgW=maxW;
       let imgH=imgW/ratio;
+
       if(imgH>maxH){
         imgH=maxH;
         imgW=imgH*ratio;
       }
 
-      // Figura + título + imagen. Sin nota/cita para imágenes cargadas por el usuario.
-      const totalNeeded=imgH+72;
-      if(y+totalNeeded>pageH-BODY.bottom) newPage();
-
-      nextFigure(title);
+      // La imagen debe acompañar texto: se reserva espacio para al menos
+      // cuatro líneas posteriores. Si no cabe, pasa con el texto a la página siguiente.
+      const minTextAfter=BODY.lineHeight*4;
+      if(y+imgH+minTextAfter>pageH-BODY.bottom) newPage();
 
       const x=BODY.left+(bodyW-imgW)/2;
       try{
@@ -849,19 +986,13 @@
       }catch(e){
         return;
       }
-      y+=imgH+22;
 
+      y+=imgH+18;
       doc.setFont("times","normal");
       doc.setFontSize(BODY.fontSize);
     }
 
-    function maybeInsertSectionImageBeforeHeading(normalizedHeading){
-      if(normalizedHeading.startsWith("4 requisitos")) insertSectionImage("methodologyImage","Representación del proceso metodológico");
-      if(normalizedHeading.startsWith("5 descripcion del examen")) insertSectionImage("requirementsImage","Verificación de requisitos de titulación");
-      if(normalizedHeading.startsWith("6 seminarios")) insertSectionImage("examImage","Proceso de evaluación del examen complexivo");
-      if(normalizedHeading.startsWith("7 distribucion de estudiantes")) insertSectionImage("seminarsImage","Preparación académica mediante seminarios de titulación");
-      if(normalizedHeading.startsWith("11 resumen")) insertSectionImage("evaluationImage","Evaluación y calificación del proceso");
-    }
+    function maybeInsertSectionImageBeforeHeading(){}
 
     function figureCaption(number,title){
       ensureSpace(48);
@@ -1065,218 +1196,88 @@
       y+=note.length*14+22;
     }
 
+
+    function drawGroupBars(data,title){
+      if(!data.length) return;
+      const chunks=[];
+      for(let i=0;i<data.length;i+=12) chunks.push(data.slice(i,i+12));
+
+      chunks.forEach((chunk,index)=>{
+        const rowH=30;
+        const chartH=chunk.length*rowH+54;
+        ensureSpace(chartH+90);
+
+        const part=chunks.length>1?" (parte "+(index+1)+" de "+chunks.length+")":"";
+        nextFigure(title+part);
+
+        const top=y;
+        const labelW=250;
+        const barLeft=BODY.left+labelW;
+        const barRight=pageW-BODY.right-34;
+        const max=Math.max(...chunk.map(d=>Number(d.value)||0),1);
+
+        doc.setFont("helvetica","normal");
+        doc.setFontSize(8.5);
+
+        chunk.forEach((d,i)=>{
+          const value=Number(d.value)||0;
+          const yy=top+i*rowH;
+          const lines=doc.splitTextToSize(String(d.label),labelW-12).slice(0,2);
+          doc.text(lines,BODY.left,yy+8);
+
+          const bw=((barRight-barLeft)*value)/max;
+          doc.setFillColor(76,104,133);
+          doc.rect(barLeft,yy+3,bw,10,"F");
+          doc.setTextColor(0);
+          doc.text(String(value),barRight+6,yy+12);
+        });
+
+        y=top+chartH-6;
+        doc.setFont("times","italic");
+        doc.setFontSize(9);
+        const note=doc.splitTextToSize("Nota. Cada fila representa un grupo carrera-modalidad tal como consta en el registro institucional.",bodyW);
+        doc.text(note,BODY.left,y);
+        y+=note.length*14+22;
+      });
+    }
+
     function graphsSection(){
       const rows=(ctx.distribution||[]).filter(r=>r.career && r.place && Number(r.count)>=0);
       if(!rows.length) return;
 
-      heading("7.1. Representación Gráfica de la Distribución",2,true);
+      heading("7.1. Lectura gráfica de la distribución",2,true);
 
       const byPlace={};
-      const careersByPlace={};
       rows.forEach(r=>{
         const n=Number(r.count)||0;
         byPlace[r.place]=(byPlace[r.place]||0)+n;
-        if(!careersByPlace[r.place]) careersByPlace[r.place]=new Set();
-        careersByPlace[r.place].add(r.career);
       });
 
-      const total=Object.values(byPlace).reduce((s,n)=>s+n,0)||1;
-
-      // Figura 1: estudiantes por lugar.
       drawVerticalBars(
         Object.entries(byPlace).map(([label,value])=>({label,value})),
         "Estudiantes por lugar de ejecución"
       );
 
-      // Figura 2: participación porcentual por lugar.
-      drawVerticalBars(
-        Object.entries(byPlace).map(([label,value])=>({label,value:(value/total)*100})),
-        "Participación porcentual de estudiantes por lugar",
-        {suffix:"%",decimals:1}
-      );
-
-      // Figura 3: todas las carreras, ordenadas de mayor a menor.
-      const allCareers=rows
+      const groups=rows
         .slice()
         .sort((a,b)=>(Number(b.count)||0)-(Number(a.count)||0))
         .map(r=>({label:r.career,value:Number(r.count)||0}));
-      drawHorizontalBars(allCareers,"Estudiantes por carrera");
+      drawGroupBars(groups,"Estudiantes por grupo carrera-modalidad");
 
-      // Figura 4: resumen top 10.
-      drawHorizontalBars(allCareers.slice(0,10),"Diez carreras con mayor número de estudiantes");
-
-      // Figura 5: Pareto.
-      drawPareto(allCareers,"Concentración acumulada de estudiantes por carrera");
-
-      // Figura 6: número de carreras atendidas por lugar.
-      drawVerticalBars(
-        Object.entries(careersByPlace).map(([label,set])=>({label,value:set.size})),
-        "Número de carreras por lugar de ejecución"
-      );
-
-      // Figura 7: duración de cada actividad.
-      const durationData=(ctx.schedule||[]).filter(r=>r.start&&r.end).map(r=>{
-        const start=new Date(r.start+"T12:00:00");
-        const end=new Date(r.end+"T12:00:00");
-        const days=Math.max(1,Math.round((end-start)/86400000)+1);
-        return {label:r.activity,value:days};
-      });
-      drawHorizontalBars(durationData,"Duración planificada de las actividades del cronograma",{suffix:" d"});
-
-      // Figura 8: línea temporal completa.
       drawTimeline(ctx.schedule||[],"Cronograma general del proceso de examen complexivo");
     }
 
-    function sourceContent(blocks){
-      const inserted={schedule:false,distribution:false};
-      let started=false;
-      let skipMode=null;
-
-      for(const b of blocks){
-        const n=normalize(b.text);
-
-        if(b.type==="h1") maybeInsertSectionImageBeforeHeading(n);
-
-        // The curated Introduction and Base Legal are already rendered.
-        // Ignore residual text from the old template until section 3 starts.
-        if(!started){
-          if(b.type==="h1" && n.startsWith("3 metodologia")){
-            started=true;
-          }else{
-            continue;
-          }
-        }
-
-        if(skipMode==="responsibilities"){
-          if(n.startsWith("3 10 cronogramas")) skipMode=null;
-          else continue;
-        }
-        if(skipMode==="schedule"){
-          if(b.type==="h1" && n.startsWith("4 requisitos")) skipMode=null;
-          else continue;
-        }
-        if(skipMode==="financial"){
-          if(n.startsWith("4 3 2 politicas")) skipMode=null;
-          else continue;
-        }
-        if(skipMode==="distribution"){
-          if(b.type==="h1" && n.startsWith("8 asignacion de laboratorios")) skipMode=null;
-          else continue;
-        }
-        if(skipMode==="labs"){
-          if(b.type==="h1" && n.startsWith("9 imponderables")) skipMode=null;
-          else continue;
-        }
-        if(skipMode==="summary"){
-          if(b.type==="h1" && n.startsWith("12 bibliografia")) skipMode=null;
-          else continue;
-        }
-
-        if(b.type==="h1" && n.startsWith("4 requisitos para titulacion")){
-          heading("4. Requisitos para Titulación",1,true);
-          paragraph(
-            "Para habilitarse al proceso de examen complexivo, el estudiante debe cumplir todos los requisitos académicos, documentales, financieros y complementarios exigidos por la institución para titulación. Se exceptúa únicamente el módulo, asignatura o requisito que dentro del sistema se identifica específicamente con la denominación «Titulación», por cuanto forma parte del propio proceso que se está ejecutando.",
-            {indent:false,after:10}
-          );
-          continue;
-        }
-
-        if(b.type==="h1" && n.startsWith("6 seminarios de titulacion")){
-          heading("6. Seminarios de Titulación",1,true);
-          paragraph(
-            "La preparación académica se organiza en cuatro núcleos temáticos. La asignatura de Integración Curricular o Titulación es la unidad académica que aglutina directamente estos cuatro núcleos y articula su desarrollo, seguimiento y evaluación dentro del proceso de preparación para el examen complexivo.",
-            {indent:false,after:10}
-          );
-          continue;
-        }
-
-        if(b.type==="h1" && n.startsWith("10 criterios de evaluacion")){
-          evaluationCriteriaSection();
-          summarySection();
-          referencesSection();
-          break;
-        }
-
-        if(n.startsWith("3 9 responsables por fase")){
-          responsibilitiesTable();
-          skipMode="responsibilities";
-          continue;
-        }
-
-        if(n.startsWith("3 10 cronogramas")){
-          scheduleTable();
-          inserted.schedule=true;
-          skipMode="schedule";
-          continue;
-        }
-
-        if(n.startsWith("4 3 1 cronograma de pagos")){
-          financialScheduleSection();
-          skipMode="financial";
-          continue;
-        }
-
-        if(n.startsWith("7 distribucion de estudiantes")){
-          distributionTables();
-          graphsSection();
-          inserted.distribution=true;
-          skipMode="distribution";
-          continue;
-        }
-
-        if(n.startsWith("8 asignacion de laboratorios")){
-          laboratoriesSection();
-          skipMode="labs";
-          continue;
-        }
-
-        if(n.startsWith("11 resumen general") || n.startsWith("11 resumen ejecutivo")){
-          summarySection();
-          skipMode="summary";
-          continue;
-        }
-
-        if(n.startsWith("12 bibliografia")){
-          referencesSection();
-          break;
-        }
-
-        if(b.type==="h1"){
-          heading(b.text,1,true);
-        }else if(b.type==="h2"){
-          heading(b.text,2,true);
-        }else if(b.type==="h3"){
-          heading(b.text,3,true);
-        }else if(b.type==="bullet"){
-          const txt=sourceProse(b.text);
-          if(txt) bullet(txt);
-        }else if(b.type==="label"){
-          const txt=sourceProse(b.text);
-          if(txt) label(txt);
-        }else{
-          const txt=sourceProse(b.text);
-          if(txt) paragraph(txt);
-        }
-      }
-
-      if(!inserted.schedule) scheduleTable();
-      if(!inserted.distribution){
-        distributionTables();
-        graphsSection();
-      }
-
-      // Seguridad editorial: si la plantilla fuente termina de forma abrupta antes
-      // de las secciones finales, siempre se generan 10, 11 y 12 completas.
-      const tocKeys=new Set(toc.map(e=>normalize(e.title)));
-      if(!tocKeys.has(normalize("10. Criterios de Evaluación"))){
-        evaluationCriteriaSection();
-      }
-      if(!tocKeys.has(normalize("11. Resumen Ejecutivo"))){
-        summarySection();
-      }
-      if(!tocKeys.has(normalize("12. Bibliografía"))){
-        referencesSection();
-      }
+    function sourceContent(){
+      methodologySection();
+      requirementsSection();
+      examDescriptionSection();
+      seminarsSection();
+      distributionTables();
+      graphsSection();
+      laboratoriesSection();
+      imponderablesSection();
+      evaluationCriteriaSection();
+      referencesSection();
     }
 
     function tocEntryHeight(entry){
@@ -1368,13 +1369,11 @@
       return total;
     }
 
-    const sourcePages=await decodeTemplatePages();
-    const blocks=parseSourceBlocks(sourcePages,ctx.period);
-
     cover();
     reserveIndexPages();
+    summarySection();
     introAndLegal();
-    sourceContent(blocks);
+    sourceContent();
 
     fillIndex();
     const totalPages=footers();
