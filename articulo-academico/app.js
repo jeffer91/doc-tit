@@ -25,7 +25,10 @@ const activePeriod=()=>periods.find(p=>p.id===activePeriodId)||periods[0];
 function blankPayload(){
   const tables={};
   Object.entries(CONFIG.tables).forEach(([key,t])=>{tables[key]=(t.initialRows||[]).map(r=>({...r}));});
-  return {schedule:CONFIG.schedule.map(a=>({activity:a,start:"",end:""})),tables,notes:""};
+  return {schedule:CONFIG.schedule.map(a=>{
+    const def=typeof a==="string"?{activity:a}:a;
+    return {activity:def.activity,responsible:def.responsible||"",description:def.description||"",route:def.route||"",start:"",end:""};
+  }),tables,notes:""};
 }
 function code(){
   const p=activePeriod(); const d=new Date(p.start+"T12:00:00");
@@ -57,8 +60,8 @@ function formatCell(v,type){
 }
 function renderSections(){
   const host=$("#dynamicSections");
-  let html=`<section class="panel"><div class="panel-head"><div><span class="eyebrow">1. Cronograma</span><h3>Fechas del proceso</h3><p class="help">Las actividades ya están definidas. Completa inicio y fin o impórtalas desde la plantilla.</p></div></div>
-  <div class="table-scroll"><table class="data-table"><thead><tr><th>Actividad</th><th>Fecha inicio</th><th>Fecha fin</th></tr></thead><tbody id="scheduleBody"></tbody></table></div></section>`;
+  let html=`<section class="panel"><div class="panel-head"><div><span class="eyebrow">1. Cronograma</span><h3>Fechas del proceso</h3><p class="help">Las actividades y responsables base ya están definidos. Completa o importa las fechas y ajusta el responsable solo si cambia en el período.</p></div></div>
+  <div class="table-scroll"><table class="data-table"><thead><tr><th>Actividad</th><th>Responsable</th><th>Fecha inicio</th><th>Fecha fin</th></tr></thead><tbody id="scheduleBody"></tbody></table></div></section>`;
   let n=2;
   Object.entries(CONFIG.tables).forEach(([key,t])=>{
     html+=`<section class="panel"><div class="panel-head"><div><span class="eyebrow">${n++}. ${esc(t.label)}</span><h3>${esc(t.title)}</h3><p class="help">${esc(t.help||"")}</p></div><button class="secondary" type="button" data-add="${key}">+ Agregar fila</button></div>
@@ -70,7 +73,7 @@ function renderSections(){
   host.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{payload.tables[b.dataset.add].push({});renderTable(b.dataset.add);progress();localSave();});
 }
 function renderSchedule(){
-  $("#scheduleBody").innerHTML=payload.schedule.map((r,i)=>`<tr><td><strong>${esc(r.activity)}</strong></td><td><input type="date" data-sch="${i}" data-f="start" value="${esc(r.start||"")}"></td><td><input type="date" data-sch="${i}" data-f="end" value="${esc(r.end||"")}"></td></tr>`).join("");
+  $("#scheduleBody").innerHTML=payload.schedule.map((r,i)=>`<tr><td><strong>${esc(r.activity)}</strong>${r.route?`<div class="help">${esc(r.route)}</div>`:""}</td><td><input type="text" data-sch="${i}" data-f="responsible" value="${esc(r.responsible||"")}" placeholder="Responsable"></td><td><input type="date" data-sch="${i}" data-f="start" value="${esc(r.start||"")}"></td><td><input type="date" data-sch="${i}" data-f="end" value="${esc(r.end||"")}"></td></tr>`).join("");
   $("#scheduleBody").querySelectorAll("input").forEach(el=>el.onchange=()=>{payload.schedule[+el.dataset.sch][el.dataset.f]=el.value;progress();localSave();});
 }
 function renderTable(key){
@@ -143,18 +146,19 @@ function mapHeaders(row,columns){
 }
 function bestActivity(value){
   const n=norm(value);if(!n)return null;
-  let exact=CONFIG.schedule.find(a=>norm(a)===n);if(exact)return exact;
+  const scheduleNames=CONFIG.schedule.map(a=>typeof a==="string"?a:a.activity);
+  let exact=scheduleNames.find(a=>norm(a)===n);if(exact)return exact;
   const aliases=CONFIG.activityAliases||{};
   for(const [canonical,list] of Object.entries(aliases)){if([canonical,...list].some(x=>norm(x)===n||norm(x).includes(n)||n.includes(norm(x))))return canonical;}
-  let best=null,score=0;CONFIG.schedule.forEach(a=>{const aw=norm(a).split(" "),nw=n.split(" ");const common=aw.filter(w=>nw.includes(w)).length/Math.max(aw.length,nw.length);if(common>score){score=common;best=a;}});return score>=.5?best:null;
+  let best=null,score=0;scheduleNames.forEach(a=>{const aw=norm(a).split(" "),nw=n.split(" ");const common=aw.filter(w=>nw.includes(w)).length/Math.max(aw.length,nw.length);if(common>score){score=common;best=a;}});return score>=.5?best:null;
 }
 function parseImport(wb){
   const out=blankPayload(),report={recognized:0,warnings:[],details:[]};
   const sname=wb.SheetNames.find(n=>norm(n).includes("cronograma"));
   if(sname){
     const rows=XLSX.utils.sheet_to_json(wb.Sheets[sname],{defval:""});
-    const map=rows.length?mapHeaders(rows[0],[{field:"activity",label:"Actividad",aliases:["evento","fase"]},{field:"start",label:"Fecha inicio",aliases:["inicio","desde","fecha inicial"]},{field:"end",label:"Fecha fin",aliases:["fin","hasta","fecha final"]}]):{};
-    rows.forEach(r=>{const a=bestActivity(r[map.activity]);if(!a){if(r[map.activity])report.warnings.push("Actividad no reconocida: "+r[map.activity]);return;}const target=out.schedule.find(x=>x.activity===a);target.start=isoDate(r[map.start]);target.end=isoDate(r[map.end]);report.recognized++;});
+    const map=rows.length?mapHeaders(rows[0],[{field:"activity",label:"Actividad",aliases:["evento","fase"]},{field:"responsible",label:"Responsable",aliases:["docente","encargado"]},{field:"start",label:"Fecha inicio",aliases:["inicio","desde","fecha inicial"]},{field:"end",label:"Fecha fin",aliases:["fin","hasta","fecha final"]}]):{};
+    rows.forEach(r=>{const a=bestActivity(r[map.activity]);if(!a){if(r[map.activity])report.warnings.push("Actividad no reconocida: "+r[map.activity]);return;}const target=out.schedule.find(x=>x.activity===a);if(map.responsible&&r[map.responsible])target.responsible=String(r[map.responsible]).trim();target.start=isoDate(r[map.start]);target.end=isoDate(r[map.end]);report.recognized++;});
     report.details.push("Cronograma: "+out.schedule.filter(r=>r.start||r.end).length+" actividades");
   }else report.warnings.push("No se encontró la hoja CRONOGRAMA.");
 
@@ -180,7 +184,7 @@ function downloadTemplate(){
   const info=[["PLANTILLA DE DATOS · "+CONFIG.title],["Instrucciones"],["1. Completa únicamente las celdas necesarias."],["2. No cambies el nombre de las hojas si no es necesario."],["3. La app reconoce alias como Inicio/Fecha inicio/Desde y Fin/Fecha fin/Hasta."],["4. Puedes dejar datos pendientes y volver a importar después."]];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(info),"INSTRUCCIONES");
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Campo","Valor"],["Periodo",p.name],["Fecha inicio",p.start],["Fecha fin",p.end],["Codigo",code()]]),"PERIODO");
-  const sch=[["Actividad","Fecha inicio","Fecha fin"],...payload.schedule.map(r=>[r.activity,r.start||"",r.end||""])];const sws=XLSX.utils.aoa_to_sheet(sch);sws["!cols"]=[{wch:42},{wch:16},{wch:16}];XLSX.utils.book_append_sheet(wb,sws,"CRONOGRAMA");
+  const sch=[["Actividad","Responsable","Fecha inicio","Fecha fin"],...payload.schedule.map(r=>[r.activity,r.responsible||"",r.start||"",r.end||""])];const sws=XLSX.utils.aoa_to_sheet(sch);sws["!cols"]=[{wch:45},{wch:40},{wch:16},{wch:16}];XLSX.utils.book_append_sheet(wb,sws,"CRONOGRAMA");
   Object.entries(CONFIG.tables).forEach(([key,t])=>{const rows=(payload.tables[key]||[]).filter(r=>Object.values(r).some(v=>String(v??"").trim()!==""));const data=[t.columns.map(c=>c.label),...(rows.length?rows.map(r=>t.columns.map(c=>r[c.field]??"")):[t.columns.map(()=> "")])];const ws=XLSX.utils.aoa_to_sheet(data);ws["!cols"]=t.columns.map(c=>({wch:c.width||20}));XLSX.utils.book_append_sheet(wb,ws,t.sheet);});
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Observaciones"],[payload.notes||""]]),"OBSERVACIONES");
   XLSX.writeFile(wb,"Plantilla_"+CONFIG.shortName+"_"+p.name.replace(/[^A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ]+/g,"-")+".xlsx");
