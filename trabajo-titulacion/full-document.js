@@ -85,14 +85,32 @@ async function generateAndDownload(ctx,filename){
     heading("3. Metodología",1);paragraph("La metodología organiza el acompañamiento por fases: asignación, orientación inicial, elaboración de borradores, retroalimentación, aprobación, revisión del lector, preparación de defensa y cierre académico.");inlineImage("methodologyImage");
     heading("3.1. Acompañamiento del tutor",2);paragraph("El tutor orienta el desarrollo académico, revisa avances y registra observaciones que permitan al estudiante mejorar progresivamente el trabajo.");
     heading("3.2. Revisión del lector",2);paragraph("El lector realiza una revisión posterior a la aprobación del tutor y emite observaciones o validación según el procedimiento institucional.");
-    heading("4. Cronograma del proceso",1);apaTable("Cronograma general del Trabajo de Titulación",["Actividad","Fecha inicio","Fecha fin"],ctx.payload.schedule.map(r=>[r.activity,fmtDate(r.start),fmtDate(r.end)]),{0:{cellWidth:bodyW*.58},1:{cellWidth:bodyW*.21},2:{cellWidth:bodyW*.21}});
+    heading("4. Cronograma del proceso",1);
+    apaTable("Calendario de actividades por proceso",
+      ["Actividad","Descripción","Responsable","Inicio","Fin"],
+      ctx.payload.schedule.map(r=>[r.activity,r.description||"",r.responsible||"",fmtDate(r.start),fmtDate(r.end)]),
+      {0:{cellWidth:bodyW*.23},1:{cellWidth:bodyW*.27},2:{cellWidth:bodyW*.24},3:{cellWidth:bodyW*.13},4:{cellWidth:bodyW*.13}}
+    );
+    paragraph("La secuencia inicia con la asignación de tutor y lector y concluye con el registro final de calificaciones. Las fechas y responsables pueden actualizarse desde la plantilla de datos del período.");
     heading("5. Carreras y estudiantes",1);const car=ctx.payload.tables?.carreras||[];apaTable("Carreras participantes",["Carrera","Modalidad","Lugar","Cantidad"],car.map(r=>[r.career||"",r.modality||"",r.place||"",String(r.count??"")]),{0:{cellWidth:bodyW*.48},1:{cellWidth:bodyW*.18},2:{cellWidth:bodyW*.18},3:{cellWidth:bodyW*.16}});
     heading("6. Asignación de Tutor y Lector",1);const tut=ctx.payload.tables?.tutores||[];apaTable("Asignaciones académicas",["Carrera","Tutor","Lector","Observaciones"],tut.filter(r=>Object.values(r).some(Boolean)).map(r=>[r.career||"",r.tutor||"",r.reader||"",r.observations||""]),{0:{cellWidth:bodyW*.30},1:{cellWidth:bodyW*.23},2:{cellWidth:bodyW*.23},3:{cellWidth:bodyW*.24}});paragraph("Las asignaciones deben mantenerse actualizadas y comunicarse a los estudiantes por los canales institucionales definidos.");
     heading("7. Desarrollo y seguimiento",1);bullet("Primer borrador: revisión del planteamiento, estructura y avance inicial.");bullet("Segundo borrador: consolidación del desarrollo y atención de observaciones.");bullet("Tercer borrador: versión próxima a cierre para validación del tutor.");bullet("Aprobación del tutor: habilita la revisión posterior del lector.");bullet("Revisión del lector: verifica coherencia y condiciones previas a defensa.");
     heading("8. Recursos y plataformas",1);const rec=ctx.payload.tables?.recursos||[];apaTable("Recursos asignados al proceso",["Recurso","Responsable","Uso"],rec.filter(r=>Object.values(r).some(Boolean)).map(r=>[r.resource||"",r.responsible||"",r.use||""]),{0:{cellWidth:bodyW*.28},1:{cellWidth:bodyW*.28},2:{cellWidth:bodyW*.44}});paragraph("Los recursos digitales y de comunicación apoyan tutorías, entrega de avances, registro y coordinación de actividades.");
     heading("9. Defensa",1);const def=ctx.payload.tables?.defensas||[];apaTable("Organización de defensas",["Carrera","Inicio","Fin","Modalidad","Observaciones"],def.filter(r=>Object.values(r).some(Boolean)).map(r=>[r.career||"",fmtDate(r.start),fmtDate(r.end),r.mode||"",r.observations||""]),{0:{cellWidth:bodyW*.30},1:{cellWidth:bodyW*.14},2:{cellWidth:bodyW*.14},3:{cellWidth:bodyW*.15},4:{cellWidth:bodyW*.27}});paragraph("La defensa se ejecuta conforme a las condiciones definidas para cada carrera y al cronograma aprobado.");
-    heading("10. Evaluación y registro final",1);paragraph("La calificación final debe reflejar la evaluación institucional aplicable al trabajo y su defensa. Los resultados se registran en los sistemas correspondientes y se respaldan con actas, rúbricas y evidencias del proceso.");
-    heading("11. Contingencias y mejora continua",1);paragraph("Las incidencias académicas, tecnológicas o de organización deben documentarse y resolverse mediante los responsables institucionales. Al cierre del período, las observaciones recopiladas sirven como insumo para mejorar la planificación siguiente.");inlineImage("closingImage");
+    heading("10. Evaluación y registro final",1);
+    paragraph("La evaluación final integra la valoración académica del trabajo y el desempeño del estudiante en la defensa, conforme a los instrumentos institucionales aplicables. Las calificaciones deben registrarse en los sistemas correspondientes y respaldarse mediante actas, rúbricas y evidencias del proceso.");
+    paragraph("El tutor y el lector cumplen funciones de acompañamiento y revisión académica. La defensa corresponde al tribunal evaluador designado y debe mantener independencia respecto de las revisiones previas.");
+
+    heading("11. Análisis de resultados y mejora continua",1);
+    paragraph("Al cierre de cada período, la Coordinación de Titulación consolida indicadores del proceso como insumo para la toma de decisiones y la mejora institucional.");
+    bullet("Eficiencia terminal: estudiantes que culminan en tiempo y forma / total de estudiantes del proceso × 100.");
+    bullet("Tasa de aprobación en defensa: estudiantes que aprueban la defensa / total de estudiantes del proceso × 100.");
+    bullet("Índice de revisión de borradores a tiempo: borradores revisados dentro del plazo / total de borradores × 100.");
+    bullet("Tiempo promedio de culminación: suma de tiempos individuales desde asignación de tutor hasta defensa / número total de estudiantes.");
+    bullet("Índice de satisfacción: resultado consolidado de las encuestas institucionales aplicadas al cierre.");
+    paragraph("Las observaciones e indicadores permiten ajustar cronogramas, acompañamiento docente, recursos y mecanismos de coordinación para el siguiente período.");
+    inlineImage("closingImage");
+
     heading("12. Bibliografía",1);paragraph("Asamblea Constituyente del Ecuador. (2008). Constitución de la República del Ecuador.",{indent:false});paragraph("Asamblea Nacional del Ecuador. (2010). Ley Orgánica de Educación Superior.",{indent:false});paragraph("Instituto Tecnológico Superior Quito Metropolitano. Reglamento institucional vigente del área de titulación.",{indent:false});
   }
   function sectionsArticulo(){
