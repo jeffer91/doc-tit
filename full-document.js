@@ -247,7 +247,7 @@
       title:"Planificación De Examen Complexivo",
       subject:ctx.period.name,
       author:"Unidad de Titulación y Eficiencia Terminal",
-      keywords:"titulación, examen complexivo, planificación, DOC-TIT v12"
+      keywords:"titulación, examen complexivo, planificación, DOC-TIT v13"
     });
 
     const pageW=doc.internal.pageSize.getWidth();
@@ -311,6 +311,10 @@
       doc.addPage();
       y=BODY.top;
       drawHeader(doc.getNumberOfPages());
+
+      // La cabecera usa Helvetica; el cuerpo académico siempre vuelve a Times 12.
+      doc.setFont("times","normal");
+      doc.setFontSize(BODY.fontSize);
     }
 
     drawHeader(1);
@@ -343,27 +347,45 @@
       const indent=opts.indent===false?0:BODY.paragraphIndent;
       const hanging=opts.hanging||0;
       const lineHeight=opts.lineHeight||BODY.lineHeight;
-      doc.setFont("times",opts.bold?"bold":opts.italic?"italic":"normal");
+      const style=opts.bold?"bold":opts.italic?"italic":"normal";
+
+      doc.setFont("times",style);
       doc.setFontSize(size);
+
       const firstW=bodyW-indent;
       const otherW=bodyW-hanging;
       const lines=wrapWords(text,firstW,otherW);
+
       lines.forEach((line,i)=>{
+        const previousPage=doc.getNumberOfPages();
         ensureSpace(lineHeight);
+
+        // Si ensureSpace creó una nueva página, la cabecera cambió temporalmente la fuente.
+        doc.setFont("times",style);
+        doc.setFontSize(size);
+
         const x=BODY.left+(i===0?indent:hanging);
         doc.text(line,x,y);
         y+=lineHeight;
       });
+
       y+=opts.after==null?8:opts.after;
     }
 
     function bullet(text){
-      doc.setFont("times","normal"); doc.setFontSize(12);
       const raw=clean(text).replace(/^•\s*/,"");
       const indent=24, bulletX=BODY.left+8, textX=BODY.left+indent;
+
+      doc.setFont("times","normal");
+      doc.setFontSize(12);
       const lines=wrapWords(raw,bodyW-indent,bodyW-indent);
+
       lines.forEach((line,i)=>{
         ensureSpace(BODY.lineHeight);
+
+        doc.setFont("times","normal");
+        doc.setFontSize(12);
+
         if(i===0) doc.text("•",bulletX,y);
         doc.text(line,textX,y);
         y+=BODY.lineHeight;
@@ -410,11 +432,18 @@
     }
 
     function reference(text){
-      doc.setFont("times","normal"); doc.setFontSize(12);
       const hanging=36;
+
+      doc.setFont("times","normal");
+      doc.setFontSize(12);
       const lines=wrapWords(text,bodyW,bodyW-hanging);
+
       lines.forEach((line,i)=>{
         ensureSpace(BODY.lineHeight);
+
+        doc.setFont("times","normal");
+        doc.setFontSize(12);
+
         doc.text(line,BODY.left+(i===0?0:hanging),y);
         y+=BODY.lineHeight;
       });
@@ -772,23 +801,22 @@
         imgW=imgH*ratio;
       }
 
-      const totalNeeded=imgH+112;
+      // Figura + título + imagen. Sin nota/cita para imágenes cargadas por el usuario.
+      const totalNeeded=imgH+72;
       if(y+totalNeeded>pageH-BODY.bottom) newPage();
 
       nextFigure(title);
+
       const x=BODY.left+(bodyW-imgW)/2;
       try{
         doc.addImage(dataUrl,imageFormat(dataUrl),x,y,imgW,imgH,undefined,"FAST");
       }catch(e){
         return;
       }
-      y+=imgH+16;
+      y+=imgH+22;
 
-      doc.setFont("times","italic");
-      doc.setFontSize(9);
-      const note=doc.splitTextToSize("Nota. Imagen institucional proporcionada para uso genérico en la planificación.",bodyW);
-      doc.text(note,BODY.left,y);
-      y+=note.length*14+20;
+      doc.setFont("times","normal");
+      doc.setFontSize(BODY.fontSize);
     }
 
     function maybeInsertSectionImageBeforeHeading(normalizedHeading){
@@ -1190,10 +1218,12 @@
       doc.setPage(pageNo);
       y=BODY.top;
 
-      doc.setFont("times","bold");
-      doc.setFontSize(14);
-      doc.text(title,pageW/2,y,{align:"center"});
-      y+=34;
+      if(title){
+        doc.setFont("times","bold");
+        doc.setFontSize(14);
+        doc.text(title,pageW/2,y,{align:"center"});
+        y+=34;
+      }
 
       entries.forEach(e=>{
         const indent=e.level===1?0:e.level===2?18:36;
@@ -1250,7 +1280,7 @@
       }
 
       drawTOCPage(2,"Índice",dedup.slice(0,splitAt));
-      drawTOCPage(3,"Índice (continuación)",dedup.slice(splitAt));
+      drawTOCPage(3,"",dedup.slice(splitAt));
     }
 
     function footers(){
