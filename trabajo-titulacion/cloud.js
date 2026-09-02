@@ -44,7 +44,10 @@
   async function upsertDocument({periodKey,documentKey,processCode,title,documentCode,payload,complete,generatedAt,generatedFileName,generatedPages}){
     const {error}=await client.from("doc_tit_documents").upsert({
       period_key:periodKey,document_key:documentKey,process_code:processCode,title,
-      document_code:documentCode,payload:payload||{},complete:!!complete,
+      document_code:documentCode,
+      schedule:Array.isArray(payload?.schedule)?payload.schedule:[],
+      distribution:Array.isArray(payload?.tables?.carreras)?payload.tables.carreras:[],
+      payload:payload||{},complete:!!complete,
       generated_at:generatedAt||null,generated_file_name:generatedFileName||null,
       generated_pages:generatedPages||null,updated_at:new Date().toISOString()
     },{onConflict:"period_key,document_key"});
