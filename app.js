@@ -127,6 +127,11 @@
 
   let state = loadState();
   let activeDocument = null;
+  let cloudReady = false;
+  let cloudSession = null;
+  let cloudAdmin = null;
+  let suppressCloudSync = false;
+  const cloudSyncTimers = new Map();
 
   const $ = s => document.querySelector(s);
   const els = {
@@ -137,10 +142,208 @@
     dashboardView: $("#dashboardView"),
     documentView: $("#documentView"),
     documentForm: $("#documentForm"),
-    periodDialog: $("#periodDialog")
+    periodDialog: $("#periodDialog"),
+    cloudLoginDialog: $("#cloudLoginDialog"),
+    cloudLoginForm: $("#cloudLoginForm"),
+    cloudStatusCard: $("#cloudStatusCard")
   };
 
   function clone(v){ return JSON.parse(JSON.stringify(v)); }
+
+  function findCatalogDocument(docId){
+    for(const [procCode,proc] of Object.entries(catalog)){
+      const doc=proc.documents.find(d=>d.id===docId);
+      if(doc) return {...doc,procCode,procName:proc.fullName||proc.name,process:procCode};
+    }
+    return null;
+  }
+
+  function setCloudStatus(mode,detail){
+    const card=$("#cloudStatusCard");
+    const title=$("#cloudStatusText");
+    const subtitle=$("#cloudStatusDetail");
+    const button=$("#cloudLoginBtn");
+    if(!card||!title||!subtitle||!button) return;
+
+    card.classList.remove("connected","error");
+    if(mode==="connected") card.classList.add("connected");
+    if(mode==="error") card.classList.add("error");
+
+    title.textContent=mode==="connected"?"Base de datos conectada":"Base de datos";
+    subtitle.textContent=detail||(
+      mode==="connected"?"Supabase · sincronizado":
+      mode==="error"?"Sin conexión":"Conectando…"
+    );
+    button.textContent=mode==="connected"?"Salir":"Acceso";
+  }
+
+  function showCloudLogin(message=""){
+    const error=$("#cloudLoginError");
+    if(error){
+      error.textContent=message;
+      error.classList.toggle("hidden",!message);
+    }
+    if(els.cloudLoginDialog && !els.cloudLoginDialog.open) els.cloudLoginDialog.showModal();
+  }
+
+  async function syncPeriodToCloud(period){
+    if(!cloudReady||!period) return;
+    await window.DocTitCloud.upsertPeriod(period);
+  }
+
+  async function syncDocumentToCloud(docId,periodId=state.activePeriodId){
+    if(!cloudReady||suppressCloudSync) return;
+    const period=state.periods.find(p=>p.id===periodId);
+    const doc=findCatalogDocument(docId);
+    const data=state.documents[`${periodId}::${docId}`];
+    if(!period||!doc||!data) return;
+
+    await window.DocTitCloud.upsertDocument({
+      period,
+      document:doc,
+      data,
+      code:documentCode(doc,period)
+    });
+  }
+
+  function queueDocumentSync(docId,periodId=state.activePeriodId){
+    if(!cloudReady||suppressCloudSync) return;
+    const key=`${periodId}::${docId}`;
+    clearTimeout(cloudSyncTimers.get(key));
+    const timer=setTimeout(()=>{
+      syncDocumentToCloud(docId,periodId).catch(err=>{
+        console.error("No se pudo sincronizar el documento.",err);
+        setCloudStatus("error","Error al sincronizar");
+      });
+      cloudSyncTimers.delete(key);
+    },700);
+    cloudSyncTimers.set(key,timer);
+  }
+
+  async function migrateLocalWorkspaceToCloud(){
+    if(localStorage.getItem("doc-tit-cloud-migrated-v1")==="1") return;
+
+    for(const period of state.periods){
+      await window.DocTitCloud.upsertPeriod(period);
+    }
+    await window.DocTitCloud.upsertSetting("institutional",state.institutional);
+
+    for(const [storeKey,data] of Object.entries(state.documents||{})){
+      const splitAt=storeKey.indexOf("::");
+      if(splitAt<0) continue;
+      const periodId=storeKey.slice(0,splitAt);
+      const docId=storeKey.slice(splitAt+2);
+      const period=state.periods.find(p=>p.id===periodId);
+      const doc=findCatalogDocument(docId);
+      if(period&&doc){
+        await window.DocTitCloud.upsertDocument({
+          period,
+          document:doc,
+          data,
+          code:documentCode(doc,period)
+        });
+      }
+
+      try{
+        const assets=await readAssetsByKey(storeKey);
+        for(const [assetKey,dataUrl] of Object.entries(assets||{})){
+          if(!dataUrl) continue;
+          await window.DocTitCloud.uploadAsset({
+            periodKey:periodId,
+            documentKey:docId,
+            assetKey,
+            dataUrl,
+            fileName:`${assetKey}.jpg`
+          });
+        }
+      }catch(err){
+        console.warn("No se pudo migrar una imagen local.",err);
+      }
+    }
+
+    localStorage.setItem("doc-tit-cloud-migrated-v1","1");
+  }
+
+  async function hydrateFromCloud(){
+    const workspace=await window.DocTitCloud.loadWorkspace();
+
+    suppressCloudSync=true;
+    try{
+      if(workspace.periods.length){
+        state.periods=workspace.periods.map(row=>({
+          id:row.period_key,
+          name:row.name,
+          start:row.start_date,
+          end:row.end_date,
+          status:row.status||"Activo"
+        }));
+      }
+
+      const docs={};
+      for(const row of workspace.documents){
+        docs[`${row.period_key}::${row.document_key}`]={
+          schedule:Array.isArray(row.schedule)?row.schedule:[],
+          distribution:Array.isArray(row.distribution)?row.distribution:[],
+          smartText:row.smart_text||"",
+          analysis:row.analysis||null,
+          complete:!!row.complete,
+          generatedAt:row.generated_at||null,
+          generatedFileName:row.generated_file_name||null,
+          generatedPages:row.generated_pages||null,
+          cloudUpdatedAt:row.updated_at||null
+        };
+      }
+      state.documents=docs;
+
+      const institutional=workspace.settings.find(row=>row.key==="institutional");
+      if(institutional?.value && typeof institutional.value==="object"){
+        state.institutional={...state.institutional,...institutional.value};
+      }
+
+      if(!state.periods.some(p=>p.id===state.activePeriodId)){
+        state.activePeriodId=state.periods[0]?.id||defaultState.activePeriodId;
+      }
+
+      saveState();
+    }finally{
+      suppressCloudSync=false;
+    }
+
+    renderAll();
+  }
+
+  async function onCloudAuthenticated(session,admin=null){
+    cloudSession=session;
+    cloudAdmin=admin;
+    cloudReady=true;
+    setCloudStatus("connected",admin?.full_name||session?.user?.email||"Supabase · conectado");
+
+    await migrateLocalWorkspaceToCloud();
+    await hydrateFromCloud();
+
+    if(els.cloudLoginDialog?.open) els.cloudLoginDialog.close();
+  }
+
+  async function initCloud(){
+    if(!window.DocTitCloud){
+      setCloudStatus("error","Supabase no cargó");
+      return;
+    }
+    setCloudStatus("loading","Conectando…");
+    try{
+      const session=await window.DocTitCloud.getSession();
+      if(session){
+        await onCloudAuthenticated(session);
+      }else{
+        showCloudLogin();
+      }
+    }catch(err){
+      console.error(err);
+      setCloudStatus("error","No se pudo conectar");
+      showCloudLogin("No se pudo conectar con la base de datos.");
+    }
+  }
+
   function stripAssetsFromDocuments(documents){
     const cleaned={};
     Object.entries(documents||{}).forEach(([key,value])=>{
@@ -289,13 +492,27 @@
   function docStoreKey(docId){ return `${state.activePeriodId}::${docId}`; }
   function getDocData(docId){ return state.documents[docStoreKey(docId)]||{}; }
   function getCachedAssets(docId){ return assetCache.get(docStoreKey(docId))||{}; }
-  async function loadAssetsForDoc(docId){ return readAssetsByKey(docStoreKey(docId)); }
+  async function loadAssetsForDoc(docId){
+    const storageKey=docStoreKey(docId);
+    if(cloudReady){
+      try{
+        const assets=await window.DocTitCloud.loadAssets(state.activePeriodId,docId);
+        assetCache.set(storageKey,assets);
+        try{ await writeAssetsByKey(storageKey,assets); }catch(e){}
+        return assets;
+      }catch(err){
+        console.warn("No se pudieron descargar las imágenes desde Supabase.",err);
+      }
+    }
+    return readAssetsByKey(storageKey);
+  }
 
   function setDocData(docId,data){
     const safe={...(data||{})};
     delete safe.assets;
     state.documents[docStoreKey(docId)]={...getDocData(docId),...safe};
     saveState();
+    queueDocumentSync(docId);
   }
 
   function allDocumentCount(){ return Object.values(catalog).reduce((sum,p)=>sum+p.documents.length,0); }
@@ -447,6 +664,11 @@
 
   async function storeAssetImage(key,file){
     if(!activeDocument||!file) return;
+    if(!cloudReady){
+      showCloudLogin("Inicia sesión para guardar imágenes en la base de datos.");
+      return;
+    }
+
     try{
       const isLogo=key==="logo";
       const dataUrl=await window.DocTitFullDocument.resizeImage(
@@ -455,16 +677,28 @@
         isLogo?320:800
       );
 
+      await window.DocTitCloud.uploadAsset({
+        periodKey:state.activePeriodId,
+        documentKey:activeDocument.id,
+        assetKey:key,
+        dataUrl,
+        fileName:file.name
+      });
+
       const storageKey=docStoreKey(activeDocument.id);
       const current={...(assetCache.get(storageKey)||{})};
       current[key]=dataUrl;
+      assetCache.set(storageKey,current);
 
-      await writeAssetsByKey(storageKey,current);
+      try{ await writeAssetsByKey(storageKey,current); }catch(e){}
+
       renderAssetPreviews(current);
       updateProgress();
+      setCloudStatus("connected","Imagen guardada en Supabase");
     }catch(err){
       console.error(err);
-      alert(err.message||"No se pudo guardar la imagen.");
+      setCloudStatus("error","Error al guardar imagen");
+      alert(err.message||"No se pudo guardar la imagen en la base de datos.");
     }
   }
 
@@ -689,8 +923,13 @@
     };
   }
 
-  function saveDraft(){
+  async function saveDraft(){
     if(!activeDocument) return;
+    if(!cloudReady){
+      showCloudLogin("Inicia sesión para guardar el borrador en la base de datos.");
+      return;
+    }
+
     const data=collectDocumentData();
     const complete=scheduleComplete(data.schedule)&&distributionComplete(data.distribution)&&!!data.assets.logo;
     setDocData(activeDocument.id,{...data,complete});
@@ -698,7 +937,16 @@
     renderPeriods();
     updateProgress();
     renderGenerationStatus(getDocData(activeDocument.id));
-    alert("Borrador guardado para este período.");
+
+    try{
+      await syncDocumentToCloud(activeDocument.id);
+      setCloudStatus("connected","Borrador guardado en Supabase");
+      alert("Borrador guardado en la base de datos.");
+    }catch(err){
+      console.error(err);
+      setCloudStatus("error","Error al guardar borrador");
+      alert("No se pudo guardar el borrador en la base de datos.");
+    }
   }
 
   function renderGenerationStatus(saved){
@@ -715,6 +963,10 @@
   }
 
   async function generatePdf(){
+    if(!cloudReady){
+      showCloudLogin("Inicia sesión para generar y guardar el PDF en la base de datos.");
+      return;
+    }
     const data=collectDocumentData();
     if(!scheduleComplete(data.schedule)){
       alert("Completa las fechas de las 9 actividades del cronograma.");
@@ -755,17 +1007,30 @@
         code
       },fileName);
 
+      const generatedAt=new Date().toISOString();
+
+      if(result.blob){
+        await window.DocTitCloud.uploadGeneratedPdf({
+          periodKey:state.activePeriodId,
+          documentKey:activeDocument.id,
+          fileName,
+          blob:result.blob
+        });
+      }
+
       setDocData(activeDocument.id,{
         ...data,
-        generatedAt:new Date().toISOString(),
+        generatedAt,
         generatedFileName:fileName,
         generatedPages:result.pages,
         complete:true
       });
+      await syncDocumentToCloud(activeDocument.id);
       renderPeriods();
       renderSmartAnalysis(data.analysis);
       status.className="generation-status success";
-      status.innerHTML=`<strong>PDF descargado</strong><span>${escapeHtml(fileName)} · ${result.pages} páginas</span>`;
+      setCloudStatus("connected","PDF guardado en Supabase");
+      status.innerHTML=`<strong>PDF descargado y guardado</strong><span>${escapeHtml(fileName)} · ${result.pages} páginas · Supabase</span>`;
     }catch(err){
       console.error(err);
       status.className="generation-status error";
@@ -824,7 +1089,7 @@
   }
   function lastDayOfMonth(year,month){ return new Date(year,month,0).getDate(); }
 
-  function createPeriod(){
+  async function createPeriod(){
     if(!updatePeriodPreview()) return;
     const sm=Number($("#startMonth").value),em=Number($("#endMonth").value);
     const sy=getYearValue("startYear"),ey=getYearValue("endYear");
@@ -840,6 +1105,18 @@
       state.activePeriodId=id;
     }
     saveState();
+
+    if(cloudReady){
+      try{
+        await syncPeriodToCloud(state.periods.find(p=>p.id===state.activePeriodId));
+        setCloudStatus("connected","Período guardado en Supabase");
+      }catch(err){
+        console.error(err);
+        setCloudStatus("error","Error al guardar período");
+        alert("El período quedó en caché local, pero no pudo guardarse en la base de datos.");
+      }
+    }
+
     renderAll();
     els.periodDialog.close();
   }
@@ -892,7 +1169,7 @@
   }));
   $("#startMonth").addEventListener("change",updatePeriodPreview);
   $("#endMonth").addEventListener("change",updatePeriodPreview);
-  $("#createPeriodBtn").addEventListener("click",e=>{e.preventDefault();createPeriod();});
+  $("#createPeriodBtn").addEventListener("click",async e=>{e.preventDefault();await createPeriod();});
   $("#backBtn").addEventListener("click",()=>{
     showView(els.dashboardView);
     $("#screenTitle").textContent="Gestión documental";
@@ -939,6 +1216,48 @@
     if(e.target.files[0]) restoreBackup(e.target.files[0]);
   });
 
+
+  $("#cloudLoginForm")?.addEventListener("submit",async e=>{
+    e.preventDefault();
+    const cedula=$("#cloudCedula").value.replace(/\D/g,"");
+    const pin=$("#cloudPin").value.replace(/\D/g,"");
+    const button=$("#cloudLoginSubmit");
+    const error=$("#cloudLoginError");
+
+    error.classList.add("hidden");
+    button.disabled=true;
+    const old=button.textContent;
+    button.textContent="Ingresando…";
+
+    try{
+      const result=await window.DocTitCloud.loginWithAdminPin(cedula,pin);
+      $("#cloudPin").value="";
+      await onCloudAuthenticated(result.session,result.admin);
+    }catch(err){
+      console.error(err);
+      error.textContent=err.message||"No fue posible iniciar sesión.";
+      error.classList.remove("hidden");
+      setCloudStatus("error","Acceso requerido");
+    }finally{
+      button.disabled=false;
+      button.textContent=old;
+    }
+  });
+
+  $("#cloudLoginBtn")?.addEventListener("click",async ()=>{
+    if(cloudReady){
+      if(!confirm("¿Cerrar la sesión de DOC-TIT?")) return;
+      try{ await window.DocTitCloud.logout(); }catch(e){}
+      cloudReady=false;
+      cloudSession=null;
+      cloudAdmin=null;
+      setCloudStatus("error","Sesión cerrada");
+      showCloudLogin();
+    }else{
+      showCloudLogin();
+    }
+  });
+
   try{
     saveState();
   }catch(err){
@@ -946,4 +1265,5 @@
   }
   migrateLegacyAssets().catch(err=>console.warn("Migración de imágenes incompleta.",err));
   renderAll();
+  initCloud();
 })();
