@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b2d4f">
+  <title>DOC-TIT · Planificación de Artículo Académico</title>
+  <link rel="stylesheet" href="styles.css?v=1">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <a class="nav-back" href="../">← DOC-TIT · menú general</a>
+    <div class="brand"><div class="brand-mark">UTET</div><div><strong>DOC-TIT</strong><span>Artículo Académico</span></div></div>
+    <div class="period-box">
+      <label>Período académico</label>
+      <div class="period-row">
+        <select id="periodSelect"></select>
+        <button id="newPeriodBtn" class="mini" type="button">+</button>
+      </div>
+    </div>
+    <div class="cloud" id="cloudCard"><span class="dot"></span><div><strong>Base de datos</strong><small id="cloudText">Conectando…</small></div></div>
+  </aside>
+
+  <main class="main">
+    <header class="top">
+      <span class="eyebrow">PRO-56 · Planificación semestral</span>
+      <h1 id="docTitle">Planificación de Artículo Académico</h1>
+      <p id="periodText"></p>
+      <span class="code" id="docCode"></span>
+    </header>
+
+    <div class="toolbar">
+      <button class="secondary" id="downloadTemplateBtn">↓ Plantilla de datos</button>
+      <label class="secondary" style="cursor:pointer">↑ Importar datos
+        <input type="file" id="importInput" accept=".xlsx,.xls" hidden>
+      </label>
+      <button class="secondary" id="saveBtn">Guardar borrador</button>
+      <button class="primary" id="generateBtn">Generar PDF</button>
+    </div>
+
+    <section class="panel">
+      <div class="panel-head"><div><span class="eyebrow">Estado</span><h3>Completitud del documento</h3></div><span class="progress-label" id="progressLabel">0%</span></div>
+      <div class="progress"><span id="progressBar"></span></div>
+      <div id="importReport" class="import-report hidden"></div>
+    </section>
+
+    <div id="dynamicSections"></div>
+
+    <section class="panel">
+      <div class="panel-head"><div><span class="eyebrow">Información adicional</span><h3>Observaciones del período</h3><p class="help">Escribe únicamente particularidades que no estén cubiertas por las tablas.</p></div></div>
+      <div class="field"><textarea id="notesInput" placeholder="Observaciones, excepciones o instrucciones particulares…"></textarea></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div><span class="eyebrow">Identidad institucional</span><h3>Logo e imágenes opcionales</h3><p class="help">El logo se usa en la cabecera. Las demás imágenes se integran dentro del texto sin citas.</p></div></div>
+      <div class="asset-grid">
+        <label class="asset"><strong>Logo institucional *</strong><span class="preview" id="logoPreview">Sin imagen</span><input id="logoUpload" type="file" accept="image/png,image/jpeg,image/webp"></label>
+        <label class="asset"><strong>Imagen de introducción</strong><span class="preview" id="introImagePreview">Opcional</span><input id="introImageUpload" type="file" accept="image/png,image/jpeg,image/webp"></label>
+        <label class="asset"><strong>Imagen de metodología</strong><span class="preview" id="methodologyImagePreview">Opcional</span><input id="methodologyImageUpload" type="file" accept="image/png,image/jpeg,image/webp"></label>
+        <label class="asset"><strong>Imagen de cierre/evaluación</strong><span class="preview" id="closingImagePreview">Opcional</span><input id="closingImageUpload" type="file" accept="image/png,image/jpeg,image/webp"></label>
+      </div>
+    </section>
+
+    <div class="actions">
+      <div class="status" id="status"></div>
+      <button class="secondary" id="saveBtnBottom">Guardar borrador</button>
+      <button class="primary" id="generateBtnBottom">Generar PDF</button>
+    </div>
+  </main>
+</div>
+
+<dialog id="periodDialog">
+  <form class="dialog" id="periodForm">
+    <span class="eyebrow">Nuevo período</span><h3>Crear período académico</h3>
+    <div class="period-builder">
+      <label>Mes inicio<select id="startMonth"></select></label>
+      <label>Año inicio<input id="startYear" type="number" min="2000" max="2100"></label>
+      <label>Mes fin<select id="endMonth"></select></label>
+      <label>Año fin<input id="endYear" type="number" min="2000" max="2100"></label>
+    </div>
+    <div class="dialog-actions"><button class="secondary" type="button" id="cancelPeriodBtn">Cancelar</button><button class="primary" type="submit">Crear período</button></div>
+  </form>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+<script src="full-document.js?v=1"></script>
+<script src="cloud.js?v=1"></script>
+<script src="app.js?v=1"></script>
+</body>
+</html>
