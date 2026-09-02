@@ -101,16 +101,54 @@ async function generateAndDownload(ctx,filename){
     heading("3. Metodología",1);paragraph("La metodología articula tres momentos de apoyo metodológico, la definición de la interrogante de investigación, el desarrollo progresivo del artículo y el acompañamiento académico por carrera.");inlineImage("methodologyImage");
     heading("3.1. Metodologías 1, 2 y 3",2);paragraph("Las metodologías proporcionan orientación progresiva para estructura, redacción académica, fuentes, coherencia metodológica y preparación del artículo.");
     heading("3.2. Interrogante de investigación",2);paragraph("La interrogante orienta el desarrollo del artículo y debe mantener relación con el campo profesional y con los objetivos académicos definidos para la modalidad.");
-    heading("4. Cronograma del proceso",1);apaTable("Cronograma general del Artículo Académico",["Actividad","Fecha inicio","Fecha fin"],ctx.payload.schedule.map(r=>[r.activity,fmtDate(r.start),fmtDate(r.end)]),{0:{cellWidth:bodyW*.58},1:{cellWidth:bodyW*.21},2:{cellWidth:bodyW*.21}});
+
+    heading("3.3. Roles y responsabilidades institucionales",2);
+    bullet("UTET: coordina la planificación general, organiza el cronograma, articula la validación de requisitos y supervisa el proceso ordinario y supletorio.");
+    bullet("Coordinación General de Carreras: da seguimiento académico general y verifica la aplicación institucional de los lineamientos.");
+    bullet("Coordinaciones de Carrera: apoyan inducción, refuerzos y seguimiento de estudiantes.");
+    bullet("Unidades responsables de requisitos: verifican los componentes habilitantes según su competencia.");
+    bullet("Responsable académico designado: revisa la interrogante y participa en actividades de evaluación y acompañamiento.");
+    bullet("Comité evaluador institucional: aplica la rúbrica y la revisión antiplagio y emite el resultado académico del artículo.");
+    bullet("Secretaría Académica: formaliza actas y registros institucionales.");
+    bullet("Tribunal evaluador: ejecuta la defensa oral y emite el resultado correspondiente.");
+
+    heading("4. Cronograma del proceso",1);
+    apaTable("Cronograma referencial del Artículo Académico",
+      ["Actividad","Responsable","Ruta","Inicio","Fin"],
+      ctx.payload.schedule.map(r=>[r.activity,r.responsible||"",r.route||"",fmtDate(r.start),fmtDate(r.end)]),
+      {0:{cellWidth:bodyW*.30},1:{cellWidth:bodyW*.28},2:{cellWidth:bodyW*.14},3:{cellWidth:bodyW*.14},4:{cellWidth:bodyW*.14}}
+    );
+    paragraph("Las trece primeras actividades corresponden al proceso ordinario. Las cuatro últimas integran la ruta supletoria y se activan únicamente cuando corresponde.");
     heading("5. Carreras y estudiantes",1);const car=ctx.payload.tables?.carreras||[];apaTable("Carreras participantes",["Carrera","Modalidad","Lugar","Cantidad"],car.map(r=>[r.career||"",r.modality||"",r.place||"",String(r.count??"")]),{0:{cellWidth:bodyW*.48},1:{cellWidth:bodyW*.18},2:{cellWidth:bodyW*.18},3:{cellWidth:bodyW*.16}});
     heading("6. Clases de refuerzo",1);const ref=ctx.payload.tables?.refuerzos||[];apaTable("Refuerzos por carrera",["Carrera","Responsable","Inicio","Fin","Observaciones"],ref.filter(r=>Object.values(r).some(Boolean)).map(r=>[r.career||"",r.responsible||"",fmtDate(r.start),fmtDate(r.end),r.observations||""]),{0:{cellWidth:bodyW*.27},1:{cellWidth:bodyW*.23},2:{cellWidth:bodyW*.13},3:{cellWidth:bodyW*.13},4:{cellWidth:bodyW*.24}});paragraph("Los refuerzos permiten resolver dudas específicas de las carreras y acompañar la consolidación del artículo.");
     heading("7. Requisitos y habilitación",1);paragraph("La habilitación para entrega, evaluación y defensa depende del cumplimiento de los requisitos institucionales aplicables al período. La verificación debe realizarse con registros oficiales y responsables claramente identificados.");
     heading("8. Entrega, evaluación institucional y antiplagio",1);paragraph("El artículo completo se entrega dentro de las fechas planificadas y pasa por revisión institucional y control antiplagio conforme a las condiciones vigentes. Las observaciones deben comunicarse con trazabilidad y dentro de los tiempos establecidos.");
     heading("9. Defensa ordinaria",1);const def=ctx.payload.tables?.defensas||[];apaTable("Defensas ordinarias y supletorias",["Tipo","Carrera","Inicio","Fin","Modalidad","Observaciones"],def.filter(r=>Object.values(r).some(Boolean)).map(r=>[r.type||"",r.career||"",fmtDate(r.start),fmtDate(r.end),r.mode||"",r.observations||""]),{0:{cellWidth:bodyW*.13},1:{cellWidth:bodyW*.24},2:{cellWidth:bodyW*.12},3:{cellWidth:bodyW*.12},4:{cellWidth:bodyW*.14},5:{cellWidth:bodyW*.25}});
     heading("10. Ruta de supletorio",1);paragraph("La ruta de supletorio comprende tutoría adicional, nueva entrega del artículo, evaluación mediante rúbrica y control antiplagio, y defensa de supletorio conforme al cronograma del período.");
-    heading("11. Evaluación",1);const ev=ctx.payload.tables?.evaluacion||[];apaTable("Ponderación de evaluación",["Componente","Ponderación %","Condición / criterio"],ev.filter(r=>Object.values(r).some(Boolean)).map(r=>[r.component||"",String(r.weight??""),r.condition||""]),{0:{cellWidth:bodyW*.30},1:{cellWidth:bodyW*.20},2:{cellWidth:bodyW*.50}});paragraph("El documento base establece una ponderación de 70% para el artículo académico y 30% para la defensa. La app permite actualizar estos valores si existe una disposición institucional vigente para el período.");
-    heading("12. Seguimiento, contingencias y cierre",1);paragraph("Las incidencias de entrega, evaluación, antiplagio o defensa deben registrarse y resolverse mediante los responsables institucionales. El cierre consolida resultados, evidencias y observaciones para seguimiento y mejora continua.");inlineImage("closingImage");
-    heading("13. Bibliografía",1);paragraph("Asamblea Constituyente del Ecuador. (2008). Constitución de la República del Ecuador.",{indent:false});paragraph("Asamblea Nacional del Ecuador. (2010). Ley Orgánica de Educación Superior.",{indent:false});paragraph("Instituto Tecnológico Superior Quito Metropolitano. Reglamento institucional vigente del área de titulación.",{indent:false});
+    heading("11. Evaluación, acreditación y seguimiento",1);
+    const ev=ctx.payload.tables?.evaluacion||[];
+    apaTable("Ponderación de evaluación",["Componente","Ponderación %","Condición / criterio"],ev.filter(r=>Object.values(r).some(Boolean)).map(r=>[r.component||"",String(r.weight??""),r.condition||""]),{0:{cellWidth:bodyW*.30},1:{cellWidth:bodyW*.20},2:{cellWidth:bodyW*.50}});
+    paragraph("El documento base establece una ponderación de 70% para el artículo académico y 30% para la defensa. La app permite actualizar estos valores si existe una disposición institucional vigente para el período.");
+    bullet("Toda calificación debe estar respaldada por un acta o registro formal.");
+    bullet("Debe existir coherencia entre los resultados parciales y la nota final consolidada.");
+    bullet("La evaluación del artículo debe vincularse con la rúbrica institucional y la revisión antiplagio.");
+    bullet("La defensa ordinaria o supletoria debe conservar acta y resultado formal.");
+    bullet("El expediente debe mantenerse completo, ordenado y verificable.");
+
+    heading("12. Retroalimentación y mejora continua",1);
+    paragraph("La retroalimentación institucional consolida hallazgos sobre interrogantes, estructura del artículo, evaluación, antiplagio, defensa, requisitos y cumplimiento del cronograma. Estos hallazgos deben convertirse en acciones de mejora para el siguiente período.");
+    bullet("Revisar cumplimiento real del cronograma y dificultades de ejecución.");
+    bullet("Analizar causas de observaciones o no aprobación del artículo.");
+    bullet("Comparar resultados del proceso ordinario y de la ruta supletoria.");
+    bullet("Verificar uniformidad en rúbrica, antiplagio, defensa y registro de actas.");
+    bullet("Revisar la efectividad de metodologías y refuerzos por carrera.");
+
+    heading("13. Disposiciones finales",1);
+    paragraph("Las situaciones excepcionales deben resolverse con autorización institucional, registro documental y trazabilidad. Cuando se autorice una defensa virtual o una reprogramación, deberá existir respaldo formal y condiciones que garanticen identificación, registro y validez académica.");
+    paragraph("La UTET es responsable de revisar y actualizar esta planificación antes de cada período académico, considerando cambios normativos, resultados del seguimiento, hallazgos de ejecución y recomendaciones institucionales.");
+    inlineImage("closingImage");
+
+    heading("14. Referencias",1);paragraph("Asamblea Constituyente del Ecuador. (2008). Constitución de la República del Ecuador.",{indent:false});paragraph("Asamblea Nacional del Ecuador. (2010). Ley Orgánica de Educación Superior.",{indent:false});paragraph("Instituto Tecnológico Superior Quito Metropolitano. Reglamento institucional vigente del área de titulación.",{indent:false});
   }
 
   cover();newPage();newPage();newPage();executive();if(TYPE==="trabajo")sectionsTrabajo();else sectionsArticulo();
