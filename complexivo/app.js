@@ -1,9 +1,9 @@
 (() => {
   "use strict";
 
-  const STORAGE_KEY = "doc-tit-v3";
-  const LEGACY_KEYS = ["doc-tit-v2","doc-tit-v1"];
-  const ASSET_DB_NAME = "doc-tit-assets";
+  const STORAGE_KEY = "doc-tit-complexivo-v1";
+  const LEGACY_KEYS = ["doc-tit-v3","doc-tit-v2","doc-tit-v1"];
+  const ASSET_DB_NAME = "doc-tit-complexivo-assets";
   const ASSET_DB_VERSION = 1;
   const ASSET_STORE = "document-assets";
   const assetCache = new Map();
