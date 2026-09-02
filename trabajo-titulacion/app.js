@@ -1,6 +1,6 @@
 (() => {
 "use strict";
-const CONFIG={"documentKey":"plan-trabajo-titulacion","title":"Planificación De Trabajo De Titulación","shortName":"Trabajo_Titulacion","codePrefix":"UGPA-RGI2-01-PRO-56-","requiredTable":"carreras","schedule":[{"activity":"Asignación de Tutor y Lector","responsible":"Coordinador de Titulación / Coordinación General de Carreras","description":"Designación del tutor y lector para acompañamiento y revisión académica."},{"activity":"Reunión Inicial con Tutor","responsible":"Estudiante / Tutor","description":"Primer encuentro para acordar plan de trabajo y objetivos."},{"activity":"Entrega del Primer Borrador","responsible":"Estudiante","description":"Presentación del primer borrador para revisión del tutor."},{"activity":"Retroalimentación del Primer Borrador","responsible":"Tutor","description":"Revisión y comentarios sobre el primer borrador."},{"activity":"Entrega del Segundo Borrador","responsible":"Estudiante","description":"Segundo borrador con incorporación de observaciones."},{"activity":"Retroalimentación del Segundo Borrador","responsible":"Tutor","description":"Revisión y comentarios sobre el segundo borrador."},{"activity":"Entrega del Tercer Borrador","responsible":"Estudiante","description":"Versión avanzada ajustada según revisiones previas."},{"activity":"Aprobación Final del Tercer Borrador por Tutor","responsible":"Tutor","description":"Aprobación del tutor para habilitar revisión del lector."},{"activity":"Revisión del Proyecto por el Lector","responsible":"Lector","description":"Revisión técnica y formal del trabajo aprobado por tutor."},{"activity":"Aprobación Final del Proyecto","responsible":"Lector","description":"Validación final previa a defensa."},{"activity":"Confirmación de Fecha de Defensa","responsible":"Coordinador de Titulación / Coordinación General de Carreras","description":"Confirmación y comunicación de fecha y modalidad de defensa."},{"activity":"Preparación para la Defensa","responsible":"Estudiante","description":"Ajustes finales y preparación de la defensa."},{"activity":"Defensa de Tesis","responsible":"Estudiante / Tribunal Evaluador / Coordinación General de Carreras","description":"Presentación y defensa del trabajo ante tribunal."},{"activity":"Registro Final de Calificaciones","responsible":"Coordinador de Titulación / Coordinación General de Carreras","description":"Registro de calificaciones finales en el sistema institucional."}],"activityAliases":{"Asignación de Tutor y Lector":["asignacion tutor lector","tutor y lector"],"Reunión Inicial con Tutor":["reunion tutor","reunion inicial"],"Entrega del Primer Borrador":["borrador 1","primer borrador","primer avance"],"Retroalimentación del Primer Borrador":["retroalimentacion borrador 1","revision primer borrador"],"Entrega del Segundo Borrador":["borrador 2","segundo borrador","segundo avance"],"Retroalimentación del Segundo Borrador":["retroalimentacion borrador 2","revision segundo borrador"],"Entrega del Tercer Borrador":["borrador 3","tercer borrador","tercer avance"],"Aprobación Final del Tercer Borrador por Tutor":["aprobacion tutor","aprobacion tercer borrador"],"Revisión del Proyecto por el Lector":["revision lector","revision proyecto lector"],"Aprobación Final del Proyecto":["aprobacion final","aprobacion lector"],"Confirmación de Fecha de Defensa":["confirmacion defensa","fecha defensa"],"Preparación para la Defensa":["preparacion defensa"],"Defensa de Tesis":["defensa","defensa tesis","defensa trabajo"],"Registro Final de Calificaciones":["registro notas","calificaciones finales"]},"tables":{"carreras":{"label":"Carreras y estudiantes","title":"Carreras participantes","help":"Registra carrera, modalidad, lugar y cantidad.","sheet":"CARRERAS","sheetAliases":["distribucion"],"requiredFields":["career","count"],"columns":[{"field":"career","label":"Carrera","aliases":["programa"],"width":38},{"field":"modality","label":"Modalidad","aliases":["tipo"],"width":18},{"field":"place","label":"Lugar","aliases":["sede"],"width":16},{"field":"count","label":"Cantidad","aliases":["cant","estudiantes","numero estudiantes"],"type":"number","width":12}]},"tutores":{"label":"Tutor y lector","title":"Asignación académica","help":"Completa únicamente cuando las asignaciones ya estén definidas.","sheet":"TUTORES_LECTORES","sheetAliases":["tutores","lectores"],"requiredFields":["career"],"columns":[{"field":"career","label":"Carrera","width":34},{"field":"tutor","label":"Tutor","aliases":["docente tutor"],"width":26},{"field":"reader","label":"Lector","aliases":["lector revisor"],"width":26},{"field":"observations","label":"Observaciones","aliases":["obs"],"width":34}]},"defensas":{"label":"Defensas","title":"Organización de defensas","help":"Registra rangos por carrera cuando ya estén definidos.","sheet":"DEFENSAS","requiredFields":["career"],"columns":[{"field":"career","label":"Carrera","width":32},{"field":"start","label":"Fecha inicio","aliases":["inicio","desde"],"type":"date","width":15},{"field":"end","label":"Fecha fin","aliases":["fin","hasta"],"type":"date","width":15},{"field":"mode","label":"Modalidad","aliases":["tipo"],"width":16},{"field":"observations","label":"Observaciones","width":30}]},"recursos":{"label":"Recursos","title":"Recursos y plataformas","help":"Incluye recursos operativos cuando cambien por período.","sheet":"RECURSOS","requiredFields":["resource"],"columns":[{"field":"resource","label":"Recurso","aliases":["plataforma","elemento"],"width":28},{"field":"responsible","label":"Responsable","aliases":["encargado"],"width":28},{"field":"use","label":"Uso","aliases":["descripcion"],"width":42}]}}}
+const CONFIG={"documentKey":"plan-trabajo-titulacion","title":"Planificación De Trabajo De Titulación","shortName":"Trabajo_Titulacion","codePrefix":"UGPA-RGI2-01-PRO-56-","requiredTable":null,"schedule":[{"activity":"Asignación de Tutor y Lector","responsible":"Coordinador de Titulación / Coordinación General de Carreras","description":"Designación del tutor y lector para acompañamiento y revisión académica."},{"activity":"Reunión Inicial con Tutor","responsible":"Estudiante / Tutor","description":"Primer encuentro para acordar plan de trabajo y objetivos."},{"activity":"Entrega del Primer Borrador","responsible":"Estudiante","description":"Presentación del primer borrador para revisión del tutor."},{"activity":"Retroalimentación del Primer Borrador","responsible":"Tutor","description":"Revisión y comentarios sobre el primer borrador."},{"activity":"Entrega del Segundo Borrador","responsible":"Estudiante","description":"Segundo borrador con incorporación de observaciones."},{"activity":"Retroalimentación del Segundo Borrador","responsible":"Tutor","description":"Revisión y comentarios sobre el segundo borrador."},{"activity":"Entrega del Tercer Borrador","responsible":"Estudiante","description":"Versión avanzada ajustada según revisiones previas."},{"activity":"Aprobación Final del Tercer Borrador por Tutor","responsible":"Tutor","description":"Aprobación del tutor para habilitar revisión del lector."},{"activity":"Revisión del Proyecto por el Lector","responsible":"Lector","description":"Revisión técnica y formal del trabajo aprobado por tutor."},{"activity":"Aprobación Final del Proyecto","responsible":"Lector","description":"Validación final previa a defensa."},{"activity":"Confirmación de Fecha de Defensa","responsible":"Coordinador de Titulación / Coordinación General de Carreras","description":"Confirmación y comunicación de fecha y modalidad de defensa."},{"activity":"Preparación para la Defensa","responsible":"Estudiante","description":"Ajustes finales y preparación de la defensa."},{"activity":"Defensa de Tesis","responsible":"Estudiante / Tribunal Evaluador / Coordinación General de Carreras","description":"Presentación y defensa del trabajo ante tribunal."},{"activity":"Registro Final de Calificaciones","responsible":"Coordinador de Titulación / Coordinación General de Carreras","description":"Registro de calificaciones finales en el sistema institucional."}],"activityAliases":{"Asignación de Tutor y Lector":["asignacion tutor lector","tutor y lector"],"Reunión Inicial con Tutor":["reunion tutor","reunion inicial"],"Entrega del Primer Borrador":["borrador 1","primer borrador","primer avance"],"Retroalimentación del Primer Borrador":["retroalimentacion borrador 1","revision primer borrador"],"Entrega del Segundo Borrador":["borrador 2","segundo borrador","segundo avance"],"Retroalimentación del Segundo Borrador":["retroalimentacion borrador 2","revision segundo borrador"],"Entrega del Tercer Borrador":["borrador 3","tercer borrador","tercer avance"],"Aprobación Final del Tercer Borrador por Tutor":["aprobacion tutor","aprobacion tercer borrador"],"Revisión del Proyecto por el Lector":["revision lector","revision proyecto lector"],"Aprobación Final del Proyecto":["aprobacion final","aprobacion lector"],"Confirmación de Fecha de Defensa":["confirmacion defensa","fecha defensa"],"Preparación para la Defensa":["preparacion defensa"],"Defensa de Tesis":["defensa","defensa tesis","defensa trabajo"],"Registro Final de Calificaciones":["registro notas","calificaciones finales"]},"tables":{"carreras":{"label":"Carreras y estudiantes","title":"Carreras participantes","help":"Registra carrera, modalidad, lugar y cantidad.","sheet":"CARRERAS","sheetAliases":["distribucion"],"requiredFields":["career","count"],"columns":[{"field":"career","label":"Carrera","aliases":["programa"],"width":38},{"field":"modality","label":"Modalidad","aliases":["tipo"],"width":18},{"field":"place","label":"Lugar","aliases":["sede"],"width":16},{"field":"count","label":"Cantidad","aliases":["cant","estudiantes","numero estudiantes"],"type":"number","width":12}]},"tutores":{"label":"Tutor y lector","title":"Asignación académica","help":"Completa únicamente cuando las asignaciones ya estén definidas.","sheet":"TUTORES_LECTORES","sheetAliases":["tutores","lectores"],"requiredFields":["career"],"columns":[{"field":"career","label":"Carrera","width":34},{"field":"tutor","label":"Tutor","aliases":["docente tutor"],"width":26},{"field":"reader","label":"Lector","aliases":["lector revisor"],"width":26},{"field":"observations","label":"Observaciones","aliases":["obs"],"width":34}]},"defensas":{"label":"Defensas","title":"Organización de defensas","help":"Registra rangos por carrera cuando ya estén definidos.","sheet":"DEFENSAS","requiredFields":["career"],"columns":[{"field":"career","label":"Carrera","width":32},{"field":"start","label":"Fecha inicio","aliases":["inicio","desde"],"type":"date","width":15},{"field":"end","label":"Fecha fin","aliases":["fin","hasta"],"type":"date","width":15},{"field":"mode","label":"Modalidad","aliases":["tipo"],"width":16},{"field":"observations","label":"Observaciones","width":30}]},"recursos":{"label":"Recursos","title":"Recursos y plataformas","help":"Incluye recursos operativos cuando cambien por período.","sheet":"RECURSOS","requiredFields":["resource"],"columns":[{"field":"resource","label":"Recurso","aliases":["plataforma","elemento"],"width":28},{"field":"responsible","label":"Responsable","aliases":["encargado"],"width":28},{"field":"use","label":"Uso","aliases":["descripcion"],"width":42}]}}}
 const MONTHS=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const FALLBACK_PERIODS=[
 {id:"2026-04_2026-09",name:"Abril 2026 – Septiembre 2026",start:"2026-04-01",end:"2026-09-30",status:"Activo"},
@@ -113,16 +113,17 @@ function renderAssets(){
 }
 function scheduleComplete(){return payload.schedule.length===CONFIG.schedule.length&&payload.schedule.every(r=>r.start&&r.end);}
 function firstTableComplete(){
-  const firstKey=CONFIG.requiredTable||Object.keys(CONFIG.tables)[0],t=CONFIG.tables[firstKey],rows=payload.tables[firstKey]||[];
+  if(!CONFIG.requiredTable) return true;
+  const t=CONFIG.tables[CONFIG.requiredTable],rows=payload.tables[CONFIG.requiredTable]||[];
   return rows.some(r=>t.requiredFields.every(f=>String(r[f]??"").trim()!==""));
 }
 function progress(){
-  let done=0,total=4;
+  let done=2,total=4; // período y código son automáticos
   if(scheduleComplete())done++;
-  if(firstTableComplete())done++;
   if(assets.logo)done++;
-  if(Object.values(payload.tables).some(rows=>rows.some(r=>Object.values(r).some(v=>String(v??"").trim()!==""))))done++;
-  const pct=Math.round(done/total*100);$("#progressBar").style.width=pct+"%";$("#progressLabel").textContent=pct+"% completo";
+  const pct=Math.round(done/total*100);
+  $("#progressBar").style.width=pct+"%";
+  $("#progressLabel").textContent=pct+"% completo";
 }
 async function resizeImage(file,maxW=1400,maxH=850){
   return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{let w=img.width,h=img.height,s=Math.min(1,maxW/w,maxH/h);const cv=document.createElement("canvas");cv.width=Math.round(w*s);cv.height=Math.round(h*s);cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);URL.revokeObjectURL(url);resolve(cv.toDataURL("image/jpeg",.88));};img.onerror=reject;img.src=url;});
@@ -171,45 +172,180 @@ function bestActivity(value){
   for(const [canonical,list] of Object.entries(aliases)){if([canonical,...list].some(x=>norm(x)===n||norm(x).includes(n)||n.includes(norm(x))))return canonical;}
   let best=null,score=0;scheduleNames.forEach(a=>{const aw=norm(a).split(" "),nw=n.split(" ");const common=aw.filter(w=>nw.includes(w)).length/Math.max(aw.length,nw.length);if(common>score){score=common;best=a;}});return score>=.5?best:null;
 }
+function readPeriodSheet(wb){
+  const sheetName=wb.SheetNames.find(n=>norm(n)==="periodo"||norm(n).includes("periodo"));
+  if(!sheetName) return null;
+  const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:""});
+  const out={};
+  rows.forEach(r=>{
+    const key=norm(r[0]);
+    if(key) out[key]=String(r[1]??"").trim();
+  });
+  return {
+    period:out.periodo||out.period||"",
+    code:out.codigo||out.code||"",
+    start:out.fecha_inicio||out.inicio||"",
+    end:out.fecha_fin||out.fin||""
+  };
+}
 function parseImport(wb){
-  const out=blankPayload(),report={recognized:0,warnings:[],details:[]};
+  const out=JSON.parse(JSON.stringify(normalizePayloadData(payload)));
+  const report={recognized:0,warnings:[],blocking:[],details:[]};
+
+  const periodInfo=readPeriodSheet(wb);
+  if(periodInfo){
+    const expectedPeriod=norm(activePeriod().name);
+    const importedPeriod=norm(periodInfo.period);
+    const expectedCode=norm(code());
+    const importedCode=norm(periodInfo.code);
+    if(importedPeriod && importedPeriod!==expectedPeriod){
+      report.blocking.push("La plantilla pertenece al período «"+periodInfo.period+"» y la app está abierta en «"+activePeriod().name+"».");
+    }
+    if(importedCode && importedCode!==expectedCode){
+      report.blocking.push("El código de la plantilla ("+periodInfo.code+") no coincide con el documento actual ("+code()+").");
+    }
+    report.details.push("Período validado: "+(periodInfo.period||"sin dato"));
+  }else{
+    report.warnings.push("No se encontró la hoja PERIODO. Se conservará el período abierto en la app.");
+  }
+
   const sname=wb.SheetNames.find(n=>norm(n).includes("cronograma"));
   if(sname){
     const rows=XLSX.utils.sheet_to_json(wb.Sheets[sname],{defval:""});
-    const map=rows.length?mapHeaders(rows[0],[{field:"activity",label:"Actividad",aliases:["evento","fase"]},{field:"responsible",label:"Responsable",aliases:["docente","encargado"]},{field:"start",label:"Fecha inicio",aliases:["inicio","desde","fecha inicial"]},{field:"end",label:"Fecha fin",aliases:["fin","hasta","fecha final"]}]):{};
-    rows.forEach(r=>{const a=bestActivity(r[map.activity]);if(!a){if(r[map.activity])report.warnings.push("Actividad no reconocida: "+r[map.activity]);return;}const target=out.schedule.find(x=>x.activity===a);if(map.responsible&&r[map.responsible])target.responsible=String(r[map.responsible]).trim();target.start=isoDate(r[map.start]);target.end=isoDate(r[map.end]);report.recognized++;});
-    report.details.push("Cronograma: "+out.schedule.filter(r=>r.start||r.end).length+" actividades");
-  }else report.warnings.push("No se encontró la hoja CRONOGRAMA.");
+    const map=rows.length?mapHeaders(rows[0],[
+      {field:"activity",label:"Actividad",aliases:["evento","fase"]},
+      {field:"responsible",label:"Responsable",aliases:["docente","encargado"]},
+      {field:"start",label:"Fecha inicio",aliases:["inicio","desde","fecha inicial"]},
+      {field:"end",label:"Fecha fin",aliases:["fin","hasta","fecha final"]}
+    ]):{};
+    rows.forEach(r=>{
+      const a=bestActivity(r[map.activity]);
+      if(!a){
+        if(r[map.activity])report.warnings.push("Actividad no reconocida: "+r[map.activity]);
+        return;
+      }
+      const target=out.schedule.find(x=>x.activity===a);
+      if(!target) return;
+      if(map.responsible && String(r[map.responsible]??"").trim()) target.responsible=String(r[map.responsible]).trim();
+      const start=isoDate(r[map.start]);
+      const end=isoDate(r[map.end]);
+      if(start) target.start=start;
+      if(end) target.end=end;
+      report.recognized++;
+    });
+    report.details.push("Cronograma: "+out.schedule.filter(r=>r.start||r.end).length+" actividades con fecha");
+  }else{
+    report.warnings.push("No se encontró la hoja CRONOGRAMA. Se conservarán las fechas ya registradas.");
+  }
 
   Object.entries(CONFIG.tables).forEach(([key,t])=>{
-    const sn=matchSheet(wb,key);if(!sn){report.warnings.push("No se encontró la hoja "+t.sheet+".");return;}
-    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{defval:""}); if(!rows.length)return;
-    const hm=mapHeaders(rows[0],t.columns); const parsed=[];
-    rows.forEach(row=>{const obj={};t.columns.forEach(col=>{let v=hm[col.field]?row[hm[col.field]]:"";if(col.type==="date")v=isoDate(v);else if(col.type==="number")v=v===""?"":Number(v)||0;else v=String(v??"").trim();obj[col.field]=v;});if(Object.values(obj).some(v=>String(v??"").trim()!==""))parsed.push(obj);});
-    out.tables[key]=parsed.length?parsed:[{}];report.recognized+=parsed.length;report.details.push(t.label+": "+parsed.length+" filas");
+    const sn=matchSheet(wb,key);
+    if(!sn){
+      report.details.push(t.label+": se conservan los datos existentes");
+      return;
+    }
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{defval:""});
+    if(!rows.length){
+      report.details.push(t.label+": hoja vacía; se conservan los datos existentes");
+      return;
+    }
+    const hm=mapHeaders(rows[0],t.columns);
+    const parsed=[];
+    rows.forEach(row=>{
+      const obj={};
+      t.columns.forEach(col=>{
+        let v=hm[col.field]?row[hm[col.field]]:"";
+        if(col.type==="date") v=isoDate(v);
+        else if(col.type==="number"){
+          if(v==="") v="";
+          else{
+            const n=Number(v);
+            v=Number.isFinite(n)?n:"";
+            if(v==="" && String(row[hm[col.field]]??"").trim()) report.warnings.push("Valor numérico no reconocido en "+t.label+": "+row[hm[col.field]]);
+          }
+        }else v=String(v??"").trim();
+        obj[col.field]=v;
+      });
+      if(Object.values(obj).some(v=>String(v??"").trim()!=="")) parsed.push(obj);
+    });
+    if(parsed.length){
+      out.tables[key]=parsed;
+      report.recognized+=parsed.length;
+      report.details.push(t.label+": "+parsed.length+" filas importadas");
+    }else{
+      report.details.push(t.label+": sin filas útiles; se conservan los datos existentes");
+    }
   });
 
-  const os=wb.SheetNames.find(n=>norm(n).includes("observ"));if(os){const arr=XLSX.utils.sheet_to_json(wb.Sheets[os],{header:1,defval:""});out.notes=arr.flat().slice(1).filter(Boolean).join("\n");}
+  const os=wb.SheetNames.find(n=>norm(n).includes("observ"));
+  if(os){
+    const arr=XLSX.utils.sheet_to_json(wb.Sheets[os],{header:1,defval:""});
+    const importedNotes=arr.flat().slice(1).filter(v=>String(v).trim()).join("\n").trim();
+    if(importedNotes){
+      out.notes=importedNotes;
+      report.recognized++;
+    }
+  }
+
   report.missing=out.schedule.filter(r=>!r.start||!r.end).map(r=>r.activity);
   return {out,report};
 }
 function showImport(parsed){
-  pendingImport=parsed.out;const r=parsed.report;const box=$("#importReport");box.classList.remove("hidden");
-  box.innerHTML=`<strong>Importación inteligente</strong><div class="import-kpis"><span class="pill oktxt">${r.recognized} datos reconocidos</span><span class="pill ${r.warnings.length?"warntxt":"oktxt"}">${r.warnings.length} advertencias</span><span class="pill ${r.missing.length?"warntxt":"oktxt"}">${r.missing.length} fechas pendientes</span></div><div class="mapping-list">${r.details.map(x=>"✓ "+esc(x)).join("<br>")}${r.warnings.length?"<br>"+r.warnings.map(x=>"⚠ "+esc(x)).join("<br>"):""}${r.missing.length?"<br>⚠ Faltan fechas: "+esc(r.missing.join(", ")):""}</div><div style="margin-top:10px"><button id="applyImportBtn" class="primary" type="button">Aplicar datos</button></div>`;
-  $("#applyImportBtn").onclick=()=>{payload=pendingImport;pendingImport=null;$("#notesInput").value=payload.notes||"";renderSections();progress();localSave();box.innerHTML="<strong>Datos aplicados.</strong><p class='help'>Revisa las tablas y guarda el borrador.</p>";};
+  pendingImport=parsed.out;
+  const r=parsed.report;
+  const box=$("#importReport");
+  box.classList.remove("hidden");
+  const blocking=r.blocking||[];
+  const applyButton=blocking.length
+    ? ""
+    : '<div style="margin-top:10px"><button id="applyImportBtn" class="primary" type="button">Aplicar datos</button></div>';
+  box.innerHTML=`<strong>Importación inteligente</strong>
+    <div class="import-kpis">
+      <span class="pill oktxt">${r.recognized} datos reconocidos</span>
+      <span class="pill ${r.warnings.length?"warntxt":"oktxt"}">${r.warnings.length} advertencias</span>
+      <span class="pill ${r.missing.length?"warntxt":"oktxt"}">${r.missing.length} fechas pendientes</span>
+      <span class="pill ${blocking.length?"errtxt":"oktxt"}">${blocking.length?"Plantilla no aplicable":"Período correcto"}</span>
+    </div>
+    <div class="mapping-list">
+      ${r.details.map(x=>"✓ "+esc(x)).join("<br>")}
+      ${r.warnings.length?"<br>"+r.warnings.map(x=>"⚠ "+esc(x)).join("<br>"):""}
+      ${blocking.length?"<br>"+blocking.map(x=>"✕ "+esc(x)).join("<br>"):""}
+      ${r.missing.length?"<br>⚠ Faltan fechas: "+esc(r.missing.join(", ")):""}
+    </div>${applyButton}`;
+  const btn=$("#applyImportBtn");
+  if(btn) btn.onclick=()=>{
+    payload=normalizePayloadData(pendingImport);
+    pendingImport=null;
+    $("#notesInput").value=payload.notes||"";
+    renderSections();
+    progress();
+    localSave();
+    box.innerHTML="<strong>Datos aplicados.</strong><p class='help'>Se conservaron los datos existentes que no estaban presentes en la plantilla. Revisa y guarda el borrador.</p>";
+  };
 }
 function downloadTemplate(){
   const wb=XLSX.utils.book_new();const p=activePeriod();
   const info=[["PLANTILLA DE DATOS · "+CONFIG.title],["Instrucciones"],["1. Completa únicamente las celdas necesarias."],["2. No cambies el nombre de las hojas si no es necesario."],["3. La app reconoce alias como Inicio/Fecha inicio/Desde y Fin/Fecha fin/Hasta."],["4. Puedes dejar datos pendientes y volver a importar después."]];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(info),"INSTRUCCIONES");
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Campo","Valor"],["Periodo",p.name],["Fecha inicio",p.start],["Fecha fin",p.end],["Codigo",code()]]),"PERIODO");
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([
+    ["Campo","Valor"],
+    ["Periodo",p.name],
+    ["Fecha inicio",p.start],
+    ["Fecha fin",p.end],
+    ["Codigo",code()],
+    ["Documento",CONFIG.title],
+    ["Clave documento",CONFIG.documentKey]
+  ]),"PERIODO");
   const sch=[["Actividad","Responsable","Fecha inicio","Fecha fin"],...payload.schedule.map(r=>[r.activity,r.responsible||"",r.start||"",r.end||""])];const sws=XLSX.utils.aoa_to_sheet(sch);sws["!cols"]=[{wch:45},{wch:40},{wch:16},{wch:16}];XLSX.utils.book_append_sheet(wb,sws,"CRONOGRAMA");
   Object.entries(CONFIG.tables).forEach(([key,t])=>{const rows=(payload.tables[key]||[]).filter(r=>Object.values(r).some(v=>String(v??"").trim()!==""));const data=[t.columns.map(c=>c.label),...(rows.length?rows.map(r=>t.columns.map(c=>r[c.field]??"")):[t.columns.map(()=> "")])];const ws=XLSX.utils.aoa_to_sheet(data);ws["!cols"]=t.columns.map(c=>({wch:c.width||20}));XLSX.utils.book_append_sheet(wb,ws,t.sheet);});
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Observaciones"],[payload.notes||""]]),"OBSERVACIONES");
   XLSX.writeFile(wb,"Plantilla_"+CONFIG.shortName+"_"+p.name.replace(/[^A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ]+/g,"-")+".xlsx");
 }
 async function generate(){
-  payload.notes=$("#notesInput").value.trim(); if(!scheduleComplete()){alert("Completa las fechas del cronograma.");return;} if(!firstTableComplete()){alert("Completa al menos una fila de "+CONFIG.tables[CONFIG.requiredTable].label+".");return;} if(!assets.logo){alert("Sube el logo institucional.");return;}
+  payload.notes=$("#notesInput").value.trim();
+  if(!scheduleComplete()){alert("Completa las fechas del cronograma.");return;}
+  if(CONFIG.requiredTable && !firstTableComplete()){alert("Completa al menos una fila de "+CONFIG.tables[CONFIG.requiredTable].label+".");return;}
+  if(!assets.logo){alert("Sube el logo institucional.");return;}
   const btn=$("#generateBtn");btn.disabled=true;setStatus("Generando documento…");
   try{
     const result=await window.DocTitFullDocument.generateAndDownload({config:CONFIG,period:activePeriod(),code:code(),payload,assets},code()+" - "+CONFIG.title+".pdf");
