@@ -1,23 +1,28 @@
 # DOC-TIT
 
-Aplicación web estática para la gestión documental de la Unidad de Titulación y Eficiencia Terminal (UTET), organizada por **períodos académicos → procesos → documentos**.
+Gestión documental del proceso de titulación.
 
-## Primera versión implementada
+## Arquitectura
 
-- Selector y creación de períodos académicos.
-- Menú de procesos con submenú de documentos.
-- Primer documento operativo: **PRO-56 · Planificación de Examen Complexivo**.
-- Código automático por período: `UTET-RGI1-01-PRO-56-AÑO-MES`.
-- Separación entre datos automáticos, datos manuales y documentos relacionados.
-- Guardado local de borradores por período.
-- Vista previa imprimible / guardable como PDF desde el navegador.
-- Exportación y restauración de respaldo JSON.
-- Despliegue preparado para GitHub Pages mediante GitHub Actions.
+Cada planificación funciona como una aplicación independiente dentro de su propia carpeta:
 
-## Uso
+- `/complexivo/` — Planificación de Examen Complexivo · `UTET-RGI1-01-PRO-56`
+- `/trabajo-titulacion/` — Planificación de Trabajo de Titulación · `UGPA-RGI2-01-PRO-56`
+- `/articulo-academico/` — Planificación de Artículo Académico · `UTET-RGI3-01-PRO-56`
 
-La aplicación no requiere backend ni instalación. Los datos se guardan en el navegador del equipo mediante almacenamiento local. No deben subirse datos reales de estudiantes al repositorio público.
+La raíz del sitio funciona únicamente como menú general.
 
-## Publicación
+## Datos
 
-El workflow `.github/workflows/pages.yml` está preparado para GitHub Pages con source **GitHub Actions**.
+Las aplicaciones comparten los períodos institucionales en Supabase, pero cada documento guarda su información con un `document_key` independiente.
+
+Trabajo de Titulación y Artículo Académico incluyen:
+
+1. Descarga de plantilla Excel con los datos actuales.
+2. Importación inteligente de la plantilla.
+3. Validación de campos y fechas detectadas.
+4. Aplicación de los datos al formulario.
+5. Guardado automático en Supabase.
+6. Generación y almacenamiento del PDF.
+
+GitHub Pages publica el repositorio completo mediante `.github/workflows/pages.yml`.
