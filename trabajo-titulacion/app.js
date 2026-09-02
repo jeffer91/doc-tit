@@ -83,7 +83,7 @@ function renderSections(){
   <div class="table-scroll"><table class="data-table"><thead><tr><th>Actividad</th><th>Responsable</th><th>Fecha inicio</th><th>Fecha fin</th></tr></thead><tbody id="scheduleBody"></tbody></table></div></section>`;
   let n=2;
   Object.entries(CONFIG.tables).forEach(([key,t])=>{
-    html+=`<section class="panel"><div class="panel-head"><div><span class="eyebrow">${n++}. ${esc(t.label)}</span><h3>${esc(t.title)}</h3><p class="help">${esc(t.help||"")}</p></div><button class="secondary" type="button" data-add="${key}">+ Agregar fila</button></div>
+    html+=`<section class="panel"><div class="panel-head"><div><span class="eyebrow">${n++}. ${esc(t.label)} · opcional</span><h3>${esc(t.title)}</h3><p class="help">${esc(t.help||"")} Esta sección no bloquea la generación del documento.</p></div><button class="secondary" type="button" data-add="${key}">+ Agregar fila</button></div>
     <div class="table-scroll"><table class="data-table"><thead><tr>${t.columns.map(c=>`<th>${esc(c.label)}</th>`).join("")}<th></th></tr></thead><tbody id="tbody-${key}"></tbody></table></div></section>`;
   });
   host.innerHTML=html;
@@ -325,7 +325,7 @@ function showImport(parsed){
 }
 function downloadTemplate(){
   const wb=XLSX.utils.book_new();const p=activePeriod();
-  const info=[["PLANTILLA DE DATOS · "+CONFIG.title],["Instrucciones"],["1. Completa únicamente las celdas necesarias."],["2. No cambies el nombre de las hojas si no es necesario."],["3. La app reconoce alias como Inicio/Fecha inicio/Desde y Fin/Fecha fin/Hasta."],["4. Puedes dejar datos pendientes y volver a importar después."]];
+  const info=[["PLANTILLA DE DATOS · "+CONFIG.title],["Instrucciones"],["1. Completa únicamente las celdas necesarias."],["2. No cambies el nombre de las hojas si no es necesario."],["3. La app reconoce alias como Inicio/Fecha inicio/Desde y Fin/Fecha fin/Hasta."],["4. Puedes dejar datos pendientes y volver a importar después."],["5. Solo el CRONOGRAMA y el logo son obligatorios para generar. Las demás hojas complementan el documento cuando contienen datos."]];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(info),"INSTRUCCIONES");
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([
     ["Campo","Valor"],
