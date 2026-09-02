@@ -7,7 +7,7 @@ const FALLBACK_PERIODS=[
 {id:"2025-10_2026-03",name:"Octubre 2025 – Marzo 2026",start:"2025-10-01",end:"2026-03-31",status:"Cerrado"},
 {id:"2025-04_2025-09",name:"Abril 2025 – Septiembre 2025",start:"2025-04-01",end:"2025-09-30",status:"Cerrado"}
 ];
-const STORAGE_KEY="doc-tit-"+CONFIG.documentKey+"-v1";
+const STORAGE_KEY="doc-tit-"+CONFIG.documentKey+"-v1";\nconst ACTIVE_KEY=STORAGE_KEY+"::active";
 let periods=FALLBACK_PERIODS.slice();
 let activePeriodId=periods[0].id;
 let payload=blankPayload();
@@ -31,10 +31,15 @@ function code(){
   return CONFIG.codePrefix+d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
 }
 function localSave(){
-  localStorage.setItem(STORAGE_KEY,JSON.stringify({activePeriodId,payload}));
+  localStorage.setItem(STORAGE_KEY+"::"+activePeriodId,JSON.stringify(payload));
+  localStorage.setItem(ACTIVE_KEY,activePeriodId);
 }
 function localLoad(){
-  try{const x=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null"); if(x){activePeriodId=x.activePeriodId||activePeriodId;payload=x.payload||payload;}}catch(_){}
+  try{
+    activePeriodId=localStorage.getItem(ACTIVE_KEY)||activePeriodId;
+    const x=JSON.parse(localStorage.getItem(STORAGE_KEY+"::"+activePeriodId)||"null");
+    if(x) payload=x;
+  }catch(_){}
 }
 function setCloud(mode,msg){
   const c=$("#cloudCard"),t=$("#cloudText"); if(!c||!t)return;
@@ -105,7 +110,7 @@ async function storeImage(key,file){
 }
 async function loadCurrent(){
   payload=blankPayload();assets={};
-  const cache=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null"); if(cache?.activePeriodId===activePeriodId&&cache.payload)payload=cache.payload;
+  const cache=JSON.parse(localStorage.getItem(STORAGE_KEY+"::"+activePeriodId)||"null"); if(cache)payload=cache;
   if(cloudReady){
     try{
       const doc=await window.DocTitCloud.loadDocument(activePeriodId,CONFIG.documentKey);
@@ -199,7 +204,7 @@ function initPeriodDialog(){
   $("#periodForm").onsubmit=async e=>{e.preventDefault();const sm=+$("#startMonth").value,em=+$("#endMonth").value,sy=+$("#startYear").value,ey=+$("#endYear").value;const start=`${sy}-${String(sm).padStart(2,"0")}-01`,last=new Date(ey,em,0).getDate(),end=`${ey}-${String(em).padStart(2,"0")}-${last}`;if(end<start){alert("El período final debe ser posterior.");return;}const id=`${sy}-${String(sm).padStart(2,"0")}_${ey}-${String(em).padStart(2,"0")}`,name=`${MONTHS[sm-1]} ${sy} – ${MONTHS[em-1]} ${ey}`;const p={id,name,start,end,status:"Activo"};periods.unshift(p);activePeriodId=id;if(cloudReady)try{await window.DocTitCloud.upsertPeriod(p);}catch(_){}$("#periodDialog").close();renderPeriods();await loadCurrent();};
 }
 function bind(){
-  $("#periodSelect").onchange=async e=>{activePeriodId=e.target.value;localSave();renderPeriods();await loadCurrent();};
+  $("#periodSelect").onchange=async e=>{activePeriodId=e.target.value;localStorage.setItem(ACTIVE_KEY,activePeriodId);renderPeriods();await loadCurrent();};
   $("#downloadTemplateBtn").onclick=downloadTemplate;
   $("#importInput").onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const wb=XLSX.read(await f.arrayBuffer(),{type:"array",cellDates:true});showImport(parseImport(wb));}catch(err){alert("No se pudo leer la plantilla: "+err.message);}e.target.value="";};
   $("#notesInput").onchange=()=>{payload.notes=$("#notesInput").value.trim();localSave();};
