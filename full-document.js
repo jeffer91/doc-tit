@@ -15,6 +15,31 @@
   };
 
   function clean(v){ return String(v == null ? "" : v).replace(/\s+/g," ").trim(); }
+
+  function cleanLegacyText(v){
+    return clean(v)
+      .replace(/%ª/g,"•")
+      .replace(/\bo\s+A los estudiantes\b/gi,"A los estudiantes")
+      .replace(/\bo\s+Criterios de evaluación:/gi,"Criterios de evaluación:")
+      .replace(/\bo\s+La cantidad de estudiantes por grupo\b/gi,"• La cantidad de estudiantes por grupo")
+      .replace(/\bo\s+Los requerimientos técnicos o de software\b/gi,"• Los requerimientos técnicos o de software")
+      .replace(/\bo\s+Pruebas técnicas previas\b/gi,"• Pruebas técnicas previas")
+      .replace(/\bo\s+Presencia de personal de soporte\b/gi,"• Presencia de personal de soporte")
+      .replace(/\bo\s+Coordinación con la unidad de infraestructura tecnológica institucional\b/gi,"• Coordinación con la unidad de infraestructura tecnológica institucional");
+  }
+
+  function sourceProse(v){
+    const text=cleanLegacyText(v);
+    if(!text) return "";
+    const parts=text.match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[text];
+    const kept=parts.filter(s=>{
+      const citation=/\(\d{4}\)/.test(s);
+      const citationCue=/(según|de acuerdo con|quien(?:es)?|afirma|señala|menciona|destaca|en palabras de)/i.test(s);
+      return !(citation&&citationCue);
+    });
+    return clean(kept.join(" "));
+  }
+
   function normalize(v){
     return clean(v).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g," ").trim();
   }
@@ -78,6 +103,7 @@
   }
 
   function lineType(t){
+    if(/^[1-4]\.\s+(Reforzar los conocimientos teóricos|Desarrollar habilidades prácticas|Evaluación a través de talleres|Orientación y asesoría):/i.test(t)) return "label";
     if(/^\d+\.\d+\.\d+\.\s+/.test(t)) return "h3";
     if(/^\d+\.\d+\.\s+/.test(t)) return "h2";
     if(/^\d+\.\s+/.test(t)) return "h1";
@@ -98,7 +124,7 @@
 
     const flush=()=>{
       if(!paragraph.length) return;
-      const t=clean(paragraph.join(" "));
+      const t=cleanLegacyText(paragraph.join(" "));
       if(t) blocks.push({type:"p",text:t});
       paragraph=[];
     };
@@ -109,7 +135,7 @@
         paragraph.push(t);
       }else{
         flush();
-        blocks.push({type,text:clean(t)});
+        blocks.push({type,text:cleanLegacyText(t)});
       }
     });
     flush();
@@ -215,7 +241,7 @@
       title:"Planificación De Examen Complexivo",
       subject:ctx.period.name,
       author:"Unidad de Titulación y Eficiencia Terminal",
-      keywords:"titulación, examen complexivo, planificación"
+      keywords:"titulación, examen complexivo, planificación, DOC-TIT v10"
     });
 
     const pageW=doc.internal.pageSize.getWidth();
@@ -234,7 +260,7 @@
       doc.setPage(pageNo);
 
       const x=36, top=22, totalW=pageW-72, h=58;
-      const logoW=130, codeW=122, centerW=totalW-logoW-codeW;
+      const logoW=125, codeW=160, centerW=totalW-logoW-codeW;
 
       doc.setDrawColor(0);
       doc.setLineWidth(0.8);
@@ -596,6 +622,122 @@
       legalParagraphs(ctx).forEach(p=>paragraph(p));
     }
 
+    function responsibilitiesTable(){
+      heading("3.9. Responsables por Fase del Proceso",2,true);
+      paragraph("La correcta ejecución del examen complexivo requiere una asignación clara de responsabilidades para cada fase del proceso. La siguiente tabla organiza la información institucional de la planificación base y evita que los responsables aparezcan como texto corrido.");
+
+      tableCaption("Responsables institucionales por fase del proceso");
+      autoTable({
+        startY:y,
+        margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
+        head:[["Fase del proceso","Responsable institucional"]],
+        body:[
+          ["Diseño metodológico y estructura del examen","Coordinación de Titulación y Coordinaciones de Carrera"],
+          ["Validación académica de los componentes del examen","Coordinaciones de Carrera"],
+          ["Socialización del proceso con estudiantes","Coordinación de Titulación y Coordinaciones de Carrera"],
+          ["Revisión de requisitos académicos y documentales","Secretaría Académica y Coordinación de Titulación"],
+          ["Control de pagos y obligaciones financieras","Unidad de Recaudación y Cartera"],
+          ["Validación de vinculación y prácticas preprofesionales","Coordinaciones de Carrera y unidades responsables de Vinculación y Prácticas Preprofesionales"],
+          ["Inscripción al proceso y uso de plataformas","Unidad de Sistemas (SISACAD)"],
+          ["Organización logística y distribución por lugar","Coordinación de Titulación y Coordinaciones de Carrera"],
+          ["Asignación de docentes evaluadores y supervisores","Coordinación de Titulación"],
+          ["Ejecución de seminarios de titulación","Docentes designados por cada carrera"],
+          ["Supervisión de las jornadas del examen","Coordinación de Titulación, Coordinaciones de Carrera y docentes responsables"],
+          ["Evaluación y calificación del examen","Colectivo docente"],
+          ["Registro de calificaciones y resultados","Coordinaciones de Carrera y Unidad de Sistemas"],
+          ["Retroalimentación a estudiantes","Docentes evaluadores y Coordinación de Titulación"],
+          ["Revisión post-proceso y mejora continua","Coordinación de Titulación y Coordinación General de Carreras"],
+          ["Registro del título en SENESCYT","Coordinación General de Carreras"]
+        ],
+        columnStyles:{0:{cellWidth:bodyW*0.52},1:{cellWidth:bodyW*0.48}},
+        styles:{font:"times",fontSize:9.5,cellPadding:4,textColor:0},
+        headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
+      });
+      tableNote("Organización elaborada a partir de la planificación institucional base.");
+    }
+
+    function financialScheduleSection(){
+      heading("4.3.1. Cronograma de Pagos del Proceso de Titulación",3,true);
+      paragraph("El proceso de titulación contempla pagos escalonados destinados a cubrir los costos administrativos y operativos asociados. La planificación base organiza estas obligaciones por cuotas y momentos de pago, sin establecer en este documento montos específicos.");
+
+      tableCaption("Cronograma referencial de pagos del proceso de titulación");
+      autoTable({
+        startY:y,
+        margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
+        head:[["Cuota","Descripción","Momento de pago"]],
+        body:[
+          ["Primera cuota","Pago inicial para la inscripción en el proceso de titulación","Fecha estipulada en el cronograma"],
+          ["Segunda cuota","Cubre costos operativos del segundo mes del proceso","Segundo mes"],
+          ["Tercera cuota","Gastos de seguimiento y apoyo académico","Tercer mes"],
+          ["Cuarta cuota","Acceso a recursos y servicios institucionales","Cuarto mes"],
+          ["Quinta cuota","Pago final para completar las obligaciones financieras","Cierre del proceso de titulación"]
+        ],
+        columnStyles:{0:{cellWidth:bodyW*0.20},1:{cellWidth:bodyW*0.52},2:{cellWidth:bodyW*0.28}},
+        styles:{font:"times",fontSize:9.5,cellPadding:4,textColor:0},
+        headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
+      });
+      tableNote("El cuadro reproduce la estructura del cronograma financiero de la planificación base; los valores y fechas específicas deben sujetarse a la información institucional vigente.");
+
+      paragraph("Cada cuota debe cancelarse dentro de los plazos institucionales aplicables. El cumplimiento financiero forma parte de las verificaciones previas del proceso de titulación.");
+    }
+
+    function laboratoriesSection(){
+      const t=totals(ctx.distribution);
+      const places=Object.keys(t.byPlace);
+      heading("8. Asignación de Laboratorios y Capacidad",1,true);
+
+      paragraph("La asignación de espacios para el período "+lowerPeriod(ctx.period.name)+" se realizará considerando la cantidad de estudiantes por carrera, los requerimientos técnicos o de software y la disponibilidad institucional. De acuerdo con la distribución registrada, la planificación contempla los siguientes lugares de ejecución: "+places.join(", ")+".");
+      paragraph("La asignación de laboratorios no se define con un número fijo dentro de esta planificación general. El detalle de laboratorio, jornada, fecha, hora y responsables debe establecerse en el cronograma operativo correspondiente.");
+
+      bullet("• La distribución de espacios se determina principalmente por la cantidad de estudiantes de cada grupo y por los requerimientos técnicos de la carrera.");
+      bullet("• Las asignaciones se establecen desde el inicio del proceso y únicamente se modifican cuando exista una necesidad justificada y validada por la coordinación.");
+      bullet("• Cuando existan necesidades específicas de accesibilidad, se deben asignar espacios que permitan la participación del estudiante en condiciones adecuadas.");
+      bullet("• La rendición se planifica de forma presencial para las modalidades contempladas por la institución. Los casos excepcionales de rendición virtual requieren solicitud formal, justificación y autorización institucional.");
+      bullet("• Antes de cada jornada deben realizarse pruebas técnicas y verificaciones de conectividad, equipos y software.");
+      bullet("• Se prevé soporte tecnológico durante las jornadas y mecanismos de respaldo de las evidencias generadas.");
+      bullet("• El personal docente supervisa el cumplimiento de tiempos, normas y protocolos y apoya la resolución de incidencias logísticas o técnicas menores.");
+    }
+
+    function summarySection(){
+      const t=totals(ctx.distribution);
+      const places=Object.entries(t.byPlace);
+      heading("11. Resumen General",1,true);
+      paragraph("La presente planificación organiza el proceso de examen complexivo del período "+lowerPeriod(ctx.period.name)+" y articula cronograma, requisitos, preparación, evaluación, distribución estudiantil, logística e imponderables.");
+
+      heading("11.1. Modalidad de Aplicación",2,true);
+      bullet("• La rendición se planifica de forma presencial. Una aplicación virtual solo procede de manera excepcional, con solicitud formal, justificación y autorización institucional.");
+
+      heading("11.2. Fases del Proceso",2,true);
+      bullet("• El proceso contempla cierre de clases, revisión de requisitos, cuatro núcleos de preparación, registro de notas, examen complexivo y supletorio, conforme al cronograma del período.");
+
+      heading("11.3. Organización por Lugares",2,true);
+      paragraph("La distribución registrada comprende "+t.total+" estudiantes. Los lugares y cantidades son: "+places.map(([p,n])=>p+" ("+n+")").join(", ")+". La planificación logística debe conservar esta distribución o documentar formalmente cualquier cambio.");
+
+      heading("11.4. Evaluación Integral",2,true);
+      bullet("• El componente teórico representa el 40% de la nota final.");
+      bullet("• El componente práctico representa el 60% de la nota final.");
+      bullet("• La planificación base establece una calificación mínima de 7/10 para la aprobación de cada componente.");
+
+      heading("11.5. Gestión de Imponderables",2,true);
+      bullet("• Se contemplan actuaciones frente a fallas técnicas, inasistencia justificada y ausencia de personal asignado, dejando registro de los incidentes que afecten la jornada.");
+
+      heading("11.6. Inclusión y Accesibilidad",2,true);
+      bullet("• Se deben prever condiciones adecuadas para estudiantes con necesidades específicas, manteniendo los criterios académicos del proceso.");
+    }
+
+    function referencesSection(){
+      heading("12. Bibliografía",1,true);
+      paragraph("Las referencias normativas e institucionales se presentan en formato APA 7 con sangría francesa.",{indent:false});
+
+      [
+        "Asamblea Nacional del Ecuador. (2008). Constitución de la República del Ecuador.",
+        "Asamblea Nacional del Ecuador. (2010). Ley Orgánica de Educación Superior.",
+        "Asamblea Nacional del Ecuador. (2010). Reglamento General a la Ley Orgánica de Educación Superior.",
+        "Instituto Tecnológico Superior Quito Metropolitano. (2022). Reglamento del Área de Titulación del ITSQMET.",
+        "Secretaría Nacional de Planificación y Desarrollo. (2021). Plan Nacional de Desarrollo 2021-2025."
+      ].forEach(reference);
+    }
+
     function figureCaption(number,title){
       ensureSpace(48);
       doc.setFont("times","bold");
@@ -717,6 +859,9 @@
       doc.line(x0,top-8,x1,top-8);
 
       doc.setFont("helvetica","normal");
+      doc.setFontSize(8);
+      doc.text(formatDateShort(valid[0].start),x0,top-14,{align:"left"});
+      doc.text(formatDateShort(valid[valid.length-1].end),x1,top-14,{align:"right"});
       doc.setFontSize(9);
 
       valid.forEach((r,i)=>{
@@ -864,30 +1009,63 @@
 
     function sourceContent(blocks){
       const inserted={schedule:false,distribution:false};
+      let started=false;
       let skipMode=null;
 
       for(const b of blocks){
         const n=normalize(b.text);
 
-        if(skipMode==="schedule"){
-          if(b.type==="h1" && n.startsWith("4 requisitos")){
-            skipMode=null;
+        // The curated Introduction and Base Legal are already rendered.
+        // Ignore residual text from the old template until section 3 starts.
+        if(!started){
+          if(b.type==="h1" && n.startsWith("3 metodologia")){
+            started=true;
           }else{
             continue;
           }
         }
+
+        if(skipMode==="responsibilities"){
+          if(n.startsWith("3 10 cronogramas")) skipMode=null;
+          else continue;
+        }
+        if(skipMode==="schedule"){
+          if(b.type==="h1" && n.startsWith("4 requisitos")) skipMode=null;
+          else continue;
+        }
+        if(skipMode==="financial"){
+          if(n.startsWith("4 3 2 politicas")) skipMode=null;
+          else continue;
+        }
         if(skipMode==="distribution"){
-          if(b.type==="h1" && n.startsWith("8 asignacion de laboratorios")){
-            skipMode=null;
-          }else{
-            continue;
-          }
+          if(b.type==="h1" && n.startsWith("8 asignacion de laboratorios")) skipMode=null;
+          else continue;
+        }
+        if(skipMode==="labs"){
+          if(b.type==="h1" && n.startsWith("9 imponderables")) skipMode=null;
+          else continue;
+        }
+        if(skipMode==="summary"){
+          if(b.type==="h1" && n.startsWith("12 bibliografia")) skipMode=null;
+          else continue;
+        }
+
+        if(n.startsWith("3 9 responsables por fase")){
+          responsibilitiesTable();
+          skipMode="responsibilities";
+          continue;
         }
 
         if(n.startsWith("3 10 cronogramas")){
           scheduleTable();
           inserted.schedule=true;
           skipMode="schedule";
+          continue;
+        }
+
+        if(n.startsWith("4 3 1 cronograma de pagos")){
+          financialScheduleSection();
+          skipMode="financial";
           continue;
         }
 
@@ -900,9 +1078,20 @@
         }
 
         if(n.startsWith("8 asignacion de laboratorios")){
-          heading(b.text,1,true);
-          paragraph("La asignación de espacios se realizará considerando la cantidad de estudiantes, los requerimientos técnicos de cada carrera y la disponibilidad institucional. La definición exacta de laboratorio, fecha, hora y responsables corresponde al cronograma operativo de rendición.");
+          laboratoriesSection();
+          skipMode="labs";
           continue;
+        }
+
+        if(n.startsWith("11 resumen general")){
+          summarySection();
+          skipMode="summary";
+          continue;
+        }
+
+        if(n.startsWith("12 bibliografia")){
+          referencesSection();
+          break;
         }
 
         if(b.type==="h1"){
@@ -912,15 +1101,14 @@
         }else if(b.type==="h3"){
           heading(b.text,3,true);
         }else if(b.type==="bullet"){
-          bullet(b.text);
+          const txt=sourceProse(b.text);
+          if(txt) bullet(txt);
         }else if(b.type==="label"){
-          label(b.text);
+          const txt=sourceProse(b.text);
+          if(txt) label(txt);
         }else{
-          if(n.includes("bibliografia") || n.includes("constitucion de la republica") || n.includes("editorial") || n.includes("revista")){
-            reference(b.text);
-          }else{
-            paragraph(b.text);
-          }
+          const txt=sourceProse(b.text);
+          if(txt) paragraph(txt);
         }
       }
 
