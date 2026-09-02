@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#0b2d4f" />
   <title>DOC-TIT · Gestión documental UTET</title>
-  <link rel="stylesheet" href="styles.css?v=20260902-15" />
+  <link rel="stylesheet" href="styles.css?v=20260902-16" />
 </head>
 <body>
   <div class="app-shell">
@@ -33,9 +33,8 @@
         <span class="cloud-dot"></span>
         <div>
           <strong id="cloudStatusText">Base de datos</strong>
-          <small id="cloudStatusDetail">Conectando…</small>
+          <small id="cloudStatusDetail">Conectando automáticamente…</small>
         </div>
-        <button type="button" class="cloud-login-link" id="cloudLoginBtn">Acceso</button>
       </div>
 
       <div class="sidebar-footer">
@@ -317,33 +316,6 @@
   </dialog>
 
 
-  <dialog id="cloudLoginDialog" class="cloud-login-dialog">
-    <form id="cloudLoginForm" class="dialog-form cloud-login-form">
-      <div class="dialog-title-row">
-        <div>
-          <span class="eyebrow">Base de datos institucional</span>
-          <h3>Acceso administrativo</h3>
-        </div>
-      </div>
-
-      <p class="cloud-login-copy">DOC-TIT guardará períodos, borradores, imágenes y PDFs en la base de datos institucional de Supabase.</p>
-
-      <label>Cédula
-        <input id="cloudCedula" type="text" inputmode="numeric" maxlength="10" autocomplete="username" placeholder="10 dígitos" required>
-      </label>
-
-      <label>PIN administrativo
-        <input id="cloudPin" type="password" inputmode="numeric" minlength="4" maxlength="6" autocomplete="current-password" placeholder="4 a 6 dígitos" required>
-      </label>
-
-      <p id="cloudLoginError" class="form-error hidden"></p>
-
-      <div class="dialog-actions">
-        <button type="submit" class="primary" id="cloudLoginSubmit">Ingresar</button>
-      </div>
-    </form>
-  </dialog>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
@@ -352,7 +324,7 @@
   <script src="template-chunk-3.js?v=20260901-5"></script>
   <script src="template-chunk-4.js?v=20260901-5"></script>
   <script src="full-document.js?v=20260902-16"></script>
-  <script src="cloud.js?v=20260902-3"></script>
-  <script src="app.js?v=20260902-15"></script>
+  <script src="cloud.js?v=20260902-4"></script>
+  <script src="app.js?v=20260902-16"></script>
 </body>
 </html>
