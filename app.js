@@ -300,22 +300,41 @@
   }
 
   function renderAssetPreviews(assets){
-    const el=$("#logoPreview");
-    if(!el) return;
-    el.innerHTML=assets.logo?`<img src="${assets.logo}" alt="Logo cargado">`:"<span>Sin imagen</span>";
+    const configs=[
+      ["logoPreview","logo","Sin imagen"],
+      ["introImagePreview","introImage","Opcional"],
+      ["methodologyImagePreview","methodologyImage","Opcional"],
+      ["requirementsImagePreview","requirementsImage","Opcional"],
+      ["examImagePreview","examImage","Opcional"],
+      ["seminarsImagePreview","seminarsImage","Opcional"],
+      ["evaluationImagePreview","evaluationImage","Opcional"]
+    ];
+
+    configs.forEach(([previewId,key,emptyText])=>{
+      const el=$("#"+previewId);
+      if(!el) return;
+      el.innerHTML=assets[key]
+        ? `<img src="${assets[key]}" alt="Imagen cargada">`
+        : `<span>${emptyText}</span>`;
+    });
   }
 
-  async function storeLogo(file){
+  async function storeAssetImage(key,file){
     if(!activeDocument||!file) return;
     try{
-      const dataUrl=await window.DocTitFullDocument.resizeImage(file,900,320);
+      const isLogo=key==="logo";
+      const dataUrl=await window.DocTitFullDocument.resizeImage(
+        file,
+        isLogo?900:1500,
+        isLogo?320:900
+      );
       const saved=getDocData(activeDocument.id);
-      const assets={...(saved.assets||{}),logo:dataUrl};
+      const assets={...(saved.assets||{}),[key]:dataUrl};
       setDocData(activeDocument.id,{assets});
       renderAssetPreviews(assets);
       updateProgress();
     }catch(err){
-      alert(err.message||"No se pudo cargar el logo.");
+      alert(err.message||"No se pudo cargar la imagen.");
     }
   }
 
@@ -764,10 +783,20 @@
     }
     updateProgress();
   });
-  $("#logoUpload")?.addEventListener("change",e=>{
-    const file=e.target.files&&e.target.files[0];
-    if(file) storeLogo(file);
-    e.target.value="";
+  [
+    ["logoUpload","logo"],
+    ["introImageUpload","introImage"],
+    ["methodologyImageUpload","methodologyImage"],
+    ["requirementsImageUpload","requirementsImage"],
+    ["examImageUpload","examImage"],
+    ["seminarsImageUpload","seminarsImage"],
+    ["evaluationImageUpload","evaluationImage"]
+  ].forEach(([inputId,key])=>{
+    $("#"+inputId)?.addEventListener("change",e=>{
+      const file=e.target.files&&e.target.files[0];
+      if(file) storeAssetImage(key,file);
+      e.target.value="";
+    });
   });
   $("#analyzeTextBtn")?.addEventListener("click",()=>runSmartAnalysis(true));
   $("#saveDraftBtn").addEventListener("click",saveDraft);
