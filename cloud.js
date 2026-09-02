@@ -171,17 +171,32 @@
       : blob.type === "application/pdf" ? "pdf"
       : "jpg";
 
+    // Avoid Storage upsert on an existing object. Supabase Storage can reject an
+    // ON CONFLICT/UPDATE path with RLS even when the same user created the file.
+    // Every upload gets a unique object path; the metadata row points to the latest.
+    const stamp = new Date().toISOString().replace(/[-:.TZ]/g,"");
     const path = [
       "assets",
       sanitizeSegment(periodKey),
       sanitizeSegment(documentKey),
-      `${sanitizeSegment(assetKey)}.${ext}`
+      sanitizeSegment(assetKey),
+      `${stamp}-${sanitizeSegment(fileName || assetKey)}.${ext}`
     ].join("/");
+
+    const { data: previousRow, error: previousError } = await client
+      .from("doc_tit_assets")
+      .select("storage_path")
+      .eq("period_key", periodKey)
+      .eq("document_key", documentKey)
+      .eq("asset_key", assetKey)
+      .maybeSingle();
+
+    if (previousError) throw previousError;
 
     const { error: uploadError } = await client.storage
       .from(BUCKET)
       .upload(path, blob, {
-        upsert: true,
+        upsert: false,
         contentType: blob.type || undefined,
         cacheControl: "3600",
       });
@@ -203,7 +218,18 @@
       updated_at: new Date().toISOString(),
     }, { onConflict: "period_key,document_key,asset_key" });
 
-    if (metaError) throw metaError;
+    if (metaError) {
+      // Best effort cleanup if metadata fails.
+      try { await client.storage.from(BUCKET).remove([path]); } catch (_) {}
+      throw metaError;
+    }
+
+    const previousPath = previousRow?.storage_path;
+    if (previousPath && previousPath !== path) {
+      // Best effort cleanup: do not fail a successful upload if an old file cannot be deleted.
+      client.storage.from(BUCKET).remove([previousPath]).catch(()=>{});
+    }
+
     return { path, blob };
   }
 
@@ -230,15 +256,26 @@
   async function uploadGeneratedPdf({ periodKey, documentKey, fileName, blob }) {
     if (!(blob instanceof Blob)) throw new Error("El PDF generado no es válido.");
 
+    const stamp = new Date().toISOString().replace(/[-:.TZ]/g,"");
     const path = [
       "generated",
       sanitizeSegment(periodKey),
       sanitizeSegment(documentKey),
-      sanitizeSegment(fileName)
+      `${stamp}-${sanitizeSegment(fileName)}`
     ].join("/");
 
+    const { data: previousRow, error: previousError } = await client
+      .from("doc_tit_assets")
+      .select("storage_path")
+      .eq("period_key", periodKey)
+      .eq("document_key", documentKey)
+      .eq("asset_key", "generated_pdf")
+      .maybeSingle();
+
+    if (previousError) throw previousError;
+
     const { error: uploadError } = await client.storage.from(BUCKET).upload(path, blob, {
-      upsert: true,
+      upsert: false,
       contentType: "application/pdf",
       cacheControl: "3600",
     });
@@ -259,7 +296,16 @@
       updated_at: new Date().toISOString(),
     }, { onConflict: "period_key,document_key,asset_key" });
 
-    if (metaError) throw metaError;
+    if (metaError) {
+      try { await client.storage.from(BUCKET).remove([path]); } catch (_) {}
+      throw metaError;
+    }
+
+    const previousPath = previousRow?.storage_path;
+    if (previousPath && previousPath !== path) {
+      client.storage.from(BUCKET).remove([previousPath]).catch(()=>{});
+    }
+
     return path;
   }
 
