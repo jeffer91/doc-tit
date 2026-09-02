@@ -9,15 +9,17 @@
     throw new Error("No se pudo cargar Supabase.");
   }
 
+  // DOC-TIT funciona sin login. La clave publishable vive en el navegador y
+  // Supabase está configurado para permitir acceso directo únicamente a las
+  // tablas/bucket de esta app.
   const client = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY,
     {
       auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        flowType: "pkce",
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
       },
     }
   );
@@ -43,42 +45,12 @@
     });
   }
 
-  async function getSession() {
-    const { data, error } = await client.auth.getSession();
+  async function healthCheck() {
+    const { error } = await client
+      .from("doc_tit_periods")
+      .select("period_key", { count: "exact", head: true });
     if (error) throw error;
-    return data.session || null;
-  }
-
-  async function loginWithAdminPin(cedula, pin) {
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/admin-pin-login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: SUPABASE_PUBLISHABLE_KEY,
-      },
-      body: JSON.stringify({ cedula, pin }),
-    });
-
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      throw new Error(payload.error || "No fue posible iniciar sesión.");
-    }
-
-    const tokenHash = payload.token_hash;
-    if (!tokenHash) throw new Error("La sesión administrativa no devolvió un token válido.");
-
-    const { data, error } = await client.auth.verifyOtp({
-      token_hash: tokenHash,
-      type: "magiclink",
-    });
-
-    if (error) throw error;
-    return { session: data.session, admin: payload.admin || null };
-  }
-
-  async function logout() {
-    const { error } = await client.auth.signOut();
-    if (error) throw error;
+    return true;
   }
 
   async function loadWorkspace() {
@@ -104,16 +76,12 @@
   }
 
   async function upsertPeriod(period) {
-    const { data: userData } = await client.auth.getUser();
-    const userId = userData?.user?.id || null;
-
     const payload = {
       period_key: period.id,
       name: period.name,
       start_date: period.start,
       end_date: period.end,
       status: period.status || "Activo",
-      created_by: userId,
       updated_at: new Date().toISOString(),
     };
 
@@ -123,13 +91,9 @@
   }
 
   async function upsertSetting(key, value) {
-    const { data: userData } = await client.auth.getUser();
-    const userId = userData?.user?.id || null;
-
     const { error } = await client.from("doc_tit_settings").upsert({
       key,
       value,
-      updated_by: userId,
       updated_at: new Date().toISOString(),
     }, { onConflict: "key" });
 
@@ -137,9 +101,6 @@
   }
 
   async function upsertDocument({ period, document, data, code }) {
-    const { data: userData } = await client.auth.getUser();
-    const userId = userData?.user?.id || null;
-
     const payload = {
       period_key: period.id,
       document_key: document.id,
@@ -154,7 +115,6 @@
       generated_at: data.generatedAt || null,
       generated_file_name: data.generatedFileName || null,
       generated_pages: data.generatedPages || null,
-      created_by: userId,
       updated_at: new Date().toISOString(),
     };
 
@@ -171,9 +131,6 @@
       : blob.type === "application/pdf" ? "pdf"
       : "jpg";
 
-    // Avoid Storage upsert on an existing object. Supabase Storage can reject an
-    // ON CONFLICT/UPDATE path with RLS even when the same user created the file.
-    // Every upload gets a unique object path; the metadata row points to the latest.
     const stamp = new Date().toISOString().replace(/[-:.TZ]/g,"");
     const path = [
       "assets",
@@ -203,9 +160,6 @@
 
     if (uploadError) throw uploadError;
 
-    const { data: userData } = await client.auth.getUser();
-    const userId = userData?.user?.id || null;
-
     const { error: metaError } = await client.from("doc_tit_assets").upsert({
       period_key: periodKey,
       document_key: documentKey,
@@ -214,20 +168,17 @@
       file_name: fileName || `${assetKey}.${ext}`,
       mime_type: blob.type || null,
       size_bytes: blob.size,
-      created_by: userId,
       updated_at: new Date().toISOString(),
     }, { onConflict: "period_key,document_key,asset_key" });
 
     if (metaError) {
-      // Best effort cleanup if metadata fails.
       try { await client.storage.from(BUCKET).remove([path]); } catch (_) {}
       throw metaError;
     }
 
     const previousPath = previousRow?.storage_path;
     if (previousPath && previousPath !== path) {
-      // Best effort cleanup: do not fail a successful upload if an old file cannot be deleted.
-      client.storage.from(BUCKET).remove([previousPath]).catch(()=>{});
+      try { await client.storage.from(BUCKET).remove([previousPath]); } catch (_) {}
     }
 
     return { path, blob };
@@ -281,9 +232,6 @@
     });
     if (uploadError) throw uploadError;
 
-    const { data: userData } = await client.auth.getUser();
-    const userId = userData?.user?.id || null;
-
     const { error: metaError } = await client.from("doc_tit_assets").upsert({
       period_key: periodKey,
       document_key: documentKey,
@@ -292,7 +240,6 @@
       file_name: fileName,
       mime_type: "application/pdf",
       size_bytes: blob.size,
-      created_by: userId,
       updated_at: new Date().toISOString(),
     }, { onConflict: "period_key,document_key,asset_key" });
 
@@ -303,7 +250,7 @@
 
     const previousPath = previousRow?.storage_path;
     if (previousPath && previousPath !== path) {
-      client.storage.from(BUCKET).remove([previousPath]).catch(()=>{});
+      try { await client.storage.from(BUCKET).remove([previousPath]); } catch (_) {}
     }
 
     return path;
@@ -311,9 +258,7 @@
 
   window.DocTitCloud = {
     client,
-    getSession,
-    loginWithAdminPin,
-    logout,
+    healthCheck,
     loadWorkspace,
     upsertPeriod,
     upsertSetting,
