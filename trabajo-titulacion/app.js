@@ -9,6 +9,8 @@ const FALLBACK_PERIODS=[
 ];
 const STORAGE_KEY="doc-tit-"+CONFIG.documentKey+"-v1";
 const ACTIVE_KEY=STORAGE_KEY+"::active";
+const ASSET_DB_NAME=STORAGE_KEY+"::assets";
+let assetDbPromise=null;
 let periods=FALLBACK_PERIODS.slice();
 let activePeriodId=periods[0].id;
 let payload=blankPayload();
@@ -52,6 +54,37 @@ function normalizePayloadData(data){
 function code(){
   const p=activePeriod(); const d=new Date(p.start+"T12:00:00");
   return CONFIG.codePrefix+d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+}
+function openAssetDb(){
+  if(!("indexedDB" in window)) return Promise.resolve(null);
+  if(assetDbPromise) return assetDbPromise;
+  assetDbPromise=new Promise((resolve,reject)=>{
+    const req=indexedDB.open(ASSET_DB_NAME,1);
+    req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains("assets"))db.createObjectStore("assets");};
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error||new Error("No se pudo abrir el almacenamiento local de imágenes."));
+  });
+  return assetDbPromise;
+}
+async function writeLocalAsset(assetKey,dataUrl){
+  const db=await openAssetDb();if(!db)return;
+  await new Promise((resolve,reject)=>{
+    const tx=db.transaction("assets","readwrite");
+    tx.objectStore("assets").put(dataUrl,activePeriodId+"::"+assetKey);
+    tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);
+  });
+}
+async function readLocalAssets(){
+  const db=await openAssetDb();if(!db)return{};
+  const keys=["logo","introImage","methodologyImage","closingImage"];
+  const out={};
+  await Promise.all(keys.map(key=>new Promise(resolve=>{
+    const tx=db.transaction("assets","readonly");
+    const req=tx.objectStore("assets").get(activePeriodId+"::"+key);
+    req.onsuccess=()=>{if(req.result)out[key]=req.result;resolve();};
+    req.onerror=()=>resolve();
+  })));
+  return out;
 }
 function localSave(){
   localStorage.setItem(STORAGE_KEY+"::"+activePeriodId,JSON.stringify(payload));
@@ -129,17 +162,35 @@ async function resizeImage(file,maxW=1400,maxH=850){
   return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{let w=img.width,h=img.height,s=Math.min(1,maxW/w,maxH/h);const cv=document.createElement("canvas");cv.width=Math.round(w*s);cv.height=Math.round(h*s);cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);URL.revokeObjectURL(url);resolve(cv.toDataURL("image/jpeg",.88));};img.onerror=reject;img.src=url;});
 }
 async function storeImage(key,file){
-  const data=await resizeImage(file,key==="logo"?900:1500,key==="logo"?320:900);assets[key]=data;renderAssets();progress();
-  if(cloudReady){try{await window.DocTitCloud.uploadAsset({periodKey:activePeriodId,documentKey:CONFIG.documentKey,assetKey:key,dataUrl:data,fileName:file.name});setCloud("ok","Imagen guardada");}catch(e){setCloud("error","Error al guardar imagen");alert(e.message);}}
+  const data=await resizeImage(file,key==="logo"?900:1500,key==="logo"?320:900);
+  assets[key]=data;
+  try{await writeLocalAsset(key,data);}catch(e){console.warn("No se pudo guardar la imagen en caché local.",e);}
+  renderAssets();progress();
+  if(cloudReady){
+    try{
+      await window.DocTitCloud.uploadAsset({periodKey:activePeriodId,documentKey:CONFIG.documentKey,assetKey:key,dataUrl:data,fileName:file.name});
+      setCloud("ok","Imagen guardada y sincronizada");
+    }catch(e){
+      setCloud("error","Imagen en caché · error de sincronización");
+      alert("La imagen quedó guardada localmente, pero no se pudo sincronizar con Supabase: "+e.message);
+    }
+  }else{
+    setCloud("error","Imagen en caché · Supabase sin conexión");
+  }
 }
 async function loadCurrent(){
-  payload=blankPayload();assets={};
-  const cache=JSON.parse(localStorage.getItem(STORAGE_KEY+"::"+activePeriodId)||"null"); if(cache)payload=normalizePayloadData(cache);
+  payload=blankPayload();
+  assets={};
+  const cache=JSON.parse(localStorage.getItem(STORAGE_KEY+"::"+activePeriodId)||"null");
+  if(cache)payload=normalizePayloadData(cache);
+  try{assets=await readLocalAssets();}catch(e){console.warn(e);}
   if(cloudReady){
     try{
       const doc=await window.DocTitCloud.loadDocument(activePeriodId,CONFIG.documentKey);
       if(doc?.payload) payload=normalizePayloadData(doc.payload);
-      assets=await window.DocTitCloud.loadAssets(activePeriodId,CONFIG.documentKey);
+      const cloudAssets=await window.DocTitCloud.loadAssets(activePeriodId,CONFIG.documentKey);
+      assets={...assets,...cloudAssets};
+      for(const [key,value] of Object.entries(cloudAssets||{})){try{await writeLocalAsset(key,value);}catch(e){}}
     }catch(e){console.warn(e);}
   }
   $("#notesInput").value=payload.notes||"";renderSections();renderAssets();progress();localSave();
@@ -355,7 +406,7 @@ async function generate(){
   }catch(e){console.error(e);setStatus("Error: "+e.message,"error");alert(e.message);}finally{btn.disabled=false;}
 }
 async function initCloud(){
-  try{await window.DocTitCloud.healthCheck();cloudReady=true;setCloud("ok","Sincronización automática");const rows=await window.DocTitCloud.loadPeriods();if(rows.length)periods=rows.map(r=>({id:r.period_key,name:r.name,start:r.start_date,end:r.end_date,status:r.status}));if(!periods.some(p=>p.id===activePeriodId))activePeriodId=periods[0].id;renderPeriods();await loadCurrent();}catch(e){console.warn(e);setCloud("error","Sin conexión · caché local");renderPeriods();renderSections();renderAssets();progress();}
+  try{await window.DocTitCloud.healthCheck();cloudReady=true;setCloud("ok","Sincronización automática");const rows=await window.DocTitCloud.loadPeriods();if(rows.length)periods=rows.map(r=>({id:r.period_key,name:r.name,start:r.start_date,end:r.end_date,status:r.status}));if(!periods.some(p=>p.id===activePeriodId))activePeriodId=periods[0].id;renderPeriods();await loadCurrent();}catch(e){console.warn(e);setCloud("error","Sin conexión · datos e imágenes en caché local");renderPeriods();renderSections();renderAssets();progress();}
 }
 function initPeriodDialog(){
   $("#startMonth").innerHTML=MONTHS.map((m,i)=>`<option value="${i+1}">${m}</option>`).join("");$("#endMonth").innerHTML=$("#startMonth").innerHTML;
