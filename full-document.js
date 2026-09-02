@@ -247,7 +247,7 @@
       title:"Planificación De Examen Complexivo",
       subject:ctx.period.name,
       author:"Unidad de Titulación y Eficiencia Terminal",
-      keywords:"titulación, examen complexivo, planificación, DOC-TIT v13"
+      keywords:"titulación, examen complexivo, planificación, DOC-TIT v14"
     });
 
     const pageW=doc.internal.pageSize.getWidth();
@@ -739,6 +739,42 @@
       bullet("• El personal docente supervisa el cumplimiento de tiempos, normas y protocolos y apoya la resolución de incidencias logísticas o técnicas menores.");
     }
 
+    function evaluationCriteriaSection(){
+      heading("10. Criterios de Evaluación",1,true);
+
+      paragraph(
+        "La evaluación del examen complexivo integra un componente teórico y un componente práctico. Ambos componentes se valoran con criterios previamente definidos y se combinan mediante la ponderación institucional establecida para obtener la nota final.",
+        {indent:false,after:10}
+      );
+
+      heading("10.1. Componente Teórico",2,true);
+      paragraph(
+        "El componente teórico representa el 40% de la nota final del examen complexivo. Su propósito es verificar el dominio de conocimientos fundamentales, la comprensión de los contenidos trabajados en los cuatro núcleos y la capacidad del estudiante para aplicar conceptos y criterios propios de su área de formación."
+      );
+      paragraph(
+        "La evaluación teórica se realiza de manera individual mediante un instrumento estructurado de preguntas. La planificación base contempla 40 preguntas y un tiempo máximo de 1 hora y 30 minutos. La aplicación debe desarrollarse bajo condiciones uniformes de control, identificación del estudiante, registro de respuestas y trazabilidad de resultados."
+      );
+
+      heading("10.2. Componente Práctico",2,true);
+      paragraph(
+        "El componente práctico representa el 60% de la nota final. Evalúa la capacidad del estudiante para resolver una situación, caso, ejercicio o taller relacionado con su campo profesional, integrando los conocimientos adquiridos durante la preparación académica."
+      );
+      paragraph(
+        "La defensa práctica se organiza en un bloque de 25 minutos por estudiante: 15 minutos para la presentación de la solución o producto desarrollado, 5 minutos para preparación y organización, y 5 minutos para preguntas del tribunal evaluador."
+      );
+      paragraph(
+        "Los criterios de valoración consideran la calidad técnica de la solución propuesta, la aplicación pertinente de conocimientos, la capacidad de análisis y reflexión crítica, y la comunicación y defensa de las decisiones adoptadas."
+      );
+
+      heading("10.3. Nota Final del Examen Complexivo",2,true);
+      paragraph(
+        "La nota final se obtiene mediante la ponderación de los dos componentes: 40% correspondiente al componente teórico y 60% correspondiente al componente práctico. La planificación base establece una calificación mínima de 7/10 para la aprobación."
+      );
+      paragraph(
+        "El resultado final debe registrarse en los sistemas institucionales correspondientes y conservar trazabilidad con los instrumentos, actas, registros de evaluación y demás evidencias generadas durante el proceso."
+      );
+    }
+
     function summarySection(){
       const t=totals(ctx.distribution);
       const places=Object.entries(t.byPlace);
@@ -1136,6 +1172,31 @@
           else continue;
         }
 
+        if(b.type==="h1" && n.startsWith("4 requisitos para titulacion")){
+          heading("4. Requisitos para Titulación",1,true);
+          paragraph(
+            "Para habilitarse al proceso de examen complexivo, el estudiante debe cumplir todos los requisitos académicos, documentales, financieros y complementarios exigidos por la institución para titulación. Se exceptúa únicamente el módulo, asignatura o requisito que dentro del sistema se identifica específicamente con la denominación «Titulación», por cuanto forma parte del propio proceso que se está ejecutando.",
+            {indent:false,after:10}
+          );
+          continue;
+        }
+
+        if(b.type==="h1" && n.startsWith("6 seminarios de titulacion")){
+          heading("6. Seminarios de Titulación",1,true);
+          paragraph(
+            "La preparación académica se organiza en cuatro núcleos temáticos. La asignatura de Integración Curricular o Titulación es la unidad académica que aglutina directamente estos cuatro núcleos y articula su desarrollo, seguimiento y evaluación dentro del proceso de preparación para el examen complexivo.",
+            {indent:false,after:10}
+          );
+          continue;
+        }
+
+        if(b.type==="h1" && n.startsWith("10 criterios de evaluacion")){
+          evaluationCriteriaSection();
+          summarySection();
+          referencesSection();
+          break;
+        }
+
         if(n.startsWith("3 9 responsables por fase")){
           responsibilitiesTable();
           skipMode="responsibilities";
@@ -1202,6 +1263,19 @@
       if(!inserted.distribution){
         distributionTables();
         graphsSection();
+      }
+
+      // Seguridad editorial: si la plantilla fuente termina de forma abrupta antes
+      // de las secciones finales, siempre se generan 10, 11 y 12 completas.
+      const tocKeys=new Set(toc.map(e=>normalize(e.title)));
+      if(!tocKeys.has(normalize("10. Criterios de Evaluación"))){
+        evaluationCriteriaSection();
+      }
+      if(!tocKeys.has(normalize("11. Resumen Ejecutivo"))){
+        summarySection();
+      }
+      if(!tocKeys.has(normalize("12. Bibliografía"))){
+        referencesSection();
       }
     }
 
