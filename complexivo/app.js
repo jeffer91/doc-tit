@@ -82,28 +82,6 @@
           {id:"code", label:"Código y versión", source:"Automáticos", automatic:true}
         ]
       }]
-    },
-    "PRO-58": {
-      name: "Seguimiento de requisitos",
-      fullName: "Seguimiento de requisitos",
-      documents: [
-        {id:"req-acta", name:"Acta de Seguimiento de Requisitos", locked:true},
-        {id:"req-individual", name:"Informe Individual de Verificación de Requisitos", locked:true},
-        {id:"req-final", name:"Reporte Final de Requisitos", locked:true}
-      ]
-    },
-    "PRO-95": {
-      name: "Evaluación semestral",
-      fullName: "Evaluación semestral del proceso de titulación",
-      documents: [{id:"informe-final", name:"Informe Final del Proceso de Titulación", locked:true}]
-    },
-    "PRO-97": {
-      name: "Inducción",
-      fullName: "Inducción del proceso de titulación",
-      documents: [
-        {id:"registro-induccion", name:"Registro de Asistencia de Inducción", locked:true},
-        {id:"informe-induccion", name:"Informe de Finalización de la Inducción", locked:true}
-      ]
     }
   };
 
