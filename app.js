@@ -3,6 +3,11 @@
 
   const STORAGE_KEY = "doc-tit-v3";
   const LEGACY_KEYS = ["doc-tit-v2","doc-tit-v1"];
+  const ASSET_DB_NAME = "doc-tit-assets";
+  const ASSET_DB_VERSION = 1;
+  const ASSET_STORE = "document-assets";
+  const assetCache = new Map();
+  let pendingLegacyAssets = [];
   const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
   const SCHEDULE_ACTIVITIES = [
@@ -136,6 +141,16 @@
   };
 
   function clone(v){ return JSON.parse(JSON.stringify(v)); }
+  function stripAssetsFromDocuments(documents){
+    const cleaned={};
+    Object.entries(documents||{}).forEach(([key,value])=>{
+      const item={...(value||{})};
+      delete item.assets;
+      cleaned[key]=item;
+    });
+    return cleaned;
+  }
+
   function loadState(){
     try{
       const current=localStorage.getItem(STORAGE_KEY);
@@ -144,7 +159,9 @@
         const raw=localStorage.getItem(key);
         if(raw) return normalizeState(JSON.parse(raw));
       }
-    }catch(e){}
+    }catch(e){
+      console.warn("No se pudo leer el estado local de DOC-TIT.",e);
+    }
     return clone(defaultState);
   }
 
@@ -155,14 +172,111 @@
     base.periods.forEach(dp=>{ if(!merged.periods.some(p=>p.id===dp.id)) merged.periods.unshift(dp); });
     if(!merged.periods.some(p=>p.id===merged.activePeriodId)) merged.activePeriodId=base.activePeriodId;
 
-    // La ficha de firmas se normaliza al formato institucional solicitado.
     merged.institutional=clone(base.institutional);
-    merged.documents=parsed?.documents||{};
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(merged));
+
+    const originalDocuments=clone(parsed?.documents||{});
+    pendingLegacyAssets=[];
+    Object.entries(originalDocuments).forEach(([key,item])=>{
+      if(item?.assets && Object.keys(item.assets).length){
+        pendingLegacyAssets.push({key,assets:item.assets});
+      }
+    });
+    merged.documents=stripAssetsFromDocuments(originalDocuments);
     return merged;
   }
 
-  function saveState(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); }
+  function serializableState(){
+    return {
+      ...state,
+      documents:stripAssetsFromDocuments(state.documents)
+    };
+  }
+
+  function saveState(){
+    const serialized=JSON.stringify(serializableState());
+    try{
+      localStorage.setItem(STORAGE_KEY,serialized);
+    }catch(err){
+      if(err?.name==="QuotaExceededError" || /quota/i.test(String(err?.message||""))){
+        // Older versions stored Base64 images in localStorage. Remove the oversized
+        // record and rewrite only the lightweight document metadata.
+        try{
+          localStorage.removeItem(STORAGE_KEY);
+          LEGACY_KEYS.forEach(key=>localStorage.removeItem(key));
+          localStorage.setItem(STORAGE_KEY,serialized);
+        }catch(secondErr){
+          console.error("No se pudo recuperar el almacenamiento local.",secondErr);
+          throw secondErr;
+        }
+      }else{
+        throw err;
+      }
+    }
+  }
+
+  function openAssetDb(){
+    return new Promise((resolve,reject)=>{
+      if(!("indexedDB" in window)){
+        reject(new Error("El navegador no permite guardar imágenes locales."));
+        return;
+      }
+      const request=indexedDB.open(ASSET_DB_NAME,ASSET_DB_VERSION);
+      request.onupgradeneeded=()=>{
+        const db=request.result;
+        if(!db.objectStoreNames.contains(ASSET_STORE)) db.createObjectStore(ASSET_STORE);
+      };
+      request.onsuccess=()=>resolve(request.result);
+      request.onerror=()=>reject(request.error||new Error("No se pudo abrir el almacén de imágenes."));
+    });
+  }
+
+  async function readAssetsByKey(key){
+    if(assetCache.has(key)) return assetCache.get(key);
+    const db=await openAssetDb();
+    try{
+      const value=await new Promise((resolve,reject)=>{
+        const tx=db.transaction(ASSET_STORE,"readonly");
+        const req=tx.objectStore(ASSET_STORE).get(key);
+        req.onsuccess=()=>resolve(req.result||{});
+        req.onerror=()=>reject(req.error);
+      });
+      assetCache.set(key,value||{});
+      return value||{};
+    }finally{
+      db.close();
+    }
+  }
+
+  async function writeAssetsByKey(key,assets){
+    const db=await openAssetDb();
+    try{
+      await new Promise((resolve,reject)=>{
+        const tx=db.transaction(ASSET_STORE,"readwrite");
+        tx.objectStore(ASSET_STORE).put(assets||{},key);
+        tx.oncomplete=()=>resolve();
+        tx.onerror=()=>reject(tx.error);
+        tx.onabort=()=>reject(tx.error||new Error("No se pudieron guardar las imágenes."));
+      });
+      assetCache.set(key,assets||{});
+    }finally{
+      db.close();
+    }
+  }
+
+  async function migrateLegacyAssets(){
+    if(!pendingLegacyAssets.length) return;
+    const pending=pendingLegacyAssets.slice();
+    pendingLegacyAssets=[];
+    for(const item of pending){
+      try{
+        const existing=await readAssetsByKey(item.key);
+        await writeAssetsByKey(item.key,{...item.assets,...existing});
+      }catch(err){
+        console.warn("No se pudo migrar una imagen antigua a IndexedDB.",err);
+      }
+    }
+  }
+
   function activePeriod(){ return state.periods.find(p=>p.id===state.activePeriodId)||state.periods[0]; }
   function monthYear(date){
     const d=new Date(date+"T12:00:00");
@@ -174,10 +288,16 @@
   }
   function docStoreKey(docId){ return `${state.activePeriodId}::${docId}`; }
   function getDocData(docId){ return state.documents[docStoreKey(docId)]||{}; }
+  function getCachedAssets(docId){ return assetCache.get(docStoreKey(docId))||{}; }
+  async function loadAssetsForDoc(docId){ return readAssetsByKey(docStoreKey(docId)); }
+
   function setDocData(docId,data){
-    state.documents[docStoreKey(docId)]={...getDocData(docId),...data};
+    const safe={...(data||{})};
+    delete safe.assets;
+    state.documents[docStoreKey(docId)]={...getDocData(docId),...safe};
     saveState();
   }
+
   function allDocumentCount(){ return Object.values(catalog).reduce((sum,p)=>sum+p.documents.length,0); }
   function periodDocumentData(){
     const prefix=state.activePeriodId+"::";
@@ -219,7 +339,7 @@
     window.scrollTo({top:0,behavior:"smooth"});
   }
 
-  function openDocument(procCode,docId){
+  async function openDocument(procCode,docId){
     const proc=catalog[procCode];
     const doc=proc.documents.find(d=>d.id===docId);
     if(!doc) return;
@@ -234,8 +354,14 @@
     $("#docCodeBadge").textContent=documentCode(doc,activePeriod());
     renderRequirements(doc);
     renderAutomatic(doc);
-    renderDocumentForm(doc);
     showView(els.documentView);
+    renderAssetPreviews({});
+    try{
+      await loadAssetsForDoc(doc.id);
+    }catch(err){
+      console.warn("No se pudieron cargar las imágenes guardadas.",err);
+    }
+    renderDocumentForm(doc);
     $("#screenTitle").textContent=doc.name;
   }
 
@@ -252,7 +378,7 @@
     const saved=getDocData(doc.id);
     renderSchedule(saved.schedule||starterSchedule());
     renderDistribution(saved.distribution||starterDistribution());
-    renderAssetPreviews(saved.assets||{});
+    renderAssetPreviews(getCachedAssets(doc.id));
     $("#smartTextInput").value=saved.smartText||"";
     renderSmartAnalysis(saved.analysis||null);
     renderGenerationStatus(saved);
@@ -325,16 +451,20 @@
       const isLogo=key==="logo";
       const dataUrl=await window.DocTitFullDocument.resizeImage(
         file,
-        isLogo?900:1500,
-        isLogo?320:900
+        isLogo?900:1400,
+        isLogo?320:800
       );
-      const saved=getDocData(activeDocument.id);
-      const assets={...(saved.assets||{}),[key]:dataUrl};
-      setDocData(activeDocument.id,{assets});
-      renderAssetPreviews(assets);
+
+      const storageKey=docStoreKey(activeDocument.id);
+      const current={...(assetCache.get(storageKey)||{})};
+      current[key]=dataUrl;
+
+      await writeAssetsByKey(storageKey,current);
+      renderAssetPreviews(current);
       updateProgress();
     }catch(err){
-      alert(err.message||"No se pudo cargar la imagen.");
+      console.error(err);
+      alert(err.message||"No se pudo guardar la imagen.");
     }
   }
 
@@ -401,7 +531,7 @@
     if(!activeDocument) return;
     const scheduleOk=scheduleComplete(collectSchedule());
     const distributionOk=distributionComplete(collectDistribution());
-    const assets=getDocData(activeDocument.id).assets||{};
+    const assets=getCachedAssets(activeDocument.id);
     const logoOk=!!assets.logo;
 
     const setReq=(id,ok)=>{
@@ -553,7 +683,7 @@
     return {
       schedule:collectSchedule(),
       distribution:collectDistribution(),
-      assets:saved.assets||{},
+      assets:activeDocument?getCachedAssets(activeDocument.id):{},
       smartText,
       analysis
     };
@@ -809,5 +939,11 @@
     if(e.target.files[0]) restoreBackup(e.target.files[0]);
   });
 
+  try{
+    saveState();
+  }catch(err){
+    console.error("No se pudo compactar el almacenamiento local de DOC-TIT.",err);
+  }
+  migrateLegacyAssets().catch(err=>console.warn("Migración de imágenes incompleta.",err));
   renderAll();
 })();
