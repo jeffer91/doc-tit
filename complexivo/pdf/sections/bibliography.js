@@ -7,16 +7,15 @@
     render(api) {
       const {heading,paragraph,reference} = api;
       heading("13. Bibliografía y Referencias Normativas",1,true);
-      paragraph("Se incluyen referencias normativas e institucionales identificables que sirven de sustento al proceso de titulación. Su denominación, versión y vigencia deben revisarse antes de cada nuevo período.",{indent:false});
+      paragraph("Las referencias se presentan con un criterio uniforme de autor corporativo, año, título y fuente normativa. No se incorporan referencias institucionales genéricas cuando no se dispone de una identificación formal verificable.",{indent:false});
 
       [
-        "Asamblea Constituyente del Ecuador. (2008). Constitución de la República del Ecuador.",
-        "Asamblea Nacional del Ecuador. (2010). Ley Orgánica de Educación Superior.",
-        "Presidencia de la República del Ecuador. (2022). Reglamento a la Ley Orgánica de Educación Superior (Decreto Ejecutivo No. 494, Suplemento del Registro Oficial No. 110, 21 de julio de 2022).",
-        "Instituto Tecnológico Superior Quito Metropolitano. Reglamento institucional del Área de Titulación. Versión institucional vigente aplicable al período."
+        "Asamblea Constituyente del Ecuador. (2008). Constitución de la República del Ecuador. Registro Oficial 449.",
+        "Asamblea Nacional del Ecuador. (2010). Ley Orgánica de Educación Superior. Registro Oficial Suplemento 298.",
+        "Presidencia de la República del Ecuador. (2022). Reglamento a la Ley Orgánica de Educación Superior (Decreto Ejecutivo No. 494). Suplemento del Registro Oficial No. 110."
       ].forEach(reference);
 
-      paragraph("Las referencias institucionales deben confirmarse con los documentos oficiales vigentes antes de emitir la planificación definitiva.",{indent:false,italic:true});
+      paragraph("Antes de emitir la planificación definitiva, las referencias institucionales adicionales deben incorporarse únicamente cuando se disponga del nombre formal, versión o fecha del documento vigente.",{indent:false,italic:true});
     }
   };
 })();
