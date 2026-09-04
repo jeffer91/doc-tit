@@ -2,53 +2,51 @@
   "use strict";
   const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {};
   ns.sections = ns.sections || {};
+
   ns.sections.seminars = {
     render(api) {
-      const {doc,ctx,pageW,pageH,bodyW,BODY,heading,paragraph,bullet,ensureSpace,tableCaption,tableNote,autoTable,formatDateShort,formatDateLong,lowerPeriod,normalize,totals,insertSectionImage,reference,drawVerticalBars,drawGroupBars,drawTimeline,getAnalysisSentences} = api;
-        function seminarsSection(){
-          heading("6. Seminarios de Titulación",1,true);
+      const {ctx,heading,paragraph,bullet,insertSectionImage,tableCaption,tableNote,autoTable,BODY,bodyW,formatDateShort,policy} = api;
 
-          paragraph(
-            "La preparación académica se organiza en cuatro núcleos temáticos. La asignatura de Integración Curricular o Titulación aglutina directamente estos núcleos y articula su desarrollo, seguimiento y evaluación. Los núcleos se desarrollan en jornada nocturna; las sesiones presenciales quedan grabadas para consulta de los estudiantes.",
-            {indent:false,after:10}
-          );
-          insertSectionImage("seminarsImage");
+      heading("6. Núcleos de Titulación",1,true);
+      paragraph(
+        "La preparación se desarrolla mediante Seminarios de Titulación organizados en cuatro núcleos. A partir de esta definición inicial, el documento utiliza el término maestro «Núcleos de Titulación» para evitar alternancias terminológicas.",
+        {indent:false}
+      );
+      insertSectionImage("seminarsImage");
 
-          const nucleusRows=(ctx.schedule||[])
-            .filter(r=>/^Núcleo\s+[1-4]$/i.test(r.activity||""))
-            .map(r=>{
-              const start=new Date(r.start+"T12:00:00");
-              const end=new Date(r.end+"T12:00:00");
-              const days=(r.start&&r.end)?Math.max(1,Math.round((end-start)/86400000)+1):"";
-              return [r.activity,formatDateShort(r.start),formatDateShort(r.end),String(days),"Nocturna · presencial · grabada"];
-            });
+      heading("6.1. Objetivo de los Núcleos de Titulación",2,true);
+      paragraph("Los núcleos buscan reforzar competencias esenciales, articular conocimientos de diferentes asignaturas y preparar al estudiante para resolver de forma individual situaciones comparables con las que encontrará en el examen. No sustituyen la formación de la carrera ni deben convertirse en entrenamiento memorístico de respuestas.");
+      paragraph("Cada núcleo debe tener un propósito definido, contenidos priorizados, actividad o ejercicio de aplicación, responsable, recursos de apoyo y evidencia de desarrollo.");
 
-          if(nucleusRows.length){
-            ensureSpace(180);
-            tableCaption("Ventana programada para los cuatro núcleos");
-            autoTable({
-              startY:api.getY(),
-              margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
-              head:[["Núcleo","Inicio","Fin","Días calendario","Condición"]],
-              body:nucleusRows,
-              columnStyles:{
-                0:{cellWidth:bodyW*0.14},
-                1:{cellWidth:bodyW*0.16},
-                2:{cellWidth:bodyW*0.16},
-                3:{cellWidth:bodyW*0.16,halign:"center"},
-                4:{cellWidth:bodyW*0.38}
-              },
-              styles:{font:"times",fontSize:9,cellPadding:4,textColor:0},
-              headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
-            });
-            tableNote("La duración operativa de cada núcleo se rige exclusivamente por la ventana definida en el cronograma del período.");
-          }
+      heading("6.2. Organización Académica",2,true);
+      const nucleusRows=(ctx.schedule||[])
+        .filter(r=>/^Núcleo\s+[1-4]$/i.test(r.activity||""))
+        .map(r=>[r.activity,formatDateShort(r.start),formatDateShort(r.end),"Jornada nocturna","Presencial; sesión grabada como recurso de consulta"]);
+      if(nucleusRows.length){
+        tableCaption("Ventana programada para los cuatro Núcleos de Titulación");
+        autoTable({
+          startY:api.getY(),
+          margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
+          head:[["Núcleo","Inicio","Fin","Jornada","Condición general"]],
+          body:nucleusRows,
+          columnStyles:{0:{cellWidth:bodyW*0.14},1:{cellWidth:bodyW*0.15},2:{cellWidth:bodyW*0.15},3:{cellWidth:bodyW*0.18},4:{cellWidth:bodyW*0.38}},
+          styles:{font:"times",fontSize:8.7,cellPadding:4,textColor:0},
+          headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
+        });
+        tableNote("La duración y fechas se obtienen exclusivamente del cronograma vigente del período.");
+      }
+      paragraph("La asignatura de Integración Curricular o Titulación articula los cuatro núcleos y permite ordenar contenidos, docentes, recursos y seguimiento. Cuando una carrera requiera una adaptación, esta debe conservar el objetivo del núcleo y quedar documentada.");
 
-          heading("6.1. Organización Académica",2,true);
-          paragraph("Los contenidos de cada núcleo se definen de acuerdo con las competencias y áreas prioritarias de las carreras. La preparación busca reforzar conocimientos y familiarizar al estudiante con la lógica de resolución individual que se utilizará en el examen.");
-        }
+      heading("6.3. Metodología de Desarrollo",2,true);
+      bullet("• Activación de conocimientos previos y revisión de conceptos esenciales.");
+      bullet("• Resolución guiada de casos, problemas o ejercicios relacionados con el perfil de egreso.");
+      bullet("• Práctica individual con tiempos y recursos comparables a los del examen.");
+      bullet("• Retroalimentación sobre errores frecuentes y criterios de calidad.");
+      bullet("• Disponibilidad de materiales y grabaciones institucionales cuando corresponda.");
 
-      seminarsSection();
+      heading("6.4. Seguimiento y Evidencias",2,true);
+      paragraph("El seguimiento debe permitir comprobar que los cuatro núcleos se desarrollaron dentro de la ventana programada. Como evidencia pueden utilizarse planificación docente, recursos, registro de participación, grabación, actividad desarrollada y reporte de novedades.");
+      paragraph("La participación en los núcleos y cualquier forma de evaluación interna deben manejarse conforme a la regla institucional vigente. El generador no recupera automáticamente condiciones antiguas de aprobación por componente o requisitos que no estén configurados para el período.");
     }
   };
 })();
