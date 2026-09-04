@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Apply patch
-        run: python .github/scripts/finalize_complexivo.py
+        run: python .github/scripts/finalize_complexivo_v2.py
       - name: Syntax and content checks
         shell: bash
         run: |
