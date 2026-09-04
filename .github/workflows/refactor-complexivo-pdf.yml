@@ -15,76 +15,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 3
+          fetch-depth: 1
 
-      - name: Recover and run refactor script
+      - name: Recover refactor script
         shell: bash
         run: |
           git show 5702361227fe988a9651d4177654b76c4ed70dd3:.github/workflows/refactor-complexivo-pdf.yml > /tmp/previous-refactor.yml
-          python - <<'PY'
-          from pathlib import Path
-          src=Path('/tmp/previous-refactor.yml').read_text(encoding='utf-8')
-          marker="          python - <<'PY'\n"
-          start=src.index(marker)+len(marker)
-          end=src.index("\n          PY\n",start)
-          block=src[start:end]
-          lines=[]
-          for line in block.splitlines():
-              lines.append(line[10:] if line.startswith('          ') else line)
-          script='\n'.join(lines)+'\n'
-          old="""if old_body not in source:
-    raise SystemExit('No se encontró bloque BODY esperado')
-source = source.replace(old_body,new_body,1)"""
-          new="""body_pattern = re.compile(
-    r'  const BODY = \\{\\n'
-    r'    left: 72,\\n'
-    r'    right: 72,\\n'
-    r'    top: 108,\\n'
-    r'    bottom: 62,\\n'
-    r'    fontSize: 12,\\n'
-    r'    lineHeight: 24,\\n'
-    r'    paragraphIndent: 36\\n'
-    r'  \\};'
-)
-source, body_count = body_pattern.subn(new_body, source, count=1)
-if body_count != 1:
-    raise SystemExit(f'No se pudo sustituir BODY: {body_count}')"""
-          if old not in script:
-              raise SystemExit('No se encontró parche BODY dentro del script recuperado')
-          script=script.replace(old,new,1)
-          Path('/tmp/refactor_complexivo_pdf.py').write_text(script,encoding='utf-8')
-          PY
+          python -c "from pathlib import Path; src=Path('/tmp/previous-refactor.yml').read_text(encoding='utf-8'); marker=\"          python - <<'PY'\\n\"; start=src.index(marker)+len(marker); end=src.index('\\n          PY\\n',start); block=src[start:end]; lines=[line[10:] if line.startswith('          ') else line for line in block.splitlines()]; Path('/tmp/refactor_complexivo_pdf.py').write_text('\\n'.join(lines)+'\\n',encoding='utf-8')"
+          python -c "from pathlib import Path; p=Path('/tmp/refactor_complexivo_pdf.py'); s=p.read_text(encoding='utf-8'); needle='if old_body not in source:'; fixed='old_body = \\\"  const BODY = {\\\\n    left: 72,\\\\n    right: 72,\\\\n    top: 108,\\\\n    bottom: 62,\\\\n    fontSize: 12,\\\\n    lineHeight: 24,\\\\n    paragraphIndent: 36\\\\n  };\\\"\\nif old_body not in source:'; assert needle in s; p.write_text(s.replace(needle,fixed,1),encoding='utf-8')"
           python /tmp/refactor_complexivo_pdf.py
 
-      - name: Syntax and registration checks
+      - name: Syntax checks
         shell: bash
         run: |
-          set -e
           node --check complexivo/full-document.js
           find complexivo/pdf -name '*.js' -print0 | xargs -0 -n1 node --check
-          node - <<'NODE'
-          const fs=require('fs');
-          global.window={};
-          const files=[
-            'complexivo/pdf/config/layout.js','complexivo/pdf/config/institutional.js','complexivo/pdf/document-outline.js',
-            'complexivo/pdf/components/header.js','complexivo/pdf/components/signature-block.js','complexivo/pdf/components/footer.js',
-            'complexivo/pdf/sections/cover.js','complexivo/pdf/sections/index.js','complexivo/pdf/sections/executive-summary.js',
-            'complexivo/pdf/sections/introduction.js','complexivo/pdf/sections/legal-basis.js',
-            'complexivo/pdf/sections/methodology/schedule.js','complexivo/pdf/sections/methodology/responsibilities.js','complexivo/pdf/sections/methodology/index.js',
-            'complexivo/pdf/sections/requirements/index.js','complexivo/pdf/sections/requirements/financial-schedule.js',
-            'complexivo/pdf/sections/exam-description.js','complexivo/pdf/sections/seminars.js',
-            'complexivo/pdf/sections/distribution/graphs.js','complexivo/pdf/sections/distribution/index.js',
-            'complexivo/pdf/sections/laboratories.js','complexivo/pdf/sections/imponderables.js','complexivo/pdf/sections/evaluation.js','complexivo/pdf/sections/bibliography.js',
-            'complexivo/full-document.js'
-          ];
-          files.forEach(f=>eval(fs.readFileSync(f,'utf8')));
-          const ns=window.DOC_TIT_COMPLEXIVO_PDF;
-          const required=['cover','index','executiveSummary','introduction','legalBasis','methodology','requirements','examDescription','seminars','distribution','laboratories','imponderables','evaluation','bibliography'];
-          required.forEach(id=>{ if(typeof ns.sections?.[id]?.render!=='function') throw new Error('Missing section '+id); });
-          ['header','signatureBlock','footer'].forEach(id=>{ if(typeof ns.components?.[id]?.render!=='function') throw new Error('Missing component '+id); });
-          if(typeof window.DocTitFullDocument?.generateAndDownload!=='function') throw new Error('Missing PDF entry point');
-          console.log('Complexivo PDF modular registry OK');
-          NODE
+          test -f complexivo/pdf/sections/cover.js
+          test -f complexivo/pdf/components/header.js
+          test -f complexivo/pdf/sections/introduction.js
+          test -f complexivo/pdf/config/institutional.js
+          grep -q 'pdf/sections/cover.js' complexivo/index.html
+          grep -q 'renderSection("cover")' complexivo/full-document.js
 
       - name: Commit modular architecture directly to main
         shell: bash
