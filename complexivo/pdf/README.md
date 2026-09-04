@@ -8,6 +8,8 @@ El generador está dividido por responsabilidad para que cada corrección sea lo
 - `document-outline.js`: orden de las secciones.
 - `../full-document.js`: motor/orquestador; no debe contener contenido específico de una sección.
 
+Regla de mantenimiento: todo archivo cargado por `index.html` debe participar realmente en la generación del PDF. No se conservan módulos huérfanos ni se cargan secciones que no estén utilizadas por el documento.
+
 Rutas principales:
 
 - Portada: `sections/cover.js`
