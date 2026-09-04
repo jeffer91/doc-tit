@@ -6,7 +6,8 @@
     render(api) {
       const {doc,pageW,pageH} = api;
       const total=doc.getNumberOfPages();
-      for(let p=1;p<=total;p++){
+      // La portada RGI no muestra paginación. Las páginas interiores conservan numeración automática.
+      for(let p=2;p<=total;p++){
         doc.setPage(p);
         doc.setFont("helvetica","normal");
         doc.setFontSize(9);
