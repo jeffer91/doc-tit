@@ -1,0 +1,681 @@
+name: Refactor Complexivo PDF into modules
+
+on:
+  push:
+    paths:
+      - ".github/workflows/refactor-complexivo-pdf.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  refactor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Modularize PDF generator
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          import textwrap
+
+          root = Path('complexivo')
+          source_path = root / 'full-document.js'
+          source = source_path.read_text(encoding='utf-8')
+          original = source
+
+          def function_span(text, name, indent='    ', terminal=None):
+              pat = re.compile(rf'(?m)^{re.escape(indent)}(?:async\s+)?function\s+{re.escape(name)}\s*\(')
+              m = pat.search(text)
+              if not m:
+                  raise SystemExit(f'No se encontró function {name}')
+              start = m.start()
+              next_pat = re.compile(rf'(?m)^{re.escape(indent)}(?:async\s+)?function\s+[A-Za-z_$][\w$]*\s*\(')
+              n = next_pat.search(text, m.end())
+              if n:
+                  end = n.start()
+              elif terminal:
+                  t = text.find(terminal, m.end())
+                  if t < 0:
+                      raise SystemExit(f'No se encontró terminal para {name}')
+                  end = t
+              else:
+                  raise SystemExit(f'No se pudo determinar fin de {name}')
+              return start, end, text[start:end].rstrip()
+
+          def extract(name, indent='    ', terminal=None):
+              return function_span(original, name, indent, terminal)[2]
+
+          def deindent(code, indent_width):
+              prefix = ' ' * indent_width
+              lines = code.splitlines()
+              return '\n'.join(line[len(prefix):] if line.startswith(prefix) else line for line in lines)
+
+          def patch_section_code(code):
+              code = code.replace('startY:y', 'startY:api.getY()')
+              return code
+
+          # ----- Extract section code before mutating the engine -----
+          funcs = {}
+          for name in [
+              'scheduleTable','distributionTables','methodologySection','requirementsSection',
+              'examDescriptionSection','seminarsSection','imponderablesSection','responsibilitiesTable',
+              'financialScheduleSection','laboratoriesSection','evaluationCriteriaSection','summarySection',
+              'referencesSection','graphsSection'
+          ]:
+              funcs[name] = extract(name)
+
+          intro_paragraphs = extract('introParagraphs', indent='  ')
+          legal_paragraphs = extract('legalParagraphs', indent='  ')
+
+          # ----- Namespace/config -----
+          (root/'pdf/config').mkdir(parents=True, exist_ok=True)
+          (root/'pdf/components').mkdir(parents=True, exist_ok=True)
+          (root/'pdf/sections/methodology').mkdir(parents=True, exist_ok=True)
+          (root/'pdf/sections/requirements').mkdir(parents=True, exist_ok=True)
+          (root/'pdf/sections/distribution').mkdir(parents=True, exist_ok=True)
+
+          layout_js = '''(() => {
+            "use strict";
+            const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {};
+            ns.config = ns.config || {};
+            ns.config.layout = {
+              body: {
+                left: 72,
+                right: 72,
+                top: 108,
+                bottom: 62,
+                fontSize: 12,
+                lineHeight: 24,
+                paragraphIndent: 36
+              }
+            };
+          })();
+          '''
+          (root/'pdf/config/layout.js').write_text(layout_js, encoding='utf-8')
+
+          institutional_js = '''(() => {
+            "use strict";
+            const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {};
+            ns.config = ns.config || {};
+            ns.config.institutional = {
+              prepared: {
+                label: "ELABORADO POR:",
+                name: "Mgs. Jefferson Villarreal",
+                role: "Coordinador de Titulación y Eficiencia Terminal"
+              },
+              reviewed: {
+                label: "REVISADO POR:",
+                name: "Ing. Martha Tomalá",
+                role: "Coordinadora General de Carreras"
+              },
+              approved: {
+                label: "APROBADO POR:",
+                name: "Dr. Alex León",
+                role: "Vicerrector"
+              }
+            };
+          })();
+          '''
+          (root/'pdf/config/institutional.js').write_text(institutional_js, encoding='utf-8')
+
+          outline_js = '''(() => {
+            "use strict";
+            const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {};
+            ns.outline = [
+              "executiveSummary",
+              "introduction",
+              "legalBasis",
+              "methodology",
+              "requirements",
+              "examDescription",
+              "seminars",
+              "distribution",
+              "laboratories",
+              "imponderables",
+              "evaluation",
+              "bibliography"
+            ];
+          })();
+          '''
+          (root/'pdf/document-outline.js').write_text(outline_js, encoding='utf-8')
+
+          # ----- Components -----
+          header_js = '''(() => {
+            "use strict";
+            const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {};
+            ns.components = ns.components || {};
+            ns.components.header = {
+              render(api) {
+                const {doc,ctx,pageW,pageNo,headerDrawn,imageFormat} = api;
+                if(headerDrawn.has(pageNo)) return;
+                headerDrawn.add(pageNo);
+                doc.setPage(pageNo);
+
+                const x=36, top=22, totalW=pageW-72, h=58;
+                const logoW=125, codeW=160, centerW=totalW-logoW-codeW;
+
+                doc.setDrawColor(0);
+                doc.setLineWidth(0.8);
+                doc.rect(x,top,totalW,h);
+                doc.line(x+logoW,top,x+logoW,top+h);
+                doc.line(x+logoW+centerW,top,x+logoW+centerW,top+h);
+                doc.line(x+logoW,top+h/2,x+logoW+centerW,top+h/2);
+
+                if(ctx.assets && ctx.assets.logo){
+                  try{
+                    doc.addImage(ctx.assets.logo,imageFormat(ctx.assets.logo),x+6,top+6,logoW-12,h-12,undefined,"FAST");
+                  }catch(e){}
+                }else{
+                  doc.setFont("helvetica","bold");
+                  doc.setFontSize(9);
+                  doc.text("LOGO INSTITUCIONAL",x+logoW/2,top+h/2,{align:"center"});
+                }
+
+                doc.setFont("helvetica","normal");
+                doc.setFontSize(9);
+                doc.text("UNIDAD DE TITULACIÓN Y EFICIENCIA TERMINAL",x+logoW+centerW/2,top+18,{align:"center"});
+
+                doc.setFont("helvetica","bold");
+                doc.setFontSize(9);
+                doc.text("Planificación De Examen Complexivo",x+logoW+centerW/2,top+h/2+10,{align:"center"});
+
+                doc.setFont("helvetica","normal");
+                doc.setFontSize(9);
+                doc.text(ctx.period.name,x+logoW+centerW/2,top+h/2+22,{align:"center"});
+
+                doc.setFont("helvetica","normal");
+                doc.setFontSize(9);
+                doc.text("Código:",x+logoW+centerW+codeW/2,top+17,{align:"center"});
+
+                doc.setFont("helvetica","bold");
+                doc.setFontSize(9);
+                const codeLines=doc.splitTextToSize(ctx.code,codeW-12);
+                doc.text(codeLines,x+logoW+centerW+codeW/2,top+31,{align:"center"});
+              }
+            };
+          })();
+          '''
+          (root/'pdf/components/header.js').write_text(header_js, encoding='utf-8')
+
+          signature_js = '''(() => {
+            "use strict";
+            const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {};
+            ns.components = ns.components || {};
+            ns.components.signatureBlock = {
+              render(api, fixedTop=null) {
+                const {doc,pageW,ensureSpace,getY,setY} = api;
+                const institutional = ns.config && ns.config.institutional;
+                if(!institutional) throw new Error("No se cargó la configuración institucional del PDF.");
+
+                const x=36;
+                const w=pageW-72;
+                const col=w/3;
+                const titleAndSignH=112;
+                const nameH=34;
+                const roleH=48;
+                const totalH=titleAndSignH+nameH+roleH;
+
+                let y=getY();
+                if(fixedTop==null){
+                  ensureSpace(totalH+24);
+                  y=getY()+8;
+                  setY(y);
+                }
+                const top=fixedTop==null?y:fixedTop;
+
+                doc.setDrawColor(0);
+                doc.setLineWidth(0.7);
+
+                for(let i=0;i<3;i++){
+                  const cx=x+i*col;
+                  doc.rect(cx,top,col,totalH);
+                  doc.line(cx,top+titleAndSignH,cx+col,top+titleAndSignH);
+                  doc.line(cx,top+titleAndSignH+nameH,cx+col,top+titleAndSignH+nameH);
+                }
+
+                const cells=[institutional.prepared,institutional.reviewed,institutional.approved];
+                cells.forEach((cell,i)=>{
+                  const cx=x+i*col;
+                  doc.setFont("helvetica","normal");
+                  doc.setFontSize(9);
+                  doc.text(cell.label,cx+7,top+17);
+
+                  doc.setFont("helvetica","bold");
+                  doc.setFontSize(9);
+                  doc.text("NOMBRE:",cx+7,top+titleAndSignH+20);
+
+                  doc.setFont("helvetica","normal");
+                  doc.setFontSize(9);
+                  const nameX=cx+55;
+                  const nameLines=doc.splitTextToSize(cell.name,col-62);
+                  doc.text(nameLines,nameX,top+titleAndSignH+20);
+
+                  doc.setFont("helvetica","bold");
+                  doc.setFontSize(9);
+                  doc.text("CARGO:",cx+7,top+titleAndSignH+nameH+18);
+
+                  doc.setFont("helvetica","normal");
+                  doc.setFontSize(9);
+                  const roleLines=doc.splitTextToSize(cell.role,col-14);
+                  doc.text(roleLines,cx+7,top+titleAndSignH+nameH+33);
+                });
+
+                if(fixedTop==null) setY(top+totalH+12);
+                return totalH;
+              }
+            };
+          })();
+          '''
+          (root/'pdf/components/signature-block.js').write_text(signature_js, encoding='utf-8')
+
+          footer_js = '''(() => {
+            "use strict";
+            const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {};
+            ns.components = ns.components || {};
+            ns.components.footer = {
+              render(api) {
+                const {doc,pageW,pageH} = api;
+                const total=doc.getNumberOfPages();
+                for(let p=1;p<=total;p++){
+                  doc.setPage(p);
+                  doc.setFont("helvetica","normal");
+                  doc.setFontSize(9);
+                  doc.text("Página "+p+" de "+total,pageW-36,pageH-22,{align:"right"});
+                }
+                return total;
+              }
+            };
+          })();
+          '''
+          (root/'pdf/components/footer.js').write_text(footer_js, encoding='utf-8')
+
+          # ----- Section module helpers -----
+          setup = '''const {doc,ctx,pageW,pageH,bodyW,BODY,heading,paragraph,bullet,ensureSpace,tableCaption,tableNote,autoTable,formatDateShort,formatDateLong,lowerPeriod,normalize,totals,insertSectionImage,reference,drawVerticalBars,drawGroupBars,drawTimeline,getAnalysisSentences} = api;'''
+
+          def wrapped_section(key, function_codes, call_code):
+              body=[]
+              for code in function_codes:
+                  code=patch_section_code(deindent(code, 4 if code.startswith('    ') else 2))
+                  body.append(textwrap.indent(code, '        '))
+              functions='\n\n'.join(body)
+              return f'''(() => {{\n  "use strict";\n  const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {{}};\n  ns.sections = ns.sections || {{}};\n  ns.sections.{key} = {{\n    render(api) {{\n      {setup}\n{functions}\n\n      {call_code}\n    }}\n  }};\n}})();\n'''
+
+          # cover
+          cover_js = '''(() => {
+            "use strict";
+            const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {};
+            ns.sections = ns.sections || {};
+            ns.sections.cover = {
+              render(api) {
+                const {doc,ctx,pageW,pageH,signatureBlock} = api;
+                const signatureTotalH=112+34+48;
+                const signatureTop=pageH-52-signatureTotalH;
+                const contentTop=112;
+                const contentBottom=signatureTop-42;
+                const visualCenter=(contentTop+contentBottom)/2;
+
+                doc.setFont("helvetica","bold");
+                doc.setFontSize(23);
+                const titleLines=doc.splitTextToSize("Planificación De Examen Complexivo",pageW-120);
+                const titleY=visualCenter-(titleLines.length*28)/2-18;
+                doc.text(titleLines,pageW/2,titleY,{align:"center"});
+
+                doc.setFont("helvetica","bold");
+                doc.setFontSize(17);
+                doc.text(ctx.period.name,pageW/2,titleY+titleLines.length*28+32,{align:"center"});
+
+                signatureBlock(signatureTop);
+              }
+            };
+          })();
+          '''
+          (root/'pdf/sections/cover.js').write_text(cover_js, encoding='utf-8')
+
+          summary = wrapped_section('executiveSummary',[funcs['summarySection']],'summarySection();')
+          (root/'pdf/sections/executive-summary.js').write_text(summary,encoding='utf-8')
+
+          intro_code = deindent(intro_paragraphs,2)
+          introduction_js = f'''(() => {{
+            "use strict";
+            const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {{}};
+            ns.sections = ns.sections || {{}};
+            ns.sections.introduction = {{
+              render(api) {{
+                const {{ctx,heading,paragraph,insertSectionImage,getAnalysisSentences,totals,lowerPeriod}} = api;
+{textwrap.indent(intro_code,'                ')}
+                heading("1. Introducción",1,true);
+                const intro=introParagraphs(ctx);
+                intro.slice(0,3).forEach(p=>paragraph(p));
+                insertSectionImage("introImage");
+                intro.slice(3).forEach(p=>paragraph(p));
+                getAnalysisSentences(ctx,"general").forEach(p=>paragraph(p));
+              }}
+            }};
+          }})();
+          '''
+          (root/'pdf/sections/introduction.js').write_text(introduction_js,encoding='utf-8')
+
+          legal_code = deindent(legal_paragraphs,2)
+          legal_js = f'''(() => {{
+            "use strict";
+            const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {{}};
+            ns.sections = ns.sections || {{}};
+            ns.sections.legalBasis = {{
+              render(api) {{
+                const {{ctx,heading,paragraph,lowerPeriod}} = api;
+{textwrap.indent(legal_code,'                ')}
+                heading("2. Base Legal",1,true);
+                legalParagraphs(ctx).forEach(p=>paragraph(p));
+              }}
+            }};
+          }})();
+          '''
+          (root/'pdf/sections/legal-basis.js').write_text(legal_js,encoding='utf-8')
+
+          # methodology parts
+          def wrapped_part(group,key,function_code,call_code):
+              code=patch_section_code(deindent(function_code,4))
+              return f'''(() => {{\n  "use strict";\n  const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {{}};\n  ns.parts = ns.parts || {{}};\n  ns.parts.{group} = ns.parts.{group} || {{}};\n  ns.parts.{group}.{key} = function(api) {{\n    {setup}\n{textwrap.indent(code,'    ')}\n    {call_code}\n  }};\n}})();\n'''
+
+          (root/'pdf/sections/methodology/schedule.js').write_text(
+              wrapped_part('methodology','schedule',funcs['scheduleTable'],'scheduleTable();'),encoding='utf-8')
+          (root/'pdf/sections/methodology/responsibilities.js').write_text(
+              wrapped_part('methodology','responsibilities',funcs['responsibilitiesTable'],'responsibilitiesTable();'),encoding='utf-8')
+
+          methodology_code = patch_section_code(deindent(funcs['methodologySection'],4))
+          methodology_code = methodology_code.replace('responsibilitiesTable();','ns.parts.methodology.responsibilities(api);')
+          methodology_code = methodology_code.replace('scheduleTable();','ns.parts.methodology.schedule(api);')
+          methodology_js = f'''(() => {{
+            "use strict";
+            const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {{}};
+            ns.sections = ns.sections || {{}};
+            ns.sections.methodology = {{
+              render(api) {{
+                {setup}
+{textwrap.indent(methodology_code,'                ')}
+                methodologySection();
+              }}
+            }};
+          }})();
+          '''
+          (root/'pdf/sections/methodology/index.js').write_text(methodology_js,encoding='utf-8')
+
+          requirements = wrapped_section('requirements',[funcs['requirementsSection']],'requirementsSection();')
+          (root/'pdf/sections/requirements/index.js').write_text(requirements,encoding='utf-8')
+          financial = wrapped_section('financialSchedule',[funcs['financialScheduleSection']],'financialScheduleSection();')
+          (root/'pdf/sections/requirements/financial-schedule.js').write_text(financial,encoding='utf-8')
+
+          exam = wrapped_section('examDescription',[funcs['examDescriptionSection']],'examDescriptionSection();')
+          (root/'pdf/sections/exam-description.js').write_text(exam,encoding='utf-8')
+          seminars = wrapped_section('seminars',[funcs['seminarsSection']],'seminarsSection();')
+          (root/'pdf/sections/seminars.js').write_text(seminars,encoding='utf-8')
+
+          graphs_part = wrapped_part('distribution','graphs',funcs['graphsSection'],'graphsSection();')
+          (root/'pdf/sections/distribution/graphs.js').write_text(graphs_part,encoding='utf-8')
+          distribution_code = patch_section_code(deindent(funcs['distributionTables'],4))
+          distribution_js = f'''(() => {{
+            "use strict";
+            const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {{}};
+            ns.sections = ns.sections || {{}};
+            ns.sections.distribution = {{
+              render(api) {{
+                {setup}
+{textwrap.indent(distribution_code,'                ')}
+                distributionTables();
+                ns.parts.distribution.graphs(api);
+              }}
+            }};
+          }})();
+          '''
+          (root/'pdf/sections/distribution/index.js').write_text(distribution_js,encoding='utf-8')
+
+          labs = wrapped_section('laboratories',[funcs['laboratoriesSection']],'laboratoriesSection();')
+          (root/'pdf/sections/laboratories.js').write_text(labs,encoding='utf-8')
+          imponderables = wrapped_section('imponderables',[funcs['imponderablesSection']],'imponderablesSection();')
+          (root/'pdf/sections/imponderables.js').write_text(imponderables,encoding='utf-8')
+          evaluation = wrapped_section('evaluation',[funcs['evaluationCriteriaSection']],'evaluationCriteriaSection();')
+          (root/'pdf/sections/evaluation.js').write_text(evaluation,encoding='utf-8')
+          bibliography = wrapped_section('bibliography',[funcs['referencesSection']],'referencesSection();')
+          (root/'pdf/sections/bibliography.js').write_text(bibliography,encoding='utf-8')
+
+          index_js = '''(() => {
+            "use strict";
+            const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {};
+            ns.sections = ns.sections || {};
+            ns.sections.index = {
+              render(api) {
+                const {toc,normalize,drawTOCPage} = api;
+                const dedup=[];
+                const seen=new Set();
+                toc.forEach(e=>{
+                  const key=normalize(e.title);
+                  if(!key || seen.has(key)) return;
+                  seen.add(key);
+                  dedup.push(e);
+                });
+                drawTOCPage(2,"Índice",dedup);
+              }
+            };
+          })();
+          '''
+          (root/'pdf/sections/index.js').write_text(index_js,encoding='utf-8')
+
+          readme = '''# Arquitectura del PDF de Examen Complexivo
+
+          El generador está dividido por responsabilidad para que cada corrección sea localizada.
+
+          - `config/`: datos institucionales y reglas de maquetación.
+          - `components/`: elementos reutilizables como encabezado, firmas y pie de página.
+          - `sections/`: contenido de cada sección visible del PDF.
+          - `document-outline.js`: orden de las secciones.
+          - `../full-document.js`: motor/orquestador; no debe contener contenido específico de una sección.
+
+          Rutas principales:
+
+          - Portada: `sections/cover.js`
+          - Índice: `sections/index.js`
+          - Resumen ejecutivo: `sections/executive-summary.js`
+          - Introducción: `sections/introduction.js`
+          - Base legal: `sections/legal-basis.js`
+          - Metodología: `sections/methodology/`
+          - Requisitos: `sections/requirements/`
+          - Descripción del examen: `sections/exam-description.js`
+          - Seminarios: `sections/seminars.js`
+          - Distribución: `sections/distribution/`
+          - Laboratorios: `sections/laboratories.js`
+          - Imponderables: `sections/imponderables.js`
+          - Evaluación: `sections/evaluation.js`
+          - Bibliografía: `sections/bibliography.js`
+          - Encabezado: `components/header.js`
+          - Firmas: `components/signature-block.js`
+          - Pie de página: `components/footer.js`
+          - Nombres/cargos institucionales: `config/institutional.js`
+          '''
+          (root/'pdf/README.md').write_text(textwrap.dedent(readme).strip()+'\n',encoding='utf-8')
+
+          # ----- Rewrite engine -----
+          # Use modular layout config with safe fallback.
+          old_body = '''  const BODY = {
+            left: 72,
+            right: 72,
+            top: 108,
+            bottom: 62,
+            fontSize: 12,
+            lineHeight: 24,
+            paragraphIndent: 36
+          };'''
+          new_body = '''  const PDF_MODULES = window.DOC_TIT_COMPLEXIVO_PDF || {};
+          const BODY = PDF_MODULES.config?.layout?.body || {
+            left: 72,
+            right: 72,
+            top: 108,
+            bottom: 62,
+            fontSize: 12,
+            lineHeight: 24,
+            paragraphIndent: 36
+          };'''
+          if old_body not in source:
+              raise SystemExit('No se encontró bloque BODY esperado')
+          source = source.replace(old_body,new_body,1)
+
+          # Remove top-level content helpers now owned by section files.
+          for name in ['introParagraphs','legalParagraphs']:
+              start,end,_=function_span(source,name,indent='  ')
+              source=source[:start]+source[end:]
+
+          # Replace header renderer by component delegate.
+          start,end,_=function_span(source,'drawHeader')
+          header_delegate = '''    function drawHeader(pageNo){
+              const component=window.DOC_TIT_COMPLEXIVO_PDF?.components?.header;
+              if(!component?.render) throw new Error("No se cargó el componente de encabezado del PDF.");
+              component.render({doc,ctx,pageW,pageH,BODY,pageNo,headerDrawn,imageFormat});
+            }
+
+'''
+          source=source[:start]+header_delegate+source[end:]
+
+          # Remove section/component functions from the engine.
+          moved_nested = [
+              'scheduleTable','distributionTables','signatureBlock','cover','introAndLegal',
+              'methodologySection','requirementsSection','examDescriptionSection','seminarsSection',
+              'imponderablesSection','responsibilitiesTable','financialScheduleSection','laboratoriesSection',
+              'evaluationCriteriaSection','summarySection','referencesSection','graphsSection','sourceContent','fillIndex'
+          ]
+          for name in moved_nested:
+              start,end,_=function_span(source,name)
+              source=source[:start]+source[end:]
+
+          # Remove footer function (last nested function before render calls).
+          start,end,_=function_span(source,'footers',terminal='\n    cover();')
+          source=source[:start]+source[end:]
+
+          old_calls = '''    cover();
+              reserveIndexPages();
+              summarySection();
+              introAndLegal();
+              sourceContent();
+
+              fillIndex();
+              const totalPages=footers();'''
+          # tolerate current indentation from source
+          call_start = source.find('    cover();')
+          call_end = source.find('    const safeName=', call_start)
+          if call_start < 0 or call_end < 0:
+              raise SystemExit('No se encontró bloque final de renderizado')
+
+          new_calls = '''    function sectionApi(){
+              const modules=window.DOC_TIT_COMPLEXIVO_PDF || {};
+              return {
+                doc,ctx,pageW,pageH,bodyW,BODY,toc,
+                getY:()=>y,
+                setY:(value)=>{ y=value; },
+                heading,paragraph,bullet,ensureSpace,tableCaption,tableNote,autoTable,
+                formatDateShort,formatDateLong,lowerPeriod,normalize,totals,
+                insertSectionImage,reference,drawVerticalBars,drawGroupBars,drawTimeline,
+                getAnalysisSentences,imageFormat,drawTOCPage,
+                signatureBlock:(fixedTop=null)=>{
+                  const component=modules.components?.signatureBlock;
+                  if(!component?.render) throw new Error("No se cargó el bloque de firmas del PDF.");
+                  return component.render({doc,pageW,pageH,BODY,ensureSpace,getY:()=>y,setY:(value)=>{y=value;}},fixedTop);
+                }
+              };
+            }
+
+            function renderSection(id){
+              const section=window.DOC_TIT_COMPLEXIVO_PDF?.sections?.[id];
+              if(!section?.render) throw new Error("No se cargó la sección del PDF: "+id);
+              section.render(sectionApi());
+            }
+
+            renderSection("cover");
+            reserveIndexPages();
+
+            const outline=window.DOC_TIT_COMPLEXIVO_PDF?.outline || [
+              "executiveSummary","introduction","legalBasis","methodology","requirements",
+              "examDescription","seminars","distribution","laboratories","imponderables",
+              "evaluation","bibliography"
+            ];
+            outline.forEach(renderSection);
+
+            renderSection("index");
+            const footer=window.DOC_TIT_COMPLEXIVO_PDF?.components?.footer;
+            if(!footer?.render) throw new Error("No se cargó el pie de página del PDF.");
+            const totalPages=footer.render({doc,pageW,pageH});
+
+'''
+          source=source[:call_start]+new_calls+source[call_end:]
+
+          source_path.write_text(source,encoding='utf-8')
+
+          # ----- Update script loading order -----
+          index_path=root/'index.html'
+          html=index_path.read_text(encoding='utf-8')
+          modules = [
+              'pdf/config/layout.js','pdf/config/institutional.js','pdf/document-outline.js',
+              'pdf/components/header.js','pdf/components/signature-block.js','pdf/components/footer.js',
+              'pdf/sections/cover.js','pdf/sections/index.js','pdf/sections/executive-summary.js',
+              'pdf/sections/introduction.js','pdf/sections/legal-basis.js',
+              'pdf/sections/methodology/schedule.js','pdf/sections/methodology/responsibilities.js','pdf/sections/methodology/index.js',
+              'pdf/sections/requirements/index.js','pdf/sections/requirements/financial-schedule.js',
+              'pdf/sections/exam-description.js','pdf/sections/seminars.js',
+              'pdf/sections/distribution/graphs.js','pdf/sections/distribution/index.js',
+              'pdf/sections/laboratories.js','pdf/sections/imponderables.js','pdf/sections/evaluation.js','pdf/sections/bibliography.js'
+          ]
+          marker=re.search(r'\s*<script src="full-document\.js\?v=[^"]+"></script>',html)
+          if not marker:
+              raise SystemExit('No se encontró script full-document.js en index.html')
+          version='20260904-modular-1'
+          tags='\n'.join(f'  <script src="{p}?v={version}"></script>' for p in modules)
+          replacement='\n'+tags+f'\n  <script src="full-document.js?v={version}"></script>'
+          html=html[:marker.start()]+replacement+html[marker.end():]
+          index_path.write_text(html,encoding='utf-8')
+
+          # Remove temporary inventory if present.
+          inventory=root/'PDF_FUNCTION_INVENTORY.txt'
+          if inventory.exists(): inventory.unlink()
+          PY
+
+      - name: Syntax and registration checks
+        shell: bash
+        run: |
+          set -e
+          node --check complexivo/full-document.js
+          find complexivo/pdf -name '*.js' -print0 | xargs -0 -n1 node --check
+          node - <<'NODE'
+          const fs=require('fs');
+          global.window={};
+          const files=[
+            'complexivo/pdf/config/layout.js','complexivo/pdf/config/institutional.js','complexivo/pdf/document-outline.js',
+            'complexivo/pdf/components/header.js','complexivo/pdf/components/signature-block.js','complexivo/pdf/components/footer.js',
+            'complexivo/pdf/sections/cover.js','complexivo/pdf/sections/index.js','complexivo/pdf/sections/executive-summary.js',
+            'complexivo/pdf/sections/introduction.js','complexivo/pdf/sections/legal-basis.js',
+            'complexivo/pdf/sections/methodology/schedule.js','complexivo/pdf/sections/methodology/responsibilities.js','complexivo/pdf/sections/methodology/index.js',
+            'complexivo/pdf/sections/requirements/index.js','complexivo/pdf/sections/requirements/financial-schedule.js',
+            'complexivo/pdf/sections/exam-description.js','complexivo/pdf/sections/seminars.js',
+            'complexivo/pdf/sections/distribution/graphs.js','complexivo/pdf/sections/distribution/index.js',
+            'complexivo/pdf/sections/laboratories.js','complexivo/pdf/sections/imponderables.js','complexivo/pdf/sections/evaluation.js','complexivo/pdf/sections/bibliography.js',
+            'complexivo/full-document.js'
+          ];
+          files.forEach(f=>eval(fs.readFileSync(f,'utf8')));
+          const ns=window.DOC_TIT_COMPLEXIVO_PDF;
+          const required=['cover','index','executiveSummary','introduction','legalBasis','methodology','requirements','examDescription','seminars','distribution','laboratories','imponderables','evaluation','bibliography'];
+          required.forEach(id=>{ if(typeof ns.sections?.[id]?.render!=='function') throw new Error('Missing section '+id); });
+          ['header','signatureBlock','footer'].forEach(id=>{ if(typeof ns.components?.[id]?.render!=='function') throw new Error('Missing component '+id); });
+          if(typeof window.DocTitFullDocument?.generateAndDownload!=='function') throw new Error('Missing PDF entry point');
+          console.log('Complexivo PDF modular registry OK');
+          NODE
+
+      - name: Commit modular architecture directly to main
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add complexivo/full-document.js complexivo/index.html complexivo/pdf complexivo/PDF_FUNCTION_INVENTORY.txt 2>/dev/null || true
+          git add -u complexivo
+          git commit -m "Refactor Complexivo PDF into section modules"
+          git push origin HEAD:main
