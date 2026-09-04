@@ -2,33 +2,11 @@
   "use strict";
   const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {};
   ns.components = ns.components || {};
-
-  function fromContext(ctx){
-    const source = ctx?.institutional || {};
-    const fallback = ns.config?.institutional || {};
-    return {
-      prepared: {
-        label: "ELABORADO POR:",
-        name: source.preparedBy || fallback.prepared?.name || "Mgs. Jefferson Villarreal",
-        role: source.preparedRole || fallback.prepared?.role || "Coordinador de Titulación y Eficiencia Terminal"
-      },
-      reviewed: {
-        label: "REVISADO POR:",
-        name: source.reviewedBy || fallback.reviewed?.name || "Ing. Martha Tomalá",
-        role: source.reviewedRole || fallback.reviewed?.role || "Coordinadora General de Carreras"
-      },
-      approved: {
-        label: "APROBADO POR:",
-        name: source.approvedBy || fallback.approved?.name || "Dr. Alex León",
-        role: source.approvedRole || fallback.approved?.role || "Vicerrector"
-      }
-    };
-  }
-
   ns.components.signatureBlock = {
     render(api, fixedTop=null) {
-      const {doc,pageW,ensureSpace,getY,setY,ctx} = api;
-      const institutional = fromContext(ctx);
+      const {doc,pageW,ensureSpace,getY,setY} = api;
+      const institutional = ns.config?.institutional;
+      if(!institutional) throw new Error("No se cargó la configuración institucional del PDF.");
 
       const x=36;
       const w=pageW-72;
