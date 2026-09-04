@@ -225,6 +225,7 @@ const BODY = PDF_MODULES.config?.layout?.body || {
     const toc=[];
     const headerDrawn=new Set();
     const analysisInjected=new Set();
+    const insertedSectionImages=new Set();
     let tableCounter=0;
     let figureCounter=0;
 
