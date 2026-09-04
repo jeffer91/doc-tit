@@ -1,0 +1,40 @@
+name: Clean Complexivo PDF orphan module
+
+on:
+  push:
+    paths:
+      - ".github/workflows/cleanup-complexivo-orphan.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Remove orphan module and loader
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('complexivo/index.html')
+          s = p.read_text(encoding='utf-8')
+          line = '  <script src="pdf/sections/requirements/financial-schedule.js?v=20260904-modular-1"></script>\n'
+          if line not in s:
+              raise SystemExit('No se encontró el loader huérfano de financial-schedule.js')
+          p.write_text(s.replace(line, '', 1), encoding='utf-8')
+          PY
+          git rm complexivo/pdf/sections/requirements/financial-schedule.js
+          git rm .github/workflows/cleanup-complexivo-orphan.yml
+
+      - name: Commit cleanup directly to main
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add complexivo/index.html
+          git commit -m "Remove unused Complexivo financial schedule module"
+          git push origin HEAD:main
