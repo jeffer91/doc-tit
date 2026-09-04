@@ -4,8 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#0b2d4f">
+    <link rel="icon" type="image/svg+xml" href="../shared/favicon.svg?v=20260904-1">
   <title>DOC-TIT · Planificación de Artículo Académico</title>
   <link rel="stylesheet" href="styles.css?v=20260902-7">
+  <link rel="stylesheet" href="../shared/sidebar.css?v=20260904-1">
 </head>
 <body>
 <div class="app">
@@ -19,6 +21,10 @@
         <button id="newPeriodBtn" class="mini" type="button">+</button>
       </div>
     </div>
+
+    <div class="doc-tit-global-heading">Planificaciones</div>
+    <div class="doc-tit-global-nav" data-doc-tit-navigation data-active-document="articulo-academico"></div>
+
     <div class="cloud" id="cloudCard"><span class="dot"></span><div><strong>Base de datos</strong><small id="cloudText">Conectando…</small></div></div>
   </aside>
 
@@ -90,5 +96,10 @@
 <script src="full-document.js?v=20260902-7"></script>
 <script src="cloud.js?v=20260902-7"></script>
 <script src="app.js?v=20260902-7"></script>
+
+<script src="../shared/documents.js?v=20260904-1"></script>
+<script src="../shared/institutional-config.js?v=20260904-1"></script>
+<script src="../shared/pdf/standards.js?v=20260904-1"></script>
+<script src="../shared/sidebar.js?v=20260904-1"></script>
 </body>
 </html>

@@ -4,9 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#0b2d4f" />
-  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=20260904-1" />
-  <title>DOC-TIT · Gestión documental UTET</title>
+  <link rel="icon" type="image/svg+xml" href="../shared/favicon.svg?v=20260904-1">
+<title>DOC-TIT · Gestión documental UTET</title>
   <link rel="stylesheet" href="styles.css?v=20260902-17" />
+  <link rel="stylesheet" href="../shared/sidebar.css?v=20260904-1">
 </head>
 <body>
   <div class="app-shell">
@@ -27,7 +28,11 @@
         <select id="periodSelect"></select>
       </div>
 
-      <div class="menu-heading">Procesos</div>
+
+    <div class="doc-tit-global-heading">Planificaciones</div>
+    <div class="doc-tit-global-nav" data-doc-tit-navigation data-active-document="complexivo"></div>
+
+      <div class="menu-heading">Documento actual</div>
       <nav id="processMenu" class="process-menu"></nav>
 
       <div class="cloud-status-card" id="cloudStatusCard">
@@ -355,5 +360,10 @@
   <script src="full-document.js?v=20260904-tables-2"></script>
   <script src="cloud.js?v=20260902-5"></script>
   <script src="app.js?v=20260904-tables-1"></script>
+
+<script src="../shared/documents.js?v=20260904-1"></script>
+<script src="../shared/institutional-config.js?v=20260904-1"></script>
+<script src="../shared/pdf/standards.js?v=20260904-1"></script>
+<script src="../shared/sidebar.js?v=20260904-1"></script>
 </body>
 </html>
