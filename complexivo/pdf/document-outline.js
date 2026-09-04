@@ -13,6 +13,9 @@
     "laboratories",
     "imponderables",
     "evaluation",
-    "bibliography"
+    "closure",
+    "generalSummary",
+    "bibliography",
+    "annexes"
   ];
 })();
