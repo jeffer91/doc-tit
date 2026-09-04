@@ -6,13 +6,11 @@
   ns.sections.examDescription = {
     render(api) {
       const {heading,paragraph,bullet,insertSectionImage,tableCaption,tableNote,autoTable,BODY,bodyW,policy} = api;
+      const a=ns.config?.areas||{};
       const ev=policy.evaluation||{};
 
       heading("5. Descripción del Examen Complexivo",1,true);
-      paragraph(
-        "El examen complexivo es una evaluación individual que integra un componente teórico y un componente práctico. Este capítulo explica qué es el examen, cómo se estructura, cómo se diseñan y validan sus instrumentos y bajo qué condiciones se aplica; la forma de calificación se desarrolla exclusivamente en el capítulo 10.",
-        {indent:false}
-      );
+      paragraph("El examen complexivo es una evaluación individual que integra un componente teórico y un componente práctico. Este capítulo explica su estructura, el diseño y validación de los instrumentos y las condiciones de aplicación; la forma de calificación se desarrolla en el capítulo 10.",{indent:false});
       insertSectionImage("examImage");
 
       heading("5.1. Estructura General",2,true);
@@ -35,28 +33,28 @@
       tableNote("La tipología concreta del componente práctico se adapta a la naturaleza de cada carrera sin alterar su carácter individual.");
 
       heading("5.2. Componente Teórico",2,true);
-      paragraph("El componente teórico se desarrolla individualmente mediante un instrumento estructurado. La configuración vigente establece "+ev.theoreticalQuestions+" preguntas y un tiempo máximo de "+ev.theoreticalMinutes+" minutos. Estos valores se obtienen de una sola configuración y no deben repetirse manualmente en distintas secciones.");
-      paragraph("Antes de la aplicación deben verificarse banco o instrumento, versión aprobada, plataforma o mecanismo de respuesta, tiempo configurado, identificación del estudiante, disponibilidad de equipo y procedimiento de respaldo.");
+      paragraph("El componente teórico se desarrolla individualmente mediante un instrumento estructurado de "+ev.theoreticalQuestions+" preguntas y un tiempo máximo de "+ev.theoreticalMinutes+" minutos. Antes de la aplicación deben verificarse el banco o instrumento, la versión aprobada, el mecanismo de respuesta, el tiempo establecido, la identificación del estudiante y el procedimiento de respaldo.");
 
       heading("5.3. Componente Práctico",2,true);
       paragraph("El componente práctico debe plantear una tarea coherente con el perfil profesional. Puede adoptar diferentes tipologías según la carrera, pero siempre debe definir objetivo, instrucciones, recursos autorizados, tiempo, producto esperado, forma de entrega y evidencia.");
-      paragraph("La defensa oral no constituye una regla general. La configuración institucional mantiene `defensaOral = false` por defecto y solo una excepción expresamente definida para una carrera puede incorporar sustentación adicional.");
+      paragraph("La defensa oral no constituye una condición general del examen complexivo. Únicamente se incorpora cuando exista una condición expresamente aprobada para la carrera correspondiente.");
 
       heading("5.4. Diseño y Validación de Instrumentos",2,true);
-      paragraph("La elaboración comienza con la selección de competencias y resultados de aprendizaje prioritarios. Posteriormente se construyen preguntas y actividades prácticas, se revisan claridad y pertinencia, se estima el tiempo de resolución, se valida la correspondencia con el perfil de egreso y se aprueba una versión identificable.");
-      bullet("• Elaboración por docentes o equipos académicos designados.");
-      bullet("• Revisión técnica y académica antes de la aplicación.");
+      paragraph("La elaboración comienza con la selección de competencias y resultados de aprendizaje prioritarios. Posteriormente se solicitan y consolidan preguntas, se construyen actividades prácticas, se revisan claridad y pertinencia, se estima el tiempo de resolución, se valida la correspondencia con el perfil de egreso y se aprueba una versión identificable.");
+      bullet("• Elaboración por docentes o equipos académicos designados por las Coordinaciones de Carrera.");
+      bullet("• Revisión académica con participación de Coordinaciones de Carrera y Gestión Didáctica, Diseño Curricular y Calidad Docente.");
+      bullet("• Articulación del proceso y control de versiones por Titulación y Eficiencia Terminal.");
       bullet("• Identificación de versión, fecha o control equivalente.");
       bullet("• Custodia y confidencialidad de instrumentos antes de la jornada.");
-      bullet("• Registro de cambios cuando una versión sea sustituida.");
 
       heading("5.5. Condiciones de Aplicación",2,true);
       paragraph("La jornada debe asegurar identificación, ingreso controlado, asignación de equipo o espacio, disponibilidad de software y conectividad, comunicación del tiempo, supervisión, entrega y respaldo. Los recursos permitidos deben comunicarse antes de iniciar.");
       paragraph("La presencialidad es la regla general. Una aplicación virtual solo puede realizarse cuando exista una excepción autorizada y deben definirse controles equivalentes de identidad, supervisión, conectividad, entrega y evidencias.");
+      paragraph("La coordinación técnica corresponde a "+(a.ti||"Coordinación de Tecnología de la Información")+" e "+(a.soporteTecnologico||"Infraestructura y Soporte Tecnológico")+", en articulación con "+(a.titulacion||"Titulación y Eficiencia Terminal")+" y "+(a.carreras||"Coordinaciones de Carrera")+".");
 
       heading("5.6. Integridad Académica",2,true);
       paragraph("La aplicación debe prevenir copia, suplantación, colaboración no autorizada, uso de recursos prohibidos o manipulación de evidencias. Las reglas deben socializarse previamente y aplicarse de manera uniforme.");
-      paragraph("Cuando se detecte un incidente, el responsable de jornada debe registrar hechos observables, conservar la evidencia disponible y aplicar el procedimiento institucional vigente. La planificación no inventa sanciones ni consecuencias que no estén respaldadas por normativa institucional.");
+      paragraph("Cuando se detecte un incidente, el responsable de jornada debe registrar hechos observables, conservar la evidencia disponible y aplicar el procedimiento institucional vigente, sin establecer consecuencias distintas de las previstas institucionalmente.");
     }
   };
 })();
