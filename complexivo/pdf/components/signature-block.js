@@ -11,7 +11,6 @@
       const institutional = ns.config?.institutional;
       if(!institutional) throw new Error("No se cargó la configuración institucional del PDF.");
 
-      // Estándar común RGI/INF: 18 cm, 3 columnas de 6 cm y 4,20 cm de alto.
       const w = 18 * CM;
       const x = (pageW - w) / 2;
       const col = 6 * CM;
@@ -43,13 +42,10 @@
       cells.forEach((cell,i)=>{
         const cx=x+i*col;
 
-        // Fila 1: función y espacio reservado para firma/QR.
+        // Fila 1: función y espacio en blanco para la firma.
         doc.setFont("helvetica","normal");
         doc.setFontSize(8.5);
         doc.text(cell.label,cx+col/2,top+15,{align:"center"});
-        doc.setFont("helvetica","bold");
-        doc.setFontSize(8.2);
-        doc.text("ÁREA DE FIRMA / QR DIGITAL",cx+col/2,top+31,{align:"center"});
 
         // Fila 2: nombre visible institucional.
         doc.setFont("helvetica","bold");
