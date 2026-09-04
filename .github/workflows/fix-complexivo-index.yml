@@ -1,0 +1,82 @@
+name: Fix continuous Complexivo index
+
+on:
+  push:
+    paths:
+      - ".github/workflows/fix-complexivo-index.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  fix-index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Make index continuous
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("complexivo/full-document.js")
+          text = path.read_text(encoding="utf-8")
+
+          old_reserve = '''    function reserveIndexPages(){
+              newPage();
+              newPage();
+              // La introducción debe iniciar en una página nueva, nunca sobre el índice.
+              newPage();
+            }'''
+
+          new_reserve = '''    function reserveIndexPages(){
+              // Una sola página de índice; el contenido comienza inmediatamente después.
+              newPage();
+              newPage();
+            }'''
+
+          old_fill = '''      const heights=dedup.map(tocEntryHeight);
+              const totalHeight=heights.reduce((s,h)=>s+h,0);
+              const target=totalHeight/2;
+
+              let cumulative=0;
+              let splitAt=1;
+              for(let i=0;i<heights.length;i++){
+                if(cumulative+heights[i]>target && i>0){
+                  splitAt=i;
+                  break;
+                }
+                cumulative+=heights[i];
+                splitAt=i+1;
+              }
+
+              drawTOCPage(2,"Índice",dedup.slice(0,splitAt));
+              drawTOCPage(3,"",dedup.slice(splitAt));'''
+
+          new_fill = '''      // El índice se presenta de forma continua en una sola página.
+              drawTOCPage(2,"Índice",dedup);'''
+
+          if old_reserve not in text:
+              raise SystemExit("No se encontró el bloque reserveIndexPages esperado")
+          if old_fill not in text:
+              raise SystemExit("No se encontró el bloque fillIndex esperado")
+
+          text = text.replace(old_reserve, new_reserve, 1)
+          text = text.replace(old_fill, new_fill, 1)
+          path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Commit fix directly to main
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add complexivo/full-document.js
+          git commit -m "Make Complexivo index continuous"
+          git push origin HEAD:main
