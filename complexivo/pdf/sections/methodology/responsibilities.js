@@ -5,33 +5,35 @@
   ns.parts.methodology = ns.parts.methodology || {};
   ns.parts.methodology.responsibilities = function(api) {
     const {heading,paragraph,tableCaption,tableNote,autoTable,BODY,bodyW} = api;
+    const a=ns.config?.areas||{};
 
-    heading("3.9. Responsables por Fase del Proceso",2,true);
-    paragraph("La ejecución requiere responsabilidades explícitas y productos verificables. La matriz vincula cada fase con la unidad responsable y con la evidencia mínima que permite comprobar su cumplimiento.");
+    heading("3.9. Matriz de Coordinación Interáreas",2,true);
+    paragraph("La ejecución del examen complexivo exige coordinación entre áreas académicas, administrativas y tecnológicas. La siguiente matriz identifica el área principal de cada necesidad y las instancias con las que debe articularse, de modo que las responsabilidades no queden expresadas de forma genérica.");
 
-    tableCaption("Responsables, productos y evidencias por fase del proceso");
+    tableCaption("Matriz de coordinación interáreas del proceso de examen complexivo");
     autoTable({
       startY:api.getY(),
       margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
-      head:[["Fase del proceso","Responsable institucional","Producto / evidencia"]],
+      head:[["Fase / necesidad","Área principal","Áreas con las que debe coordinar"]],
       body:[
-        ["Diseño metodológico y estructura del examen","Coordinación de Titulación y Coordinaciones de Carrera","Plan metodológico, lineamientos y versión aprobada del proceso"],
-        ["Validación académica de instrumentos","Coordinaciones de Carrera y docentes designados","Instrumentos revisados, criterios de evaluación y control de versión"],
-        ["Inducción y socialización","Coordinación de Titulación y Coordinaciones de Carrera","Convocatoria, material, registro de participación y comunicaciones"],
-        ["Requisitos académicos y documentales","Secretaría Académica y Coordinaciones de Carrera","Registro de habilitación y estado de requisitos"],
-        ["Obligaciones financieras","Unidad de Recaudación y Cartera","Estado institucional de cumplimiento, sin valores históricos hardcodeados"],
-        ["Vinculación y prácticas preprofesionales","Unidades responsables y Coordinaciones de Carrera","Registro o certificación de cumplimiento"],
-        ["Organización logística","Coordinación de Titulación y unidades de apoyo","Distribución, espacios, horarios, checklist técnico y responsables"],
-        ["Núcleos de Titulación","Docentes designados y Coordinaciones de Carrera","Plan, recursos, registros y seguimiento de los cuatro núcleos"],
-        ["Aplicación del examen","Coordinación de Titulación, docentes responsables y soporte","Asistencia, bitácora, evidencias de entrega e incidencias"],
-        ["Evaluación y calificación","Docentes evaluadores","Criterios aplicados, resultados y evidencias de evaluación"],
-        ["Registro de resultados","Coordinaciones de Carrera y unidades de sistema","Registro institucional, actas o constancias de carga"],
-        ["Cierre y mejora continua","Coordinación de Titulación y Coordinación General de Carreras","Informe final, archivo de evidencias y plan de mejora"]
+        ["Dirección del proceso complexivo",a.titulacion||"Titulación y Eficiencia Terminal",(a.coordinacionAcademica||"Coordinación Académica")+", "+(a.coordinacionGeneral||"Coordinación General de Carreras")],
+        ["Coordinación de docentes y carreras",a.coordinacionGeneral||"Coordinación General de Carreras",(a.carreras||"Coordinaciones de Carrera")+", "+(a.titulacion||"Titulación y Eficiencia Terminal")],
+        ["Verificación académica y documental",a.secretaria||"Secretaría Académica",(a.carreras||"Coordinaciones de Carrera")+", "+(a.titulacion||"Titulación y Eficiencia Terminal")],
+        ["Diseño académico de instrumentos",a.carreras||"Coordinaciones de Carrera","Docentes designados, "+(a.titulacion||"Titulación y Eficiencia Terminal")+", "+(a.gestionDidactica||"Gestión Didáctica, Diseño Curricular y Calidad Docente")],
+        ["Validación financiera",a.recaudacion||"Recaudación y Cartera",(a.titulacion||"Titulación y Eficiencia Terminal")+", "+(a.secretaria||"Secretaría Académica")+" cuando corresponda"],
+        ["Vinculación",a.vinculacion||"Vinculación con la Sociedad",(a.carreras||"Coordinaciones de Carrera")+", "+(a.titulacion||"Titulación y Eficiencia Terminal")],
+        ["Prácticas",a.practicas||"Prácticas Preprofesionales",(a.carreras||"Coordinaciones de Carrera")+", "+(a.titulacion||"Titulación y Eficiencia Terminal")],
+        ["Lengua extranjera",a.idiomas||"Coordinación Idiomas",(a.secretaria||"Secretaría Académica")+", "+(a.carreras||"Coordinaciones de Carrera")],
+        ["Casos estudiantiles justificados",a.bienestar||"Bienestar y Seguimiento Estudiantil",(a.titulacion||"Titulación y Eficiencia Terminal")+", "+(a.carreras||"Coordinaciones de Carrera")],
+        ["Plataformas y aulas virtuales",a.ti||"Coordinación de Tecnología de la Información",(a.desarrolloSistemas||"Unidad de Desarrollo de Sistemas")+", "+(a.soporteTecnologico||"Infraestructura y Soporte Tecnológico")+", "+(a.titulacion||"Titulación y Eficiencia Terminal")],
+        ["Laboratorios y soporte tecnológico",a.soporteTecnologico||"Infraestructura y Soporte Tecnológico",(a.titulacion||"Titulación y Eficiencia Terminal")+", "+(a.carreras||"Coordinaciones de Carrera")],
+        ["Espacios físicos",a.infraestructuraFisica||"Infraestructura Física y Servicios Generales",(a.titulacion||"Titulación y Eficiencia Terminal")+", "+(a.coordinacionGeneral||"Coordinación General de Carreras")],
+        ["Registro y cierre",(a.titulacion||"Titulación y Eficiencia Terminal")+" / "+(a.secretaria||"Secretaría Académica"),(a.carreras||"Coordinaciones de Carrera")+", "+(a.desarrolloSistemas||"Unidad de Desarrollo de Sistemas")+" y áreas responsables"]
       ],
-      columnStyles:{0:{cellWidth:bodyW*0.31},1:{cellWidth:bodyW*0.31},2:{cellWidth:bodyW*0.38}},
-      styles:{font:"times",fontSize:8.6,cellPadding:4,textColor:0},
+      columnStyles:{0:{cellWidth:bodyW*0.29},1:{cellWidth:bodyW*0.30},2:{cellWidth:bodyW*0.41}},
+      styles:{font:"times",fontSize:8.2,cellPadding:4,textColor:0},
       headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
     });
-    tableNote("La matriz debe actualizarse cuando cambie la estructura institucional o la asignación de responsabilidades del período.");
+    tableNote("La matriz debe actualizarse cuando exista un cambio formal en la estructura institucional o en la asignación de competencias.");
   };
 })();
