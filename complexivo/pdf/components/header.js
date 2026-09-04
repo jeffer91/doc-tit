@@ -37,7 +37,7 @@
       const totalW = isCover ? 18 * CM : pageW - 60;
       const x = isCover ? (pageW - totalW) / 2 : 30;
       const top = isCover ? 1.5 * CM : 18;
-      const h = isCover ? 2.8 * CM : 72;
+      const h = isCover ? 3.4 * CM : 72;
       const colA = totalW * 0.25;
       const colB = totalW * 0.50;
       const colC = totalW * 0.25;
@@ -58,7 +58,7 @@
       if(ctx.assets && ctx.assets.logo){
         try{
           const maxW = Math.min(colA - 10, 3.8 * CM);
-          const maxH = Math.min(h - 10, 1.8 * CM);
+          const maxH = Math.min(h - 10, 2.2 * CM);
           const fitted = fitImage(doc, ctx.assets.logo, maxW, maxH);
           const lx = x + (colA - fitted.w) / 2;
           const ly = top + (h - fitted.h) / 2;
@@ -80,24 +80,22 @@
       doc.text(unitLines,bx+colB/2,unitY,{align:"center",lineHeightFactor:1.05});
 
       // B2 - Nombre formal del documento y período.
-      doc.setFont("helvetica","bold");
-      doc.setFontSize(9);
-      const titleLines = doc.splitTextToSize(title,colB-16);
-      const titleLineH = 10;
-      doc.setFontSize(10);
+      // jsPDF incluye Helvetica como fuente estándar; visualmente es la equivalente métrica de Arial.
+      // En portada, el bloque título + período se renderiza a 23 pt, como exige el formato.
       const period = String(ctx.period?.name || "");
-      const periodLines = doc.splitTextToSize(period,colB-16);
-      const periodLineH = 11;
-      const groupH = titleLines.length*titleLineH + 6 + periodLines.length*periodLineH;
-      let groupY = top + row1 + (row2-groupH)/2 + 8;
-
+      const coverText = period ? title + "\n" + period : title;
+      const coverSize = isCover ? 23 : 9;
+      const coverLineH = isCover ? 24 : 10;
       doc.setFont("helvetica","bold");
-      doc.setFontSize(9);
-      doc.text(titleLines,bx+colB/2,groupY,{align:"center",lineHeightFactor:1.05});
-      groupY += titleLines.length*titleLineH + 6;
-      doc.setFont("helvetica","bold");
-      doc.setFontSize(10);
-      doc.text(periodLines,bx+colB/2,groupY,{align:"center",lineHeightFactor:1.05});
+      doc.setFontSize(coverSize);
+      const coverLines = [];
+      coverText.split("\n").forEach((part) => {
+        const lines = doc.splitTextToSize(part,colB-16);
+        coverLines.push(...lines);
+      });
+      const groupH = coverLines.length * coverLineH;
+      const groupY = top + row1 + (row2-groupH)/2 + (isCover ? 18 : 8);
+      doc.text(coverLines,bx+colB/2,groupY,{align:"center",lineHeightFactor:1.02});
 
       // C1+C2 - En RGI el control documental es únicamente el código.
       const code = String(ctx.code || "");
