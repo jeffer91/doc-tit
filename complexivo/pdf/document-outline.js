@@ -2,7 +2,6 @@
   "use strict";
   const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {};
   ns.outline = [
-    "executiveSummary",
     "introduction",
     "legalBasis",
     "methodology",
@@ -14,7 +13,7 @@
     "imponderables",
     "evaluation",
     "closure",
-    "generalSummary",
+    "executiveSummary",
     "bibliography",
     "annexes"
   ];
