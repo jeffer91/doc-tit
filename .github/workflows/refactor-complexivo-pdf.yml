@@ -14,13 +14,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
 
       - name: Recover refactor script
         shell: bash
         run: |
-          git show 5702361227fe988a9651d4177654b76c4ed70dd3:.github/workflows/refactor-complexivo-pdf.yml > /tmp/previous-refactor.yml
+          git fetch origin 5702361227fe988a9651d4177654b76c4ed70dd3 --depth=1
+          git show FETCH_HEAD:.github/workflows/refactor-complexivo-pdf.yml > /tmp/previous-refactor.yml
           python -c "from pathlib import Path; src=Path('/tmp/previous-refactor.yml').read_text(encoding='utf-8'); marker=\"          python - <<'PY'\\n\"; start=src.index(marker)+len(marker); end=src.index('\\n          PY\\n',start); block=src[start:end]; lines=[line[10:] if line.startswith('          ') else line for line in block.splitlines()]; Path('/tmp/refactor_complexivo_pdf.py').write_text('\\n'.join(lines)+'\\n',encoding='utf-8')"
           python -c "from pathlib import Path; p=Path('/tmp/refactor_complexivo_pdf.py'); s=p.read_text(encoding='utf-8'); needle='if old_body not in source:'; fixed='old_body = \\\"  const BODY = {\\\\n    left: 72,\\\\n    right: 72,\\\\n    top: 108,\\\\n    bottom: 62,\\\\n    fontSize: 12,\\\\n    lineHeight: 24,\\\\n    paragraphIndent: 36\\\\n  };\\\"\\nif old_body not in source:'; assert needle in s; p.write_text(s.replace(needle,fixed,1),encoding='utf-8')"
           python /tmp/refactor_complexivo_pdf.py
