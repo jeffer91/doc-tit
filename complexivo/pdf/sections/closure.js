@@ -26,6 +26,8 @@
       paragraph("Las evidencias deben organizarse por período, carrera y estudiante o jornada, según corresponda. El respaldo se coordina entre "+(a.titulacion||"Titulación y Eficiencia Terminal")+", "+(a.carreras||"Coordinaciones de Carrera")+" y "+(a.ti||"Coordinación de Tecnología de la Información")+" cuando se utilicen repositorios o plataformas institucionales.");
       tableCaption("Matriz mínima de evidencias y trazabilidad");
       autoTable({
+        rowPageBreak:"avoid",
+        tableWidth:bodyW,
         startY:api.getY(),
         margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
         head:[["Fase","Evidencia mínima","Responsable","Uso de la evidencia"]],
@@ -52,7 +54,8 @@
       paragraph("Las lecciones aprendidas deben convertirse en acciones concretas con responsable y, cuando corresponda, fecha de implementación para el siguiente período.");
 
       heading("11.7. Secuencia Administrativa de Cierre",2,true);
-      paragraph("La secuencia de cierre es: Consolidación de resultados → Registro de calificaciones → Verificación de estudiantes sin estado final → Respaldo de evidencias → Cierre de aulas y plataformas → Informe final del proceso. El examen complexivo se considera administrativamente cerrado cuando esta secuencia ha sido completada y documentada.",{indent:false,bold:true});
+      paragraph("La secuencia administrativa de cierre comprende seis pasos: 1) consolidación de resultados; 2) registro de calificaciones; 3) verificación de estudiantes sin estado final; 4) respaldo de evidencias; 5) cierre de aulas y plataformas; y 6) elaboración del informe final del proceso.",{indent:false});
+      paragraph("El examen complexivo se considera administrativamente cerrado cuando los seis pasos han sido completados y cuentan con evidencia verificable.",{indent:false});
     }
   };
 })();
