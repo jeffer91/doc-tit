@@ -7,7 +7,7 @@
     render(api) {
       const {heading,paragraph,reference} = api;
       heading("13. Bibliografía y Referencias Normativas",1,true);
-      paragraph("Se incluyen únicamente referencias normativas o institucionales identificables. La app no genera autores, años, páginas ni citas académicas cuando no existe una fuente real y verificable.",{indent:false});
+      paragraph("Se incluyen referencias normativas e institucionales identificables que sirven de sustento al proceso de titulación. Su denominación, versión y vigencia deben revisarse antes de cada nuevo período.",{indent:false});
 
       [
         "Asamblea Constituyente del Ecuador. (2008). Constitución de la República del Ecuador.",
@@ -16,7 +16,7 @@
         "Instituto Tecnológico Superior Quito Metropolitano. Reglamento institucional del Área de Titulación. Versión institucional vigente aplicable al período."
       ].forEach(reference);
 
-      paragraph("Las referencias institucionales deben revisarse antes de cada nuevo período para confirmar denominación, versión y vigencia.",{indent:false,italic:true});
+      paragraph("Las referencias institucionales deben confirmarse con los documentos oficiales vigentes antes de emitir la planificación definitiva.",{indent:false,italic:true});
     }
   };
 })();
