@@ -8,76 +8,97 @@
       const {ctx,heading,paragraph,tableCaption,tableNote,autoTable,BODY,bodyW,totals,joinNatural,policy,formatDateShort} = api;
       const t=totals(ctx.distribution);
       const ev=policy.evaluation||{};
-      const schedule=ctx.schedule||[];
-      if(!schedule.length && !(ctx.distribution||[]).length) return;
+      const schedule=(ctx.schedule||[]).filter(r=>r && (r.activity||r.start||r.end));
+      const distribution=(ctx.distribution||[]).filter(r=>r && (r.career||r.place||Number(r.count)>0));
+      if(!schedule.length && !distribution.length) return;
 
       heading("14. Anexos",1,true);
-      paragraph("Los anexos reúnen información disponible del período y formatos de control directamente vinculados con la ejecución del examen complexivo.",{indent:false});
+      paragraph("Los anexos se presentan como instrumentos operativos de control. Solo incorporan información disponible del período y evitan campos ficticios o valores pendientes de definición.",{indent:false});
 
-      heading("14.1. Anexo A - Control de Consistencia del Período",2,true);
       const first=schedule.filter(r=>r.start).slice().sort((a,b)=>a.start.localeCompare(b.start))[0];
       const last=schedule.filter(r=>r.end).slice().sort((a,b)=>b.end.localeCompare(a.end))[0];
-      tableCaption("Control de consistencia del período");
-      autoTable({
-        startY:api.getY(),
-        margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
-        head:[["Validación","Resultado"]],
-        body:[
-          ["Total de estudiantes",String(t.total)],
-          ["Lugares registrados",joinNatural(Object.keys(t.byPlace))],
-          ["Número de grupos carrera-modalidad",String((ctx.distribution||[]).length)],
-          ["Primera actividad",first?first.activity+" - "+formatDateShort(first.start):"Sin dato"],
-          ["Última actividad",last?last.activity+" - "+formatDateShort(last.end):"Sin dato"],
-          ["Ponderación",ev.theoreticalWeight+" % + "+ev.practicalWeight+" % = "+(ev.theoreticalWeight+ev.practicalWeight)+" %"],
-          ["Nota mínima",ev.minimumGrade+"/"+ev.gradeScale],
-          ["Modalidad general","Presencial; virtual solo por excepción autorizada"],
-          ["Defensa oral","No aplica como regla general; únicamente cuando exista una condición aprobada para la carrera"]
-        ],
-        columnStyles:{0:{cellWidth:bodyW*0.34},1:{cellWidth:bodyW*0.66}},
-        styles:{font:"times",fontSize:9,cellPadding:4,textColor:0},
-        headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
-      });
-      tableNote("Los resultados se sustentan en los datos y criterios vigentes del período.");
+      const consistencyRows=[
+        t.total>0 ? ["Total de estudiantes",String(t.total),"[ ] Verificado",""] : null,
+        Object.keys(t.byPlace).length ? ["Lugares registrados",joinNatural(Object.keys(t.byPlace)),"[ ] Verificado",""] : null,
+        distribution.length ? ["Grupos carrera-modalidad",String(distribution.length),"[ ] Verificado",""] : null,
+        first ? ["Primera actividad",first.activity+" - "+formatDateShort(first.start),"[ ] Verificado",""] : null,
+        last ? ["Última actividad",last.activity+" - "+formatDateShort(last.end),"[ ] Verificado",""] : null,
+        Number.isFinite(Number(ev.theoreticalWeight)) && Number.isFinite(Number(ev.practicalWeight)) ? ["Ponderación",ev.theoreticalWeight+" % + "+ev.practicalWeight+" % = "+(Number(ev.theoreticalWeight)+Number(ev.practicalWeight))+" %","[ ] Verificado",""] : null,
+        ev.minimumGrade!=null && ev.gradeScale!=null ? ["Nota mínima",ev.minimumGrade+"/"+ev.gradeScale,"[ ] Verificado",""] : null,
+        ["Modalidad general","Presencial; virtual solo mediante excepción autorizada","[ ] Verificado",""]
+      ].filter(Boolean);
 
-      heading("14.2. Anexo B - Lista de Verificación Operativa",2,true);
-      tableCaption("Checklist previo a cada jornada de examen");
-      autoTable({
-        startY:api.getY(),
-        margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
-        head:[["Control","Estado esperado","Evidencia"]],
-        body:[
-          ["Listado de estudiantes y responsables","Confirmado","Cronograma o listado de jornada"],
-          ["Identidad y habilitación","Verificadas","Registro institucional"],
-          ["Espacio y capacidad","Confirmados","Asignación de laboratorio o aula"],
-          ["Equipos y software","Probados","Checklist técnico"],
-          ["Conectividad y accesos","Probados","Registro de prueba"],
-          ["Instrumento y versión","Aprobados","Control de versión"],
-          ["Responsables y contingencia","Confirmados","Matriz de responsables y mecanismo de respaldo"],
-          ["Entrega y respaldo","Definidos","Ruta o mecanismo de almacenamiento"],
-          ["Registro de incidencias","Disponible","Bitácora de jornada"]
-        ],
-        columnStyles:{0:{cellWidth:bodyW*0.35},1:{cellWidth:bodyW*0.25},2:{cellWidth:bodyW*0.40}},
-        styles:{font:"times",fontSize:8.8,cellPadding:4,textColor:0},
-        headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
-      });
-      tableNote("Este formato debe completarse con información real de cada jornada y conservarse como evidencia del control previo.");
-
-      heading("14.3. Anexo C - Seguimiento del Plan Operativo",2,true);
-      const plan=Array.isArray(ctx.operationalPlan)?ctx.operationalPlan:[];
-      if(plan.length){
-        tableCaption("Estado de actividades operativas del período");
+      if(consistencyRows.length){
+        heading("14.1. Anexo A - Control de Consistencia del Período",2,true);
+        tableCaption("Ficha de control de consistencia del período");
         autoTable({
+          institutionalGrid:true,
+          rowPageBreak:"avoid",
+          tableWidth:bodyW,
           startY:api.getY(),
           margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
-          head:[["Actividad","Inicio","Fecha límite","Estado","Persona responsable"]],
-          body:plan.map(r=>[r.activity||"",r.start?formatDateShort(r.start):"Por definir",r.deadline?formatDateShort(r.deadline):"Por definir",r.status||"Planificado",r.person||"Por definir"]),
-          columnStyles:{0:{cellWidth:bodyW*0.38},1:{cellWidth:bodyW*0.14},2:{cellWidth:bodyW*0.14},3:{cellWidth:bodyW*0.14},4:{cellWidth:bodyW*0.20}},
-          styles:{font:"times",fontSize:7.5,cellPadding:3,textColor:0},
-          headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
+          head:[["Campo de control","Valor registrado","Validación","Observaciones"]],
+          body:consistencyRows,
+          columnStyles:{0:{cellWidth:bodyW*0.25},1:{cellWidth:bodyW*0.38},2:{cellWidth:bodyW*0.17},3:{cellWidth:bodyW*0.20}},
+          styles:{font:"times",fontSize:8.4,cellPadding:4,textColor:0,valign:"middle"},
+          headStyles:{font:"times",fontStyle:"bold",fontSize:8.4,fillColor:[242,242,242],textColor:0}
         });
-        tableNote("El seguimiento permite verificar qué actividades permanecen planificadas, se encuentran en proceso o han sido completadas.");
-      }else{
-        paragraph("El seguimiento del plan operativo se incorpora cuando existan actividades registradas para el período.");
+        tableNote("La ficha debe validarse antes de emitir la planificación definitiva.");
+      }
+
+      heading("14.2. Anexo B - Lista de Verificación Operativa",2,true);
+      tableCaption("Lista de verificación previa a cada jornada de examen");
+      const checklist=[
+        ["Listado de estudiantes y responsables","[ ] Sí   [ ] No   [ ] Observado","","Cronograma o listado de jornada",""] ,
+        ["Identidad y habilitación","[ ] Sí   [ ] No   [ ] Observado","","Registro institucional",""] ,
+        ["Espacio y capacidad","[ ] Sí   [ ] No   [ ] Observado","","Asignación de laboratorio o aula",""] ,
+        ["Equipos y software","[ ] Sí   [ ] No   [ ] Observado","","Checklist técnico",""] ,
+        ["Conectividad y accesos","[ ] Sí   [ ] No   [ ] Observado","","Registro de prueba",""] ,
+        ["Instrumento y versión","[ ] Sí   [ ] No   [ ] Observado","","Control de versión",""] ,
+        ["Responsables y contingencia","[ ] Sí   [ ] No   [ ] Observado","","Matriz de responsables",""] ,
+        ["Entrega y respaldo","[ ] Sí   [ ] No   [ ] Observado","","Ruta o mecanismo de almacenamiento",""] ,
+        ["Registro de incidencias","[ ] Sí   [ ] No   [ ] Observado","","Bitácora de jornada",""]
+      ];
+      autoTable({
+        institutionalGrid:true,
+        rowPageBreak:"avoid",
+        tableWidth:bodyW,
+        startY:api.getY(),
+        margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
+        head:[["Control","Cumplimiento","Responsable","Evidencia","Observaciones"]],
+        body:checklist,
+        columnStyles:{0:{cellWidth:bodyW*0.25},1:{cellWidth:bodyW*0.20},2:{cellWidth:bodyW*0.16},3:{cellWidth:bodyW*0.23},4:{cellWidth:bodyW*0.16}},
+        styles:{font:"times",fontSize:7.8,cellPadding:3.5,textColor:0,valign:"middle"},
+        headStyles:{font:"times",fontStyle:"bold",fontSize:7.8,fillColor:[242,242,242],textColor:0}
+      });
+      tableNote("Este instrumento se completa con datos reales de la jornada y se conserva como evidencia de control.");
+
+      const plan=(Array.isArray(ctx.operationalPlan)?ctx.operationalPlan:[]).filter(r=>{
+        if(!r) return false;
+        return [r.start,r.deadline,r.actualDate,r.person,r.status,r.observations,r.evidence].some(v=>String(v||"").trim());
+      });
+      if(plan.length){
+        heading("14.3. Anexo C - Seguimiento del Plan Operativo",2,true);
+        tableCaption("Formato de seguimiento de actividades operativas");
+        autoTable({
+          institutionalGrid:true,
+          rowPageBreak:"avoid",
+          tableWidth:bodyW,
+          startY:api.getY(),
+          margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
+          head:[["Actividad","Fecha prevista","Fecha ejecutada","Responsable / Estado","Evidencia / Observaciones"]],
+          body:plan.map(r=>[
+            r.activity||"",
+            r.deadline?formatDateShort(r.deadline):(r.start?formatDateShort(r.start):""),
+            r.actualDate?formatDateShort(r.actualDate):"",
+            [r.person,r.status].filter(Boolean).join("\n"),
+            [r.evidence,r.observations].filter(Boolean).join("\n")
+          ]),
+          columnStyles:{0:{cellWidth:bodyW*0.28},1:{cellWidth:bodyW*0.14},2:{cellWidth:bodyW*0.14},3:{cellWidth:bodyW*0.20},4:{cellWidth:bodyW*0.24}},
+          styles:{font:"times",fontSize:7.8,cellPadding:3.5,textColor:0,valign:"top"},
+          headStyles:{font:"times",fontStyle:"bold",fontSize:7.8,fillColor:[242,242,242],textColor:0}
+        });
+        tableNote("No se imprimen actividades sin información real de seguimiento.");
       }
     }
   };
