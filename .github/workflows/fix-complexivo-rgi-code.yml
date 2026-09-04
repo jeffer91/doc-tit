@@ -1,0 +1,57 @@
+name: Fix Complexivo RGI document code
+
+on:
+  push:
+    paths:
+      - ".github/workflows/fix-complexivo-rgi-code.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Correct RGI code and cache key
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          app = Path('complexivo/app.js')
+          s = app.read_text(encoding='utf-8')
+          s = s.replace('{id:"code", label:"Código y versión", source:"Automáticos", automatic:true}',
+                        '{id:"code", label:"Código documental", source:"Automático", automatic:true}')
+          pattern = re.compile(r'  function documentCode\(doc,period\)\{\n    const \{year,month\}=monthYear\(period\.start\);\n    return `\$\{doc\.prefix\}\$\{doc\.sequence\}-\$\{doc\.process\}-\$\{year\}-\$\{month\}`;\n  \}')
+          replacement = '  function documentCode(doc,period){\n    // El RGI conserva literalmente el código documental asignado; el período no forma parte del código.\n    return `${doc.prefix}${doc.sequence}-${doc.process}`;\n  }'
+          s2, count = pattern.subn(replacement, s, count=1)
+          if count != 1:
+              raise SystemExit(f'documentCode replacement count={count}')
+          app.write_text(s2, encoding='utf-8')
+
+          index = Path('complexivo/index.html')
+          h = index.read_text(encoding='utf-8')
+          h = h.replace('v=20260904-cover-rgi-1','v=20260904-cover-rgi-2')
+          index.write_text(h, encoding='utf-8')
+          PY
+
+      - name: Validate JavaScript
+        shell: bash
+        run: |
+          node --check complexivo/app.js
+          grep -q 'Código documental' complexivo/app.js
+          grep -q 'return `${doc.prefix}${doc.sequence}-${doc.process}`;' complexivo/app.js
+          grep -q 'v=20260904-cover-rgi-2' complexivo/index.html
+
+      - name: Commit correction directly to main
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add complexivo/app.js complexivo/index.html
+          if ! git diff --cached --quiet; then
+            git commit -m "Correct Complexivo RGI document code"
+            git push origin HEAD:main
+          fi
