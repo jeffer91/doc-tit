@@ -4,26 +4,28 @@
   ns.parts = ns.parts || {};
   ns.parts.methodology = ns.parts.methodology || {};
   ns.parts.methodology.schedule = function(api) {
-    const {doc,ctx,pageW,pageH,bodyW,BODY,heading,paragraph,bullet,ensureSpace,tableCaption,tableNote,autoTable,formatDateShort,formatDateLong,lowerPeriod,normalize,totals,insertSectionImage,reference,drawVerticalBars,drawGroupBars,drawTimeline,getAnalysisSentences} = api;
-    function scheduleTable(){
-      heading("3.10. Cronogramas",2,true);
-      paragraph("El cronograma general organiza las fechas de las principales fases del examen complexivo y constituye la referencia temporal para los documentos operativos complementarios.");
+    const {ctx,heading,paragraph,tableCaption,tableNote,autoTable,BODY,formatDateShort,drawTimeline} = api;
 
-      ensureSpace(190);
-      tableCaption("Cronograma general del proceso de examen complexivo");
+    heading("3.10. Cronogramas",2,true);
+    paragraph("La planificación distingue tres niveles: cronograma general del proceso, cronograma operativo de los cuatro Núcleos de Titulación y cronograma específico de aplicación del examen. El primero fija ventanas institucionales; los dos restantes desarrollan horarios, grupos, espacios, responsables y recursos sin sustituir la planificación general.");
 
-      autoTable({
-        startY:api.getY(),
-        margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
-        head:[["Actividad","Fecha inicio","Fecha fin"]],
-        body:(ctx.schedule||[]).map(r=>[r.activity,formatDateShort(r.start),formatDateShort(r.end)]),
-        styles:{font:"times",fontSize:10,cellPadding:5,textColor:0},
-        headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
-      });
+    tableCaption("Cronograma general del proceso de examen complexivo");
+    autoTable({
+      startY:api.getY(),
+      margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
+      head:[["Actividad","Fecha inicio","Fecha fin"]],
+      body:(ctx.schedule||[]).map(r=>[r.activity,formatDateShort(r.start),formatDateShort(r.end)]),
+      styles:{font:"times",fontSize:9.5,cellPadding:5,textColor:0},
+      headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
+    });
+    tableNote("Elaboración propia con base en las fechas vigentes registradas para el período.");
 
-      tableNote("Elaboración propia con base en la planificación académica del período.");
-      paragraph("Los cronogramas complementarios de desarrollo de núcleos y de rendición del examen detallarán, cuando corresponda, la distribución por carrera, lugar, fecha, hora, laboratorio y responsables, sin sustituir la planificación general del período.");
+    const post=(ctx.schedule||[]).filter(r=>r.end&&ctx.period?.end&&r.end>ctx.period.end);
+    if(post.length){
+      paragraph("Aclaración temporal: el período académico finaliza el "+formatDateShort(ctx.period.end)+", mientras que determinadas actividades de cierre y titulación se ejecutan posteriormente según el cronograma. Estas fechas posteriores corresponden a la culminación operativa del proceso y no modifican la denominación del período académico.",{indent:false,bold:true});
     }
-    scheduleTable();
+
+    paragraph("El cronograma de Núcleos de Titulación debe precisar, como mínimo, núcleo, carrera o grupo, docente, fecha, horario, modalidad autorizada, recurso o enlace institucional cuando corresponda y evidencia de desarrollo. El cronograma de examen debe precisar carrera, grupo, lugar, laboratorio o espacio, fecha, hora, responsable de jornada y soporte.");
+    drawTimeline(ctx.schedule||[],"Secuencia temporal del proceso de titulación");
   };
 })();
