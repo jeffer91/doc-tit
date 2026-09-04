@@ -33,7 +33,6 @@
       const isCover = pageNo === 1;
 
       // Portada RGI: 18 cm de ancho, columnas 4,50 / 9,00 / 4,50 cm.
-      // En páginas interiores se conserva el encabezado compacto para no invadir el cuerpo.
       const totalW = isCover ? 18 * CM : pageW - 60;
       const x = isCover ? (pageW - totalW) / 2 : 30;
       const top = isCover ? 1.5 * CM : 18;
@@ -52,7 +51,6 @@
       doc.rect(x,top,totalW,h,"FD");
       doc.line(bx,top,bx,top+h);
       doc.line(cx,top,cx,top+h);
-      // En RGI solo la columna central se divide en dos filas.
       doc.line(bx,top+row1,cx,top+row1);
 
       if(ctx.assets && ctx.assets.logo){
@@ -66,11 +64,11 @@
         }catch(e){}
       }else{
         doc.setFont("helvetica","bold");
-        doc.setFontSize(8.5);
+        doc.setFontSize(9);
         doc.text("LOGO INSTITUCIONAL",x+colA/2,top+h/2,{align:"center"});
       }
 
-      // B1 - Unidad responsable.
+      // Encabezado institucional: Arial 9 equivalente en jsPDF = Helvetica 9.
       doc.setFont("helvetica","normal");
       doc.setFontSize(9);
       const unit = "UNIDAD DE TITULACIÓN Y EFICIENCIA TERMINAL";
@@ -79,31 +77,41 @@
       const unitY = top + (row1 - unitLines.length*unitLineH)/2 + 7.5;
       doc.text(unitLines,bx+colB/2,unitY,{align:"center",lineHeightFactor:1.05});
 
-      // B2 - Nombre formal del documento y período.
-      // jsPDF incluye Helvetica como fuente estándar; visualmente es la equivalente métrica de Arial.
-      // En portada, el bloque título + período se renderiza a 23 pt, como exige el formato.
-      const period = String(ctx.period?.name || "");
-      const coverText = period ? title + "\n" + period : title;
-      const coverSize = isCover ? 23 : 9;
-      const coverLineH = isCover ? 24 : 10;
+      // ÚNICAMENTE el título formal va a 23 pt.
+      const titleSize = isCover ? 23 : 9;
+      const titleLineH = isCover ? 23.5 : 10;
       doc.setFont("helvetica","bold");
-      doc.setFontSize(coverSize);
-      const coverLines = [];
-      coverText.split("\n").forEach((part) => {
-        const lines = doc.splitTextToSize(part,colB-16);
-        coverLines.push(...lines);
-      });
-      const groupH = coverLines.length * coverLineH;
-      const groupY = top + row1 + (row2-groupH)/2 + (isCover ? 18 : 8);
-      doc.text(coverLines,bx+colB/2,groupY,{align:"center",lineHeightFactor:1.02});
+      doc.setFontSize(titleSize);
+      const titleLines = doc.splitTextToSize(title,colB-16);
 
-      // C1+C2 - En RGI el control documental es únicamente el código.
+      // El período permanece a 9 pt; no forma parte del título a 23 pt.
+      const period = String(ctx.period?.name || "");
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(9);
+      const periodLines = period ? doc.splitTextToSize(period,colB-16) : [];
+      const periodLineH = 10;
+
+      const groupH = titleLines.length*titleLineH + (periodLines.length ? 8 + periodLines.length*periodLineH : 0);
+      let groupY = top + row1 + (row2-groupH)/2 + (isCover ? 17 : 8);
+
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(titleSize);
+      doc.text(titleLines,bx+colB/2,groupY,{align:"center",lineHeightFactor:1.02});
+
+      if(periodLines.length){
+        groupY += titleLines.length*titleLineH + 8;
+        doc.setFont("helvetica","normal");
+        doc.setFontSize(9);
+        doc.text(periodLines,bx+colB/2,groupY,{align:"center",lineHeightFactor:1.05});
+      }
+
+      // Control documental: Arial 9 equivalente = Helvetica 9.
       const code = String(ctx.code || "");
       doc.setFont("helvetica","bold");
-      doc.setFontSize(8.5);
+      doc.setFontSize(9);
       doc.text("Código:",cx+colC/2,top+h/2-7,{align:"center"});
       doc.setFont("helvetica","normal");
-      doc.setFontSize(8.5);
+      doc.setFontSize(9);
       const codeLines = doc.splitTextToSize(code,colC-10);
       doc.text(codeLines,cx+colC/2,top+h/2+6,{align:"center",lineHeightFactor:1.05});
     }
