@@ -640,11 +640,10 @@
     }
 
     function reserveIndexPages(){
-      newPage();
-      newPage();
-      // La introducción debe iniciar en una página nueva, nunca sobre el índice.
-      newPage();
-    }
+    // Una sola página de índice; el contenido comienza inmediatamente después.
+    newPage();
+    newPage();
+  }
 
     function introAndLegal(){
       heading("1. Introducción",1,true);
@@ -1337,23 +1336,8 @@
         dedup.push(e);
       });
 
-      const heights=dedup.map(tocEntryHeight);
-      const totalHeight=heights.reduce((s,h)=>s+h,0);
-      const target=totalHeight/2;
-
-      let cumulative=0;
-      let splitAt=1;
-      for(let i=0;i<heights.length;i++){
-        if(cumulative+heights[i]>target && i>0){
-          splitAt=i;
-          break;
-        }
-        cumulative+=heights[i];
-        splitAt=i+1;
-      }
-
-      drawTOCPage(2,"Índice",dedup.slice(0,splitAt));
-      drawTOCPage(3,"",dedup.slice(splitAt));
+      // El índice se presenta de forma continua en una sola página.
+    drawTOCPage(2,"Índice",dedup);
     }
 
     function footers(){
