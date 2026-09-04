@@ -79,7 +79,7 @@
           {id:"schedule", label:"Cronograma", source:"Fechas de las 9 actividades", automatic:false},
           {id:"distribution", label:"Carreras · Lugar · Cantidad", source:"Distribución del período", automatic:false},
           {id:"logo", label:"Logo institucional", source:"Cabecera de todas las páginas", automatic:false},
-          {id:"code", label:"Código y versión", source:"Automáticos", automatic:true}
+          {id:"code", label:"Código documental", source:"Automático", automatic:true}
         ]
       }]
     }
@@ -475,8 +475,8 @@
     return {year:d.getFullYear(),month:String(d.getMonth()+1).padStart(2,"0")};
   }
   function documentCode(doc,period){
-    const {year,month}=monthYear(period.start);
-    return `${doc.prefix}${doc.sequence}-${doc.process}-${year}-${month}`;
+    // El RGI conserva literalmente el código documental asignado; el período no forma parte del código.
+    return `${doc.prefix}${doc.sequence}-${doc.process}`;
   }
   function docStoreKey(docId){ return `${state.activePeriodId}::${docId}`; }
   function getDocData(docId){ return state.documents[docStoreKey(docId)]||{}; }
