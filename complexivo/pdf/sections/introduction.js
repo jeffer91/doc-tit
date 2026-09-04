@@ -4,27 +4,41 @@
   ns.sections = ns.sections || {};
   ns.sections.introduction = {
     render(api) {
-      const {ctx,heading,paragraph,insertSectionImage,getAnalysisSentences,totals,lowerPeriod} = api;
-                function introParagraphs(ctx){
-                  const t=totals(ctx.distribution);
-                  const places=Object.keys(t.byPlace).join(", ");
-                  const p=lowerPeriod(ctx.period.name);
-                  return [
-                    "El examen complexivo constituye una modalidad de evaluación integral orientada a verificar que el estudiante articule los conocimientos, habilidades y competencias desarrollados durante su trayectoria académica y pueda aplicarlos de manera pertinente en situaciones vinculadas con su perfil de egreso. Su planificación requiere coordinar componentes académicos, administrativos, tecnológicos y logísticos, de modo que la evaluación se ejecute bajo criterios comunes, con trazabilidad documental y con condiciones equivalentes para los participantes.",
-                    "La presente planificación corresponde al período "+p+" y organiza el proceso desde el cierre de las actividades académicas y la verificación de requisitos hasta el desarrollo de los núcleos de preparación, la aplicación del examen complexivo, el registro de resultados y la eventual instancia de supletorio. El documento funciona como marco general de actuación y se complementa con cronogramas operativos específicos para cada fase.",
-                    "La planificación se sustenta en un enfoque teórico-práctico. El componente teórico permite valorar conocimientos esenciales y capacidad de análisis, mientras que el componente práctico busca evidenciar la aplicación de saberes frente a problemas, casos o situaciones propias del campo profesional. Esta integración permite que la evaluación no se limite a la reproducción de contenidos, sino que observe la capacidad del estudiante para argumentar, resolver y tomar decisiones de manera fundamentada.",
-                    "La organización del período considera además la distribución real de estudiantes. Para esta planificación se registran "+t.total+" estudiantes, distribuidos entre "+places+". Esta información permite dimensionar la demanda operativa, prever espacios, organizar jornadas y articular la participación de las carreras sin alterar los nombres oficiales registrados para cada grupo.",
-                    "El alcance del documento comprende la metodología del proceso, las responsabilidades institucionales, los requisitos de titulación, la preparación mediante seminarios o núcleos, la descripción de los componentes del examen, la distribución de estudiantes, los criterios para la asignación de recursos, la gestión de imponderables, los criterios de evaluación y el cierre del proceso. Cada apartado se relaciona con los demás para asegurar una ejecución ordenada y verificable.",
-                    "La coordinación entre la Unidad de Titulación y Eficiencia Terminal, las coordinaciones de carrera, Secretaría Académica, las unidades de apoyo y los docentes evaluadores es indispensable para mantener la continuidad del proceso. La planificación establece responsabilidades diferenciadas y evita que las decisiones operativas se adopten de manera aislada, particularmente en aspectos como la validación de requisitos, el uso de plataformas, la logística de espacios, la evaluación y el registro de calificaciones.",
-                    "Asimismo, se consideran criterios de inclusión, accesibilidad y contingencia. La institución debe prever mecanismos de atención frente a situaciones justificadas que puedan afectar la participación del estudiante o la ejecución de una jornada, procurando que cualquier ajuste conserve los principios académicos del proceso y quede debidamente documentado.",
-                    "En consecuencia, esta planificación se concibe como un instrumento de gestión académica y de control del proceso de titulación. Su finalidad no es únicamente establecer fechas, sino integrar las condiciones, responsables, recursos y criterios necesarios para que el examen complexivo se desarrolle de forma coherente, transparente y alineada con el perfil profesional de cada carrera."
-                  ];
-                }
+      const {ctx,heading,paragraph,bullet,insertSectionImage,getAnalysisSentences,totals,lowerPeriod,joinNatural} = api;
+      const t=totals(ctx.distribution);
+      const places=Object.keys(t.byPlace);
+      const p=lowerPeriod(ctx.period.name);
+
       heading("1. Introducción",1,true);
-      const intro=introParagraphs(ctx);
-      intro.slice(0,3).forEach(p=>paragraph(p));
+      paragraph(
+        "El examen complexivo constituye una modalidad de titulación orientada a comprobar de manera integral que el estudiante articula los conocimientos, habilidades y competencias desarrollados durante su trayectoria académica y puede aplicarlos frente a situaciones vinculadas con su perfil de egreso. Su planificación no se limita a definir una fecha de evaluación; requiere coordinar requisitos, preparación, instrumentos, recursos, responsables, evidencias y mecanismos de cierre.",
+        {indent:false}
+      );
       insertSectionImage("introImage");
-      intro.slice(3).forEach(p=>paragraph(p));
+
+      heading("1.1. Antecedentes y justificación",2,true);
+      paragraph("La planificación corresponde al período "+p+" y responde a la necesidad de ejecutar el examen bajo criterios comunes, verificables y documentados para todas las carreras incluidas en el proceso. El documento establece una ruta institucional que permite anticipar actividades, identificar responsables y reducir decisiones improvisadas durante las jornadas de titulación.");
+      paragraph("La existencia de grupos con diferentes carreras, modalidades académicas y lugares de ejecución exige una coordinación transversal entre Titulación, las Coordinaciones de Carrera, Secretaría Académica, las unidades de apoyo, los docentes responsables y los servicios tecnológicos. La planificación convierte esa coordinación en actividades, productos y evidencias concretas.");
+
+      heading("1.2. Propósito y objetivo general",2,true);
+      paragraph("El propósito del documento es servir como instrumento de gestión académica y operativa para la preparación, aplicación, evaluación y cierre del examen complexivo, utilizando los datos vigentes del período como única fuente de verdad.");
+      paragraph("El objetivo general es garantizar que el proceso de titulación mediante examen complexivo se desarrolle de forma ordenada, individual, teórico-práctica, trazable, equitativa y coherente con el perfil de egreso de cada carrera.");
+
+      heading("1.3. Objetivos específicos",2,true);
+      bullet("• Establecer una secuencia clara de actividades desde la verificación de requisitos hasta el cierre documental.");
+      bullet("• Definir responsables, productos esperados y evidencias para cada fase del proceso.");
+      bullet("• Organizar la preparación académica mediante cuatro Núcleos de Titulación y asegurar su seguimiento.");
+      bullet("• Coordinar la distribución de "+t.total+" estudiantes entre "+joinNatural(places)+" sin alterar los nombres oficiales registrados en la fuente institucional.");
+      bullet("• Asegurar condiciones técnicas, de accesibilidad, supervisión, respaldo e integridad académica durante la aplicación.");
+      bullet("• Aplicar una sola regla institucional de ponderación, nota mínima, modalidad y tratamiento de excepciones.");
+      bullet("• Consolidar resultados, evidencias, incidencias y acciones de mejora al finalizar el proceso.");
+
+      heading("1.4. Alcance y población objetivo",2,true);
+      paragraph("El alcance comprende a los estudiantes incorporados en la distribución vigente del período, a las carreras que participan en el examen complexivo y a las unidades académicas y administrativas responsables de habilitación, preparación, logística, evaluación y registro. La población planificada es de "+t.total+" estudiantes.");
+      paragraph("El documento abarca metodología, requisitos, diseño y aplicación del examen, Núcleos de Titulación, distribución de estudiantes, capacidad técnica, imponderables, criterios de evaluación, cierre, trazabilidad y anexos operativos generados a partir de información real del período.");
+
+      heading("1.5. Principios del proceso",2,true);
+      paragraph("La ejecución se orienta por los principios de transparencia, igualdad de oportunidades, pertinencia académica, trazabilidad, confidencialidad de instrumentos, accesibilidad, continuidad operativa y mejora continua. Toda excepción relevante debe contar con justificación, autorización y evidencia.");
       getAnalysisSentences(ctx,"general").forEach(p=>paragraph(p));
     }
   };
