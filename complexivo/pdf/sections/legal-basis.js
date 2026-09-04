@@ -4,20 +4,33 @@
   ns.sections = ns.sections || {};
   ns.sections.legalBasis = {
     render(api) {
-      const {ctx,heading,paragraph,lowerPeriod} = api;
-                function legalParagraphs(ctx){
-                  const p=lowerPeriod(ctx.period.name);
-                  return [
-                    "La planificación del examen complexivo para el período "+p+" se enmarca en la normativa nacional de educación superior y en la regulación institucional aplicable al proceso de titulación. La base legal permite vincular la planificación operativa con los derechos del estudiante, las finalidades del sistema de educación superior y las obligaciones institucionales relacionadas con evaluación, egreso, titulación y registro de títulos.",
-                    "La Constitución de la República del Ecuador constituye el marco superior de referencia para el sistema educativo y para las finalidades de la educación superior. Estos principios orientan la organización de procesos académicos que deben asegurar calidad, pertinencia, igualdad de oportunidades y formación integral.",
-                    "La Ley Orgánica de Educación Superior reconoce los derechos de los estudiantes y regula las responsabilidades de las instituciones de educación superior respecto del acceso, permanencia, egreso y titulación. Para el examen complexivo, esto exige condiciones previamente definidas, verificables y aplicadas de manera consistente.",
-                    "El Reglamento a la Ley Orgánica de Educación Superior fue expedido por la Presidencia de la República mediante Decreto Ejecutivo No. 494 y publicado en el Suplemento del Registro Oficial No. 110 de 21 de julio de 2022. Su aplicación refuerza la necesidad de mantener trazabilidad sobre información académica, egreso, titulación y registro de títulos.",
-                    "En el ámbito institucional, el Reglamento del Área de Titulación establece la finalidad y alcance del proceso y orienta la titulación hacia la validación integral de competencias adquiridas durante la formación profesional y su relación con el perfil de egreso.",
-                    "La planificación adopta una evaluación teórico-práctica y articula requisitos, preparación académica, aplicación del examen, registro de resultados, atención de contingencias y cierre documental. Las disposiciones complementarias que se apliquen durante el período deberán observar la normativa vigente al momento de su ejecución."
-                  ];
-                }
+      const {ctx,heading,paragraph,tableCaption,tableNote,autoTable,BODY,bodyW,lowerPeriod,policy} = api;
+
       heading("2. Base Legal",1,true);
-      legalParagraphs(ctx).forEach(p=>paragraph(p));
+      paragraph(
+        "La planificación del examen complexivo para el período "+lowerPeriod(ctx.period.name)+" se sustenta en la normativa nacional de educación superior y en la regulación institucional vigente aplicable a titulación. La app no utiliza citas académicas de relleno ni incorpora artículos antiguos de forma automática: el marco jurídico debe mantenerse verificable y actualizable.",
+        {indent:false}
+      );
+
+      heading("2.1. Marco normativo aplicable",2,true);
+      paragraph("La Constitución de la República del Ecuador constituye el marco superior de referencia para los principios de educación, calidad, igualdad de oportunidades y formación integral. La Ley Orgánica de Educación Superior regula derechos, responsabilidades institucionales, egreso y titulación. El Reglamento a la LOES complementa aspectos de información, registro y gestión académica.");
+      paragraph("En el ámbito institucional, el Reglamento del Área de Titulación y las disposiciones internas vigentes determinan la forma en que se verifican requisitos, se ejecuta la modalidad de titulación, se califican resultados, se atienden incidencias y se registra el cierre. Cuando la institución actualice una norma, la configuración legal del generador debe modificarse antes de emitir nuevas planificaciones.");
+
+      heading("2.2. Matriz de aplicación normativa",2,true);
+      tableCaption("Normativa y aplicación dentro de la planificación");
+      autoTable({
+        startY:api.getY(),
+        margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
+        head:[["Norma","Artículo / disposición de referencia","Aplicación dentro de esta planificación"]],
+        body:(policy.legalReferences||[]).map(r=>[r.norm,r.provision,r.application]),
+        columnStyles:{0:{cellWidth:bodyW*0.27},1:{cellWidth:bodyW*0.33},2:{cellWidth:bodyW*0.40}},
+        styles:{font:"times",fontSize:8.5,cellPadding:4,textColor:0},
+        headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
+      });
+      tableNote("La matriz identifica el nivel normativo y su función operativa. La numeración de artículos solo debe incorporarse cuando exista una revisión jurídica o institucional vigente que la confirme.");
+
+      heading("2.3. Criterio de actualización normativa",2,true);
+      paragraph("Antes de reutilizar la planificación en un nuevo período, la Unidad responsable debe revisar si existieron reformas legales, reglamentarias o institucionales que modifiquen requisitos, modalidades, reglas de evaluación, registros o autoridades competentes. El generador debe conservar la profundidad de la base legal sin reproducir disposiciones obsoletas.");
     }
   };
 })();
