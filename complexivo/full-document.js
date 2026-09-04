@@ -583,9 +583,9 @@
       }
 
       const cells=[
-        {title:"ELABORADO POR:",name:ctx.institutional?.preparedBy||"Msg. Jefferson Villarreal",role:ctx.institutional?.preparedRole||"COORDINADOR DE CARRERAS"},
-        {title:"REVISADO POR:",name:ctx.institutional?.reviewedBy||"Mgde. Martha Tomalá",role:ctx.institutional?.reviewedRole||"COORDINADORA GENERAL DE CARRERAS"},
-        {title:"APROBADO POR:",name:ctx.institutional?.approvedBy||"Mgt. Alex León",role:ctx.institutional?.approvedRole||"VICERRECTOR"}
+        {title:"ELABORADO POR:",name:ctx.institutional?.preparedBy||"Mgs. Jefferson Villarreal",role:ctx.institutional?.preparedRole||"Coordinador de Titulación y Eficiencia Terminal"},
+        {title:"REVISADO POR:",name:ctx.institutional?.reviewedBy||"Ing. Martha Tomalá",role:ctx.institutional?.reviewedRole||"Coordinadora General de Carreras"},
+        {title:"APROBADO POR:",name:ctx.institutional?.approvedBy||"Dr. Alex León",role:ctx.institutional?.approvedRole||"Vicerrector"}
       ];
 
       cells.forEach((cell,i)=>{

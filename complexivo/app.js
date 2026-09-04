@@ -93,12 +93,12 @@
     ],
     activePeriodId:"2026-04_2026-09",
     institutional:{
-      preparedBy:"Msg. Jefferson Villarreal",
-      preparedRole:"COORDINADOR DE CARRERAS",
-      reviewedBy:"Mgde. Martha Tomalá",
-      reviewedRole:"COORDINADORA GENERAL DE CARRERAS",
-      approvedBy:"Mgt. Alex León",
-      approvedRole:"VICERRECTOR"
+      preparedBy:"Mgs. Jefferson Villarreal",
+      preparedRole:"Coordinador de Titulación y Eficiencia Terminal",
+      reviewedBy:"Ing. Martha Tomalá",
+      reviewedRole:"Coordinadora General de Carreras",
+      approvedBy:"Dr. Alex León",
+      approvedRole:"Vicerrector"
     },
     documents:{}
   };
