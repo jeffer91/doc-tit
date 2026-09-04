@@ -2,33 +2,49 @@
   "use strict";
   const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {};
   ns.sections = ns.sections || {};
+
   ns.sections.evaluation = {
     render(api) {
-      const {doc,ctx,pageW,pageH,bodyW,BODY,heading,paragraph,bullet,ensureSpace,tableCaption,tableNote,autoTable,formatDateShort,formatDateLong,lowerPeriod,normalize,totals,insertSectionImage,reference,drawVerticalBars,drawGroupBars,drawTimeline,getAnalysisSentences} = api;
-        function evaluationCriteriaSection(){
-          heading("10. Criterios de Evaluación",1,true);
+      const {heading,paragraph,insertSectionImage,tableCaption,tableNote,autoTable,BODY,bodyW,policy} = api;
+      const ev=policy.evaluation||{};
 
-          paragraph(
-            "La evaluación del examen complexivo integra dos componentes individuales: teórico y práctico. Ambos se aplican mediante equipo informático y se valoran con criterios previamente definidos para obtener la nota final.",
-            {indent:false,after:10}
-          );
-          insertSectionImage("evaluationImage");
+      heading("10. Criterios de Evaluación",1,true);
+      paragraph("Este capítulo regula exclusivamente cómo se valora, calcula, valida y registra el resultado. La descripción de la estructura y condiciones de aplicación del examen se encuentra en el capítulo 5 para evitar duplicaciones.",{indent:false});
+      insertSectionImage("evaluationImage");
 
-          heading("10.1. Componente Teórico",2,true);
-          paragraph("El componente teórico representa el 40% de la nota final. Evalúa conocimientos fundamentales, comprensión y capacidad de análisis mediante un instrumento estructurado de 40 preguntas, con un tiempo máximo de 1 hora y 30 minutos.");
-          paragraph("La calificación se obtiene a partir de las respuestas registradas individualmente y debe conservar trazabilidad con el instrumento aplicado.");
+      heading("10.1. Principios de Calificación",2,true);
+      paragraph("La calificación debe aplicar criterios previamente definidos, consistentes con el instrumento utilizado y suficientemente claros para justificar el resultado. Los criterios deben permitir distinguir calidad técnica, precisión, aplicación de conocimientos, análisis y cumplimiento de requerimientos.");
+      paragraph("La evidencia de evaluación debe conservar relación con el estudiante, el instrumento o versión aplicada y el resultado registrado en el sistema institucional.");
 
-          heading("10.2. Componente Práctico",2,true);
-          paragraph("El componente práctico representa el 60% de la nota final. Se desarrolla individualmente en computador mediante un caso, ejercicio, simulación, desarrollo, configuración, análisis o resolución técnica, de acuerdo con la naturaleza de la carrera.");
-          paragraph("Los criterios de valoración consideran exactitud o calidad técnica, aplicación pertinente de conocimientos, capacidad de análisis, resolución del problema, uso adecuado de herramientas y cumplimiento de los requerimientos establecidos en el instrumento.");
-          paragraph("No se contempla una defensa oral ante tribunal como regla general del examen complexivo. Cualquier excepción deberá estar expresamente definida y aprobada para la carrera correspondiente.");
+      heading("10.2. Componente Teórico",2,true);
+      paragraph("El componente teórico tiene una ponderación única de "+ev.theoreticalWeight+" %. Su resultado se obtiene de las respuestas registradas individualmente y se transforma a la escala institucional correspondiente antes de aplicar la ponderación.");
 
-          heading("10.3. Nota Final del Examen Complexivo",2,true);
-          paragraph("La nota final se calcula con una ponderación de 40% para el componente teórico y 60% para el componente práctico. La planificación base establece 7/10 como calificación mínima de aprobación.");
-          paragraph("El resultado final debe registrarse en los sistemas institucionales y vincularse con las evidencias de aplicación y evaluación.");
-        }
+      heading("10.3. Componente Práctico",2,true);
+      paragraph("El componente práctico tiene una ponderación única de "+ev.practicalWeight+" %. La valoración debe utilizar criterios apropiados a la actividad de cada carrera, manteniendo como ejes comunes la aplicación pertinente de conocimientos, la calidad o exactitud técnica, la resolución del problema y el cumplimiento del producto solicitado.");
+      paragraph("La defensa oral no forma parte de la regla general de calificación. Una carrera solo puede incorporarla cuando exista una excepción expresamente definida en su instrumento aprobado.");
 
-      evaluationCriteriaSection();
+      tableCaption("Matriz general de evaluación");
+      autoTable({
+        startY:api.getY(),
+        margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
+        head:[["Componente","Ponderación","Base de valoración","Evidencia"]],
+        body:[
+          ["Teórico",ev.theoreticalWeight+" %","Respuestas del instrumento teórico","Registro de respuestas y calificación"],
+          ["Práctico",ev.practicalWeight+" %","Criterios o rúbrica del producto práctico","Producto, archivo, resultado o evidencia equivalente"]
+        ],
+        columnStyles:{0:{cellWidth:bodyW*0.18},1:{cellWidth:bodyW*0.16},2:{cellWidth:bodyW*0.34},3:{cellWidth:bodyW*0.32}},
+        styles:{font:"times",fontSize:8.7,cellPadding:4,textColor:0},
+        headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
+      });
+      tableNote("La suma de ponderaciones debe ser siempre 100 % y se valida antes de generar el documento.");
+
+      heading("10.4. Nota Final y Aprobación",2,true);
+      paragraph("La nota final se calcula mediante la fórmula: Nota final = (Nota teórica × "+(ev.theoreticalWeight/100).toFixed(2)+") + (Nota práctica × "+(ev.practicalWeight/100).toFixed(2)+"). La calificación mínima institucional configurada para aprobación es "+ev.minimumGrade+"/"+ev.gradeScale+".");
+      paragraph("La app utiliza una sola variable de nota mínima y una sola regla de cálculo. No recupera automáticamente políticas anteriores que exigieran aprobar cada componente por separado o aprobar teoría antes de continuar, salvo que la configuración institucional vigente cambie expresamente.");
+
+      heading("10.5. Validación, Registro, Revisión y Supletorio",2,true);
+      paragraph("Antes de publicar resultados debe verificarse la consistencia entre calificaciones parciales, ponderaciones y nota final. Posteriormente se registra el resultado en el sistema institucional y se conserva la evidencia correspondiente.");
+      paragraph("Las solicitudes de revisión y la instancia de supletorio se atienden conforme al cronograma y al procedimiento vigente. La planificación debe registrar cualquier cambio de nota con trazabilidad suficiente para identificar motivo, responsable y fecha de actualización.");
     }
   };
 })();
