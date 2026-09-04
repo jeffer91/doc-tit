@@ -1,5 +1,6 @@
 (() => {
   "use strict";
+  // Shared DOC-TIT sidebar navigation · v1
 
   function normalizePath(path) {
     let value = String(path || "/").replace(/\\/g, "/");
