@@ -1,0 +1,176 @@
+name: Apply Complexivo structural corrections
+
+on:
+  push:
+    paths:
+      - ".github/workflows/apply-complexivo-corrections.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch PDF engine and loader
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          # ---------- PDF engine ----------
+          p=Path("complexivo/full-document.js")
+          s=p.read_text(encoding="utf-8")
+
+          if "const contentPages=new Set([1]);" not in s:
+              needle="    let figureCounter=0;\n"
+              assert needle in s, "figureCounter anchor not found"
+              s=s.replace(needle,needle+"    const contentPages=new Set([1]);\n    function markContent(pageNo=doc.getNumberOfPages()){ contentPages.add(pageNo); }\n",1)
+
+          for signature in [
+              "    function paragraph(text,opts={}){\n",
+              "    function bullet(text){\n",
+              "    function heading(text,level=1,includeToc=true){\n",
+              "    function label(text){\n",
+              "    function reference(text){\n",
+              "    function tableCaption(title){\n",
+              "    function tableNote(note){\n",
+              "    function figureCaption(number,title){\n"
+          ]:
+              replacement=signature+"      markContent();\n"
+              if replacement not in s:
+                  assert signature in s, f"missing function anchor: {signature.strip()}"
+                  s=s.replace(signature,replacement,1)
+
+          image_anchor="      const dataUrl=ctx.assets && ctx.assets[assetKey];\n      if(!dataUrl) return;\n"
+          if image_anchor+"      markContent();\n" not in s:
+              assert image_anchor in s, "image anchor not found"
+              s=s.replace(image_anchor,image_anchor+"      markContent();\n",1)
+
+          toc_anchor="    function drawTOCPage(pageNo,title,entries){\n      doc.setPage(pageNo);\n"
+          if toc_anchor+"      markContent(pageNo);\n" not in s:
+              assert toc_anchor in s, "TOC anchor not found"
+              s=s.replace(toc_anchor,toc_anchor+"      markContent(pageNo);\n",1)
+
+          show_head='      options.showHead="everyPage";\n'
+          if 'options.rowPageBreak=options.rowPageBreak||"avoid";' not in s:
+              assert show_head in s, "autoTable showHead anchor not found"
+              s=s.replace(show_head,show_head+'      options.rowPageBreak=options.rowPageBreak||"avoid";\n      const bottomMargin=Number(options.margin?.bottom||BODY.bottom);\n      options.margin={...(options.margin||{}),bottom:Math.max(bottomMargin,BODY.bottom+44)};\n',1)
+
+          page_anchor='      options.didDrawPage=(data)=>{\n        drawHeader(doc.getNumberOfPages());\n'
+          if page_anchor+'        markContent();\n' not in s:
+              assert page_anchor in s, "didDrawPage anchor not found"
+              s=s.replace(page_anchor,page_anchor+'        markContent();\n',1)
+
+          # Replace fallback outline and add automatic blank-page/index compaction.
+          pattern=re.compile(r'''  const outline=window\.DOC_TIT_COMPLEXIVO_PDF\?\.outline \|\| \[\n.*?  \];\n  outline\.forEach\(renderSection\);\n\n  renderSection\("index"\);''',re.S)
+          replacement='''  const outline=window.DOC_TIT_COMPLEXIVO_PDF?.outline || [
+    "introduction","legalBasis","methodology","requirements","examDescription",
+    "seminars","distribution","laboratories","imponderables","evaluation",
+    "closure","executiveSummary","bibliography","annexes"
+  ];
+  outline.forEach(renderSection);
+
+  function removeUntrackedBlankPages(){
+    for(let pageNo=doc.getNumberOfPages();pageNo>=5;pageNo--){
+      if(contentPages.has(pageNo)) continue;
+      doc.deletePage(pageNo);
+      toc.forEach(entry=>{ if(entry.page>pageNo) entry.page-=1; });
+    }
+  }
+
+  function compactReservedIndexPages(){
+    const dedup=[];
+    const seen=new Set();
+    toc.forEach(entry=>{
+      const key=normalize(entry.title);
+      if(!key || seen.has(key)) return;
+      seen.add(key);
+      dedup.push(entry);
+    });
+    const available=pageH-BODY.top-BODY.bottom-42;
+    let needed=1;
+    let used=0;
+    dedup.forEach(entry=>{
+      const h=tocEntryHeight(entry);
+      if(used+h>available && needed<3){ needed+=1; used=0; }
+      used+=h;
+    });
+    const unused=Math.max(0,3-needed);
+    for(let i=0;i<unused;i++) doc.deletePage(2+needed);
+    if(unused) toc.forEach(entry=>{ if(entry.page>4) entry.page-=unused; });
+    ctx.indexPagesUsed=needed;
+  }
+
+  removeUntrackedBlankPages();
+  compactReservedIndexPages();
+  renderSection("index");'''
+          s2,count=pattern.subn(replacement,s,count=1)
+          assert count==1, f"outline render block replacement count={count}"
+          s=s2
+          p.write_text(s,encoding="utf-8")
+
+          # ---------- HTML loader ----------
+          p=Path("complexivo/index.html")
+          h=p.read_text(encoding="utf-8")
+          h=h.replace('v=20260904-complete-1','v=20260904-complete-2')
+          h=h.replace('<span class="eyebrow">3. Información adicional</span>','<span class="eyebrow">4. Información adicional</span>')
+          h=h.replace('<span class="eyebrow">4. Identidad institucional</span>','<span class="eyebrow">5. Identidad institucional</span>')
+          h=h.replace('<span class="eyebrow">5. Imágenes del documento</span>','<span class="eyebrow">6. Imágenes del documento</span>')
+
+          institutional='  <script src="pdf/config/institutional.js?v=20260904-complete-2"></script>\n'
+          if 'pdf/config/areas.js' not in h:
+              assert institutional in h
+              h=h.replace(institutional,institutional+'  <script src="pdf/config/areas.js?v=20260904-complete-2"></script>\n',1)
+
+          h=h.replace('  <script src="pdf/sections/executive-summary.js?v=20260904-complete-2"></script>\n','')
+          h=h.replace('  <script src="pdf/sections/general-summary.js?v=20260904-complete-2"></script>\n','')
+
+          meth='  <script src="pdf/sections/methodology/index.js?v=20260904-complete-2"></script>\n'
+          if 'methodology/operational-plan.js' not in h:
+              assert meth in h
+              h=h.replace(meth,'  <script src="pdf/sections/methodology/operational-plan.js?v=20260904-complete-2"></script>\n'+meth,1)
+
+          closure='  <script src="pdf/sections/closure.js?v=20260904-complete-2"></script>\n'
+          if 'pdf/sections/executive-summary.js?v=20260904-complete-2' not in h:
+              assert closure in h
+              h=h.replace(closure,closure+'  <script src="pdf/sections/executive-summary.js?v=20260904-complete-2"></script>\n',1)
+
+          full='  <script src="full-document.js?v=20260904-complete-2"></script>\n'
+          if 'operational-data.js' not in h:
+              assert full in h
+              h=h.replace(full,full+'  <script src="operational-data.js?v=20260904-complete-2"></script>\n',1)
+
+          p.write_text(h,encoding="utf-8")
+
+          # Remove superseded closing-summary module.
+          old=Path("complexivo/pdf/sections/general-summary.js")
+          if old.exists(): old.unlink()
+          PY
+
+      - name: Validate JavaScript and forbidden document language
+        shell: bash
+        run: |
+          set -e
+          node --check complexivo/full-document.js
+          node --check complexivo/operational-data.js
+          find complexivo/pdf -name '*.js' -print0 | xargs -0 -n1 node --check
+          ! grep -RniE 'La app|el generador|hardcodead|defensaOral|única fuente de verdad|control automático de consistencia|desactivada por defecto|antes de generar el documento' complexivo/pdf/sections
+          grep -q '3.11. Plan Operativo de Preparación' complexivo/pdf/sections/methodology/operational-plan.js
+          grep -q '12. Resumen Ejecutivo' complexivo/pdf/sections/executive-summary.js
+          grep -q 'operational-data.js' complexivo/index.html
+
+      - name: Commit corrections directly to main
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add complexivo
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Finalize Complexivo institutional and operational corrections"
+            git push origin HEAD:main
+          fi
