@@ -3,11 +3,22 @@
   const ns = window.DOC_TIT_COMPLEXIVO_PDF = window.DOC_TIT_COMPLEXIVO_PDF || {};
   ns.components = ns.components || {};
 
-  function formatMetaDate(value){
-    if(!value) return "";
-    const d = new Date(String(value).slice(0,10) + "T12:00:00");
-    if(Number.isNaN(d.getTime())) return String(value);
-    return new Intl.DateTimeFormat("es-EC",{day:"2-digit",month:"2-digit",year:"numeric"}).format(d);
+  const CM = 72 / 2.54;
+
+  function fitImage(doc, dataUrl, maxW, maxH) {
+    try {
+      const props = doc.getImageProperties(dataUrl);
+      const ratio = props.width / props.height;
+      let w = maxW;
+      let h = w / ratio;
+      if (h > maxH) {
+        h = maxH;
+        w = h * ratio;
+      }
+      return { w, h };
+    } catch (e) {
+      return { w: maxW, h: maxH };
+    }
   }
 
   ns.components.header = {
@@ -19,58 +30,84 @@
 
       const policy = ns.config?.policy || {};
       const title = policy.documentTitle || "Planificación del Examen Complexivo";
-      const version = ctx.meta?.version || ctx.doc?.version || policy.version || "1.0";
-      const elaborationDate = formatMetaDate(ctx.meta?.elaborationDate);
-      const x=30, top=18, totalW=pageW-60, h=72;
-      const logoW=112, metaW=150, centerW=totalW-logoW-metaW;
-      const metaX=x+logoW+centerW;
+      const isCover = pageNo === 1;
+
+      // Portada RGI: 18 cm de ancho, columnas 4,50 / 9,00 / 4,50 cm.
+      // En páginas interiores se conserva el encabezado compacto para no invadir el cuerpo.
+      const totalW = isCover ? 18 * CM : pageW - 60;
+      const x = isCover ? (pageW - totalW) / 2 : 30;
+      const top = isCover ? 1.5 * CM : 18;
+      const h = isCover ? 2.8 * CM : 72;
+      const colA = totalW * 0.25;
+      const colB = totalW * 0.50;
+      const colC = totalW * 0.25;
+      const row1 = isCover ? 0.8 * CM : 22;
+      const row2 = h - row1;
+      const bx = x + colA;
+      const cx = bx + colB;
 
       doc.setDrawColor(0);
-      doc.setLineWidth(0.75);
-      doc.rect(x,top,totalW,h);
-      doc.line(x+logoW,top,x+logoW,top+h);
-      doc.line(metaX,top,metaX,top+h);
+      doc.setLineWidth(0.65);
+      doc.setFillColor(255,255,255);
+      doc.rect(x,top,totalW,h,"FD");
+      doc.line(bx,top,bx,top+h);
+      doc.line(cx,top,cx,top+h);
+      // En RGI solo la columna central se divide en dos filas.
+      doc.line(bx,top+row1,cx,top+row1);
 
       if(ctx.assets && ctx.assets.logo){
         try{
-          doc.addImage(ctx.assets.logo,imageFormat(ctx.assets.logo),x+6,top+7,logoW-12,h-14,undefined,"FAST");
+          const maxW = Math.min(colA - 10, 3.8 * CM);
+          const maxH = Math.min(h - 10, 1.8 * CM);
+          const fitted = fitImage(doc, ctx.assets.logo, maxW, maxH);
+          const lx = x + (colA - fitted.w) / 2;
+          const ly = top + (h - fitted.h) / 2;
+          doc.addImage(ctx.assets.logo,imageFormat(ctx.assets.logo),lx,ly,fitted.w,fitted.h,undefined,"FAST");
         }catch(e){}
       }else{
         doc.setFont("helvetica","bold");
         doc.setFontSize(8.5);
-        doc.text("LOGO INSTITUCIONAL",x+logoW/2,top+h/2,{align:"center"});
+        doc.text("LOGO INSTITUCIONAL",x+colA/2,top+h/2,{align:"center"});
       }
 
+      // B1 - Unidad responsable.
       doc.setFont("helvetica","normal");
-      doc.setFontSize(8.3);
-      doc.text("UNIDAD DE TITULACIÓN Y EFICIENCIA TERMINAL",x+logoW+centerW/2,top+16,{align:"center"});
+      doc.setFontSize(9);
+      const unit = "UNIDAD DE TITULACIÓN Y EFICIENCIA TERMINAL";
+      const unitLines = doc.splitTextToSize(unit,colB-12);
+      const unitLineH = 9.5;
+      const unitY = top + (row1 - unitLines.length*unitLineH)/2 + 7.5;
+      doc.text(unitLines,bx+colB/2,unitY,{align:"center",lineHeightFactor:1.05});
+
+      // B2 - Nombre formal del documento y período.
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(9);
+      const titleLines = doc.splitTextToSize(title,colB-16);
+      const titleLineH = 10;
+      doc.setFontSize(10);
+      const period = String(ctx.period?.name || "");
+      const periodLines = doc.splitTextToSize(period,colB-16);
+      const periodLineH = 11;
+      const groupH = titleLines.length*titleLineH + 6 + periodLines.length*periodLineH;
+      let groupY = top + row1 + (row2-groupH)/2 + 8;
 
       doc.setFont("helvetica","bold");
       doc.setFontSize(9);
-      const titleLines=doc.splitTextToSize(title,centerW-14);
-      doc.text(titleLines,x+logoW+centerW/2,top+32,{align:"center"});
+      doc.text(titleLines,bx+colB/2,groupY,{align:"center",lineHeightFactor:1.05});
+      groupY += titleLines.length*titleLineH + 6;
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(10);
+      doc.text(periodLines,bx+colB/2,groupY,{align:"center",lineHeightFactor:1.05});
 
+      // C1+C2 - En RGI el control documental es únicamente el código.
+      const code = String(ctx.code || "");
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(8.5);
+      doc.text("Código:",cx+colC/2,top+h/2-7,{align:"center"});
       doc.setFont("helvetica","normal");
       doc.setFontSize(8.5);
-      doc.text(ctx.period.name,x+logoW+centerW/2,top+61,{align:"center"});
-
-      const rows=[
-        ["Código",ctx.code||""],
-        ["Versión",version],
-        ["Fecha de Elaboración",elaborationDate]
-      ];
-      const rowH=h/3;
-      rows.forEach((row,i)=>{
-        if(i>0) doc.line(metaX,top+i*rowH,x+totalW,top+i*rowH);
-        const cy=top+i*rowH;
-        doc.setFont("helvetica","bold");
-        doc.setFontSize(7.2);
-        doc.text(row[0]+":",metaX+5,cy+9);
-        doc.setFont("helvetica","normal");
-        doc.setFontSize(7.5);
-        const lines=doc.splitTextToSize(String(row[1]||""),metaW-10).slice(0,2);
-        doc.text(lines,metaX+5,cy+18);
-      });
+      const codeLines = doc.splitTextToSize(code,colC-10);
+      doc.text(codeLines,cx+colC/2,top+h/2+6,{align:"center",lineHeightFactor:1.05});
     }
   };
 })();
