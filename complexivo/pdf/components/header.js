@@ -83,7 +83,8 @@
       const titleLines = doc.splitTextToSize(title,colB-16);
       const titleLineH = 9.8;
 
-      doc.setFont("helvetica","normal");
+      // Título y período del encabezado: ambos 9 pt y negrita.
+      doc.setFont("helvetica","bold");
       doc.setFontSize(9);
       const periodLines = period ? doc.splitTextToSize(period,colB-16) : [];
       const periodLineH = 9.8;
@@ -97,7 +98,7 @@
 
       if(periodLines.length){
         groupY += titleLines.length*titleLineH + 4;
-        doc.setFont("helvetica","normal");
+        doc.setFont("helvetica","bold");
         doc.setFontSize(9);
         doc.text(periodLines,bx+colB/2,groupY,{align:"center",lineHeightFactor:1.02});
       }
