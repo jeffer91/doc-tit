@@ -54,6 +54,12 @@ const BODY = PDF_MODULES.config?.layout?.body || {
     const s=String(name||"");
     return s ? s.charAt(0).toLowerCase()+s.slice(1) : s;
   }
+  function joinNatural(items){
+    const values=(items||[]).map(v=>String(v||"").trim()).filter(Boolean);
+    if(values.length<=1) return values[0]||"";
+    if(values.length===2) return values[0]+" y "+values[1];
+    return values.slice(0,-1).join(", ")+" y "+values[values.length-1];
+  }
   function formatDateShort(v){
     if(!v) return "";
     const d=new Date(v+"T12:00:00");
@@ -211,8 +217,16 @@ const BODY = PDF_MODULES.config?.layout?.body || {
     if(!window.jspdf || !window.jspdf.jsPDF) throw new Error("No se pudo cargar el generador PDF.");
     const { jsPDF }=window.jspdf;
     const doc=new jsPDF({unit:"pt",format:"a4",compress:true,putOnlyUsedFonts:true});
+    const policy=window.DOC_TIT_COMPLEXIVO_PDF?.config?.policy || {};
+    const elaborationDate=ctx.meta?.elaborationDate || new Date().toISOString().slice(0,10);
+    const elaborationDateDisplay=(()=>{
+      const d=new Date(elaborationDate+"T12:00:00");
+      return Number.isNaN(d.getTime())?String(elaborationDate):new Intl.DateTimeFormat("es-EC",{day:"2-digit",month:"2-digit",year:"numeric"}).format(d);
+    })();
+    ctx.meta={...(ctx.meta||{}),version:ctx.meta?.version||ctx.doc?.version||policy.version||"1.0",elaborationDate,elaborationDateDisplay};
+    ctx.policy=policy;
     doc.setProperties({
-      title:"Planificación De Examen Complexivo",
+      title:policy.documentTitle||"Planificación del Examen Complexivo",
       subject:ctx.period.name,
       author:"Unidad de Titulación y Eficiencia Terminal",
       keywords:"titulación, examen complexivo, planificación, DOC-TIT v15"
@@ -276,27 +290,30 @@ const BODY = PDF_MODULES.config?.layout?.body || {
       const hanging=opts.hanging||0;
       const lineHeight=opts.lineHeight||BODY.lineHeight;
       const style=opts.bold?"bold":opts.italic?"italic":"normal";
-
       doc.setFont("times",style);
       doc.setFontSize(size);
-
-      const firstW=bodyW-indent;
-      const otherW=bodyW-hanging;
-      const lines=wrapWords(text,firstW,otherW);
-
-      lines.forEach((line,i)=>{
-        const previousPage=doc.getNumberOfPages();
-        ensureSpace(lineHeight);
-
-        // Si ensureSpace creó una nueva página, la cabecera cambió temporalmente la fuente.
+      const lines=wrapWords(text,bodyW-indent,bodyW-hanging);
+      let index=0;
+      while(index<lines.length){
+        let available=Math.floor((pageH-BODY.bottom-y)/lineHeight);
+        if(available<2 && lines.length-index>1){
+          newPage();
+          available=Math.floor((pageH-BODY.bottom-y)/lineHeight);
+        }
+        let take=Math.min(Math.max(available,1),lines.length-index);
+        const remaining=lines.length-index-take;
+        if(remaining===1 && take>2) take-=1;
+        if(take<=0){newPage();continue;}
         doc.setFont("times",style);
         doc.setFontSize(size);
-
-        const x=BODY.left+(i===0?indent:hanging);
-        doc.text(line,x,y);
-        y+=lineHeight;
-      });
-
+        for(let offset=0;offset<take;offset++){
+          const absolute=index+offset;
+          doc.text(lines[absolute],BODY.left+(absolute===0?indent:hanging),y);
+          y+=lineHeight;
+        }
+        index+=take;
+        if(index<lines.length)newPage();
+      }
       y+=opts.after==null?8:opts.after;
     }
 
@@ -326,9 +343,7 @@ const BODY = PDF_MODULES.config?.layout?.body || {
       const size=level===1?14:level===2?13:12.5;
       const cleaned=clean(text);
 
-      // Regla editorial: todo título de primer nivel inicia una página nueva.
-      if(level===1 && y>BODY.top+2) newPage();
-
+      // Los títulos fluyen con el contenido; ensureSpace evita títulos huérfanos.
       doc.setFont("times",style);
       doc.setFontSize(size);
 
@@ -444,7 +459,9 @@ const BODY = PDF_MODULES.config?.layout?.body || {
     }
 
     function reserveIndexPages(){
-    // Una sola página de índice; el contenido comienza inmediatamente después.
+    // Reserva páginas 2–4 para un índice continuo calculado al final.
+    newPage();
+    newPage();
     newPage();
     newPage();
   }
@@ -795,13 +812,13 @@ const BODY = PDF_MODULES.config?.layout?.body || {
       getY:()=>y,
       setY:(value)=>{ y=value; },
       heading,paragraph,bullet,ensureSpace,tableCaption,tableNote,autoTable,
-      formatDateShort,formatDateLong,lowerPeriod,normalize,totals,
+      formatDateShort,formatDateLong,lowerPeriod,normalize,totals,joinNatural,policy,
       insertSectionImage,reference,drawVerticalBars,drawGroupBars,drawTimeline,
-      getAnalysisSentences,imageFormat,drawTOCPage,
+      getAnalysisSentences,imageFormat,drawTOCPage,tocEntryHeight,
       signatureBlock:(fixedTop=null)=>{
         const component=modules.components?.signatureBlock;
         if(!component?.render) throw new Error("No se cargó el bloque de firmas del PDF.");
-        return component.render({doc,pageW,pageH,BODY,ensureSpace,getY:()=>y,setY:(value)=>{y=value;}},fixedTop);
+        return component.render({doc,ctx,pageW,pageH,BODY,ensureSpace,getY:()=>y,setY:(value)=>{y=value;}},fixedTop);
       }
     };
   }

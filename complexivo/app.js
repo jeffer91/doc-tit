@@ -12,7 +12,7 @@
 
   const SCHEDULE_ACTIVITIES = [
     "Fin de clases",
-    "Semana Requisitos",
+    "Semana de Requisitos",
     "Núcleo 1",
     "Núcleo 2",
     "Núcleo 3",
@@ -24,7 +24,7 @@
 
   const APR_SEP_2026_SCHEDULE = [
     {activity:"Fin de clases", start:"2026-09-25", end:"2026-09-26"},
-    {activity:"Semana Requisitos", start:"2026-09-28", end:"2026-10-02"},
+    {activity:"Semana de Requisitos", start:"2026-09-28", end:"2026-10-02"},
     {activity:"Núcleo 1", start:"2026-10-05", end:"2026-10-08"},
     {activity:"Núcleo 2", start:"2026-10-12", end:"2026-10-15"},
     {activity:"Núcleo 3", start:"2026-10-16", end:"2026-10-20"},
@@ -67,8 +67,8 @@
       fullName: "Planificación semestral del proceso de titulación",
       documents: [{
         id: "plan-examen-complexivo",
-        name: "Planificación de Examen Complexivo",
-        fileTitle: "Planificación De Examen Complexivo",
+        name: "Planificación del Examen Complexivo",
+        fileTitle: "Planificación del Examen Complexivo",
         prefix: "UTET-RGI1-",
         sequence: "01",
         process: "PRO-56",
@@ -952,20 +952,31 @@
     }
   }
 
+  function validateGenerationData(data){
+    const errors=[];
+    const warnings=[];
+    if(!scheduleComplete(data.schedule)) errors.push("Completa las fechas de las 9 actividades del cronograma.");
+    if(!distributionComplete(data.distribution)) errors.push("Completa Carrera, Lugar y Cantidad en todas las filas utilizadas.");
+    if(!data.assets.logo) errors.push("Sube el logo institucional.");
+    (data.schedule||[]).forEach(r=>{if(r.start&&r.end&&r.start>r.end)errors.push("La fecha de inicio no puede ser posterior a la fecha fin en: "+r.activity+".");});
+    const scheduled=(data.schedule||[]).filter(r=>r.start);
+    for(let i=1;i<scheduled.length;i++){
+      if(scheduled[i].start<scheduled[i-1].start){errors.push("El cronograma debe mantener las actividades en orden cronológico.");break;}
+    }
+    const total=(data.distribution||[]).reduce((sum,r)=>sum+(Number(r.count)||0),0);
+    if(total<=0)errors.push("El total de estudiantes debe ser mayor que cero.");
+    const ev=window.DOC_TIT_COMPLEXIVO_PDF?.config?.policy?.evaluation||{};
+    if(Number(ev.theoreticalWeight)+Number(ev.practicalWeight)!==100)errors.push("La ponderación teórica y práctica debe sumar 100 %.");
+    const period=activePeriod();
+    if((data.schedule||[]).some(r=>r.end&&period?.end&&r.end>period.end))warnings.push("Existen actividades posteriores al fin nominal del período; el PDF incluirá la aclaración correspondiente.");
+    return {errors:[...new Set(errors)],warnings:[...new Set(warnings)]};
+  }
+
   async function generatePdf(){
     const data=collectDocumentData();
-    if(!scheduleComplete(data.schedule)){
-      alert("Completa las fechas de las 9 actividades del cronograma.");
-      return;
-    }
-    if(!distributionComplete(data.distribution)){
-      alert("Completa Carrera, Lugar y Cantidad en todas las filas utilizadas.");
-      return;
-    }
-    if(!data.assets.logo){
-      alert("Sube el logo institucional. Se utilizará en la cabecera de todas las páginas.");
-      return;
-    }
+    const validation=validateGenerationData(data);
+    if(validation.errors.length){alert("No se puede generar el PDF:\n\n- "+validation.errors.join("\n- "));return;}
+    if(validation.warnings.length)console.warn("Validaciones DOC-TIT:",validation.warnings);
 
     const button=$("#generateBtn");
     const status=$("#generationStatus");
@@ -990,6 +1001,7 @@
         assets:data.assets,
         analysis:data.analysis,
         institutional:state.institutional,
+        meta:{version:doc.version||window.DOC_TIT_COMPLEXIVO_PDF?.config?.policy?.version||"1.0",elaborationDate:new Date().toISOString().slice(0,10)},
         code
       },fileName);
 
