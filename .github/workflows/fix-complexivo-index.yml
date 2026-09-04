@@ -20,51 +20,41 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
 
           path = Path("complexivo/full-document.js")
           text = path.read_text(encoding="utf-8")
 
-          old_reserve = '''    function reserveIndexPages(){
-              newPage();
-              newPage();
-              // La introducción debe iniciar en una página nueva, nunca sobre el índice.
-              newPage();
-            }'''
-
-          new_reserve = '''    function reserveIndexPages(){
+          reserve_pattern = re.compile(
+              r'    function reserveIndexPages\(\)\{\n'
+              r'\s*newPage\(\);\n'
+              r'\s*newPage\(\);\n'
+              r'\s*// La introducción debe iniciar en una página nueva, nunca sobre el índice\.\n'
+              r'\s*newPage\(\);\n'
+              r'\s*\}'
+          )
+          reserve_replacement = '''    function reserveIndexPages(){
               // Una sola página de índice; el contenido comienza inmediatamente después.
               newPage();
               newPage();
             }'''
 
-          old_fill = '''      const heights=dedup.map(tocEntryHeight);
-              const totalHeight=heights.reduce((s,h)=>s+h,0);
-              const target=totalHeight/2;
+          text, reserve_count = reserve_pattern.subn(reserve_replacement, text, count=1)
+          if reserve_count != 1:
+              raise SystemExit(f"Se esperó modificar reserveIndexPages una vez y se modificó {reserve_count}")
 
-              let cumulative=0;
-              let splitAt=1;
-              for(let i=0;i<heights.length;i++){
-                if(cumulative+heights[i]>target && i>0){
-                  splitAt=i;
-                  break;
-                }
-                cumulative+=heights[i];
-                splitAt=i+1;
-              }
-
-              drawTOCPage(2,"Índice",dedup.slice(0,splitAt));
-              drawTOCPage(3,"",dedup.slice(splitAt));'''
-
-          new_fill = '''      // El índice se presenta de forma continua en una sola página.
+          fill_pattern = re.compile(
+              r'      const heights=dedup\.map\(tocEntryHeight\);.*?'
+              r'      drawTOCPage\(3,"",dedup\.slice\(splitAt\)\);',
+              re.S,
+          )
+          fill_replacement = '''      // El índice se presenta de forma continua en una sola página.
               drawTOCPage(2,"Índice",dedup);'''
 
-          if old_reserve not in text:
-              raise SystemExit("No se encontró el bloque reserveIndexPages esperado")
-          if old_fill not in text:
-              raise SystemExit("No se encontró el bloque fillIndex esperado")
+          text, fill_count = fill_pattern.subn(fill_replacement, text, count=1)
+          if fill_count != 1:
+              raise SystemExit(f"Se esperó modificar fillIndex una vez y se modificó {fill_count}")
 
-          text = text.replace(old_reserve, new_reserve, 1)
-          text = text.replace(old_fill, new_fill, 1)
           path.write_text(text, encoding="utf-8")
           PY
 
