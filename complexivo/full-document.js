@@ -583,9 +583,9 @@
       }
 
       const cells=[
-        {title:"ELABORADO POR:",name:ctx.institutional?.preparedBy||"Mgs. Jefferson Villarreal",role:ctx.institutional?.preparedRole||"Coordinador de Titulación y Eficiencia Terminal"},
-        {title:"REVISADO POR:",name:ctx.institutional?.reviewedBy||"Ing. Martha Tomalá",role:ctx.institutional?.reviewedRole||"Coordinadora General de Carreras"},
-        {title:"APROBADO POR:",name:ctx.institutional?.approvedBy||"Dr. Alex León",role:ctx.institutional?.approvedRole||"Vicerrector"}
+        {title:"ELABORADO POR:",name:"Mgs. Jefferson Villarreal",role:"Coordinador de Titulación y Eficiencia Terminal"},
+        {title:"REVISADO POR:",name:"Ing. Martha Tomalá",role:"Coordinadora General de Carreras"},
+        {title:"APROBADO POR:",name:"Dr. Alex León",role:"Vicerrector"}
       ];
 
       cells.forEach((cell,i)=>{
