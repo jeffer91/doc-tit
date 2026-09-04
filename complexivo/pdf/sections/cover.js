@@ -22,25 +22,28 @@
       const visualCenter = (contentTop + contentBottom) / 2;
       const blockW = 18 * CM;
 
+      // Título visual central de la hoja: 23 pt.
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(23);
+      const titleLines=doc.splitTextToSize(title,blockW);
+      const titleLineH=27;
+
+      // Período complementario del bloque central.
       doc.setFont("helvetica","bold");
       doc.setFontSize(18);
-      const titleLines=doc.splitTextToSize(title,blockW);
-      const titleLineH=22;
-
-      doc.setFontSize(16);
       const periodLines=doc.splitTextToSize(String(ctx.period?.name||""),blockW);
-      const periodLineH=19;
+      const periodLineH=21;
 
       const groupH=titleLines.length*titleLineH + 14 + periodLines.length*periodLineH;
-      let y=visualCenter-groupH/2+14;
+      let y=visualCenter-groupH/2+17;
 
       doc.setFont("helvetica","bold");
-      doc.setFontSize(18);
+      doc.setFontSize(23);
       doc.text(titleLines,pageW/2,y,{align:"center",lineHeightFactor:1.05});
       y+=titleLines.length*titleLineH+14;
 
       doc.setFont("helvetica","bold");
-      doc.setFontSize(16);
+      doc.setFontSize(18);
       doc.text(periodLines,pageW/2,y,{align:"center",lineHeightFactor:1.05});
 
       signatureBlock(signatureTop);
