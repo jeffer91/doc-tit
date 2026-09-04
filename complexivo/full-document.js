@@ -463,14 +463,14 @@ const BODY = PDF_MODULES.config?.layout?.body || {
           const tableWidth=data.table.columns.reduce((sum,column)=>sum+(Number(column.width)||0),0);
           const right=Math.min(pageW-data.table.settings.margin.right,left+tableWidth);
 
-          if(data.section==="head" && data.column.index===0){
+          if(data.section==="head" && data.column.index===data.table.columns.length-1){
             doc.setDrawColor(0);
             doc.setLineWidth(0.8);
             doc.line(left,data.cell.y,right,data.cell.y);
             doc.setLineWidth(0.45);
             doc.line(left,data.cell.y+data.cell.height,right,data.cell.y+data.cell.height);
           }
-          if(data.section==="body" && data.row.index===data.table.body.length-1 && data.column.index===0){
+          if(data.section==="body" && data.row.index===data.table.body.length-1 && data.column.index===data.table.columns.length-1){
             doc.setDrawColor(0);
             doc.setLineWidth(0.8);
             doc.line(left,data.cell.y+data.cell.height,right,data.cell.y+data.cell.height);
