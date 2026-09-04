@@ -421,11 +421,36 @@ const BODY = PDF_MODULES.config?.layout?.body || {
 
       const userDidDrawPage=options.didDrawPage;
       const userDidDrawCell=options.didDrawCell;
+      const institutionalGrid=!!options.institutionalGrid;
+      delete options.institutionalGrid;
 
-      options.theme="plain";
-      options.styles={font:"times",fontSize:10,cellPadding:{top:5,right:6,bottom:5,left:6},textColor:0,lineWidth:0,overflow:"linebreak",valign:"top",...((options.styles)||{})};
-      options.headStyles={font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0,lineWidth:0,halign:"left",...((options.headStyles)||{})};
+      options.theme=institutionalGrid?"grid":"plain";
+      options.styles={
+        font:"times",
+        fontSize:10,
+        cellPadding:{top:5,right:6,bottom:5,left:6},
+        textColor:0,
+        lineColor:0,
+        lineWidth:institutionalGrid?0.35:0,
+        overflow:"linebreak",
+        valign:"top",
+        ...((options.styles)||{})
+      };
+      options.headStyles={
+        font:"times",
+        fontStyle:"bold",
+        fillColor:institutionalGrid?[242,242,242]:[255,255,255],
+        textColor:0,
+        lineColor:0,
+        lineWidth:institutionalGrid?0.35:0,
+        halign:"left",
+        ...((options.headStyles)||{})
+      };
       options.showHead="everyPage";
+      options.rowPageBreak=options.rowPageBreak||"avoid";
+      options.pageBreak=options.pageBreak||"auto";
+      options.tableWidth=options.tableWidth||bodyW;
+      options.horizontalPageBreak=false;
 
       options.didDrawPage=(data)=>{
         drawHeader(doc.getNumberOfPages());
@@ -433,22 +458,23 @@ const BODY = PDF_MODULES.config?.layout?.body || {
       };
 
       options.didDrawCell=(data)=>{
-        const left=data.table.settings.margin.left;
-        const right=pageW-data.table.settings.margin.right;
+        if(!institutionalGrid){
+          const left=data.table.settings.margin.left;
+          const tableWidth=data.table.columns.reduce((sum,column)=>sum+(Number(column.width)||0),0);
+          const right=Math.min(pageW-data.table.settings.margin.right,left+tableWidth);
 
-        // APA 7: only top rule, header-bottom rule and final bottom rule.
-        if(data.section==="head" && data.column.index===0){
-          doc.setDrawColor(0);
-          doc.setLineWidth(0.8);
-          doc.line(left,data.cell.y,right,data.cell.y);
-          doc.setLineWidth(0.45);
-          doc.line(left,data.cell.y+data.cell.height,right,data.cell.y+data.cell.height);
-        }
-
-        if(data.section==="body" && data.row.index===data.table.body.length-1 && data.column.index===0){
-          doc.setDrawColor(0);
-          doc.setLineWidth(0.8);
-          doc.line(left,data.cell.y+data.cell.height,right,data.cell.y+data.cell.height);
+          if(data.section==="head" && data.column.index===0){
+            doc.setDrawColor(0);
+            doc.setLineWidth(0.8);
+            doc.line(left,data.cell.y,right,data.cell.y);
+            doc.setLineWidth(0.45);
+            doc.line(left,data.cell.y+data.cell.height,right,data.cell.y+data.cell.height);
+          }
+          if(data.section==="body" && data.row.index===data.table.body.length-1 && data.column.index===0){
+            doc.setDrawColor(0);
+            doc.setLineWidth(0.8);
+            doc.line(left,data.cell.y+data.cell.height,right,data.cell.y+data.cell.height);
+          }
         }
 
         if(userDidDrawCell) userDidDrawCell(data);
