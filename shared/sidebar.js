@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  // Shared DOC-TIT sidebar navigation · v3
+  // Shared DOC-TIT sidebar navigation · v4
 
   const LAST_DOCUMENT_KEY = "doc-tit-last-document";
 
@@ -84,9 +84,7 @@
 
     document.querySelectorAll(".sidebar").forEach(sidebar => {
       Array.from(sidebar.childNodes).forEach(node => {
-        if (node.nodeType === Node.TEXT_NODE && String(node.textContent || "").includes("\\n")) {
-          node.remove();
-        }
+        if (node.nodeType === Node.TEXT_NODE && String(node.textContent || "").includes("\\n")) node.remove();
       });
     });
 
@@ -110,29 +108,30 @@
     const dashboard = document.querySelector("#dashboardView");
     const documentView = document.querySelector("#documentView");
     if (documentView?.classList.contains("active") && !dashboard?.classList.contains("active")) return;
-
     const trigger = document.querySelector('#processMenu [data-doc="plan-examen-complexivo"]');
     if (trigger) trigger.click();
   }
 
   function keepComplexivoDirect() {
     if (activeDocumentId() !== "complexivo") return;
-
     const dashboard = document.querySelector("#dashboardView");
     if (dashboard) {
       const observer = new MutationObserver(() => {
         fixSummaryGrammar();
-        if (dashboard.classList.contains("active")) {
-          window.setTimeout(openComplexivoDirect, 0);
-        }
+        if (dashboard.classList.contains("active")) window.setTimeout(openComplexivoDirect, 0);
       });
       observer.observe(dashboard, { attributes: true, attributeFilter: ["class"], childList: true, subtree: true });
     }
-
-    const periodSelect = document.querySelector("#periodSelect");
-    periodSelect?.addEventListener("change", () => window.setTimeout(openComplexivoDirect, 0));
-
+    document.querySelector("#periodSelect")?.addEventListener("change", () => window.setTimeout(openComplexivoDirect, 0));
     window.setTimeout(openComplexivoDirect, 0);
+  }
+
+  function loadPlanningTemplates() {
+    if (document.querySelector("script[data-doc-tit-planning-templates]")) return;
+    const script = document.createElement("script");
+    script.dataset.docTitPlanningTemplates = "1";
+    script.src = resolveBasePath() + "shared/planning-templates.js?v=20260908-1";
+    document.body.appendChild(script);
   }
 
   function init() {
@@ -140,11 +139,9 @@
     cleanLegacySidebar();
     fixSummaryGrammar();
     keepComplexivoDirect();
+    loadPlanningTemplates();
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init, { once: true });
-  } else {
-    init();
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+  else init();
 })();
