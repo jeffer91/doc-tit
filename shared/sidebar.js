@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  // Shared DOC-TIT sidebar navigation · v4
+  // Shared DOC-TIT sidebar navigation · v5
 
   const LAST_DOCUMENT_KEY = "doc-tit-last-document";
 
@@ -39,7 +39,6 @@
   function renderNavigation(container) {
     const docs = Array.isArray(window.DOC_TIT_DOCUMENTS) ? window.DOC_TIT_DOCUMENTS : [];
     if (!docs.length) return;
-
     const activeId = activeDocumentId();
     rememberDocument(activeId);
     const groups = new Map();
@@ -48,21 +47,12 @@
       if (!groups.has(key)) groups.set(key, { process: doc.process, group: doc.group, docs: [] });
       groups.get(key).docs.push(doc);
     });
-
     container.innerHTML = "";
     container.classList.add("doc-tit-nav");
-
     groups.forEach(group => {
       const section = document.createElement("section");
       section.className = "doc-tit-nav-group";
-      section.innerHTML = `
-        <div class="doc-tit-nav-group-title">
-          <span class="doc-tit-nav-code">${group.process}</span>
-          <span>${group.group}</span>
-        </div>
-        <div class="doc-tit-nav-links"></div>
-      `;
-
+      section.innerHTML = `<div class="doc-tit-nav-group-title"><span class="doc-tit-nav-code">${group.process}</span><span>${group.group}</span></div><div class="doc-tit-nav-links"></div>`;
       const links = section.querySelector(".doc-tit-nav-links");
       group.docs.forEach(doc => {
         const link = document.createElement("a");
@@ -74,23 +64,18 @@
         if (doc.id === activeId) link.setAttribute("aria-current", "page");
         links.appendChild(link);
       });
-
       container.appendChild(section);
     });
   }
 
   function cleanLegacySidebar() {
     document.querySelectorAll(".nav-back, .sidebar > a[href='../']").forEach(el => el.remove());
-
     document.querySelectorAll(".sidebar").forEach(sidebar => {
       Array.from(sidebar.childNodes).forEach(node => {
         if (node.nodeType === Node.TEXT_NODE && String(node.textContent || "").includes("\\n")) node.remove();
       });
     });
-
-    document.querySelectorAll(".brand span").forEach(el => {
-      el.textContent = "Gestión documental";
-    });
+    document.querySelectorAll(".brand span").forEach(el => { el.textContent = "Gestión documental"; });
   }
 
   function fixSummaryGrammar() {
@@ -98,8 +83,7 @@
     if (!el) return;
     const match = String(el.textContent || "").match(/^(\d+) documentos · (\d+) generados$/);
     if (!match) return;
-    const docs = Number(match[1]);
-    const generated = Number(match[2]);
+    const docs = Number(match[1]), generated = Number(match[2]);
     el.textContent = `${docs} ${docs === 1 ? "documento" : "documentos"} · ${generated} ${generated === 1 ? "generado" : "generados"}`;
   }
 
@@ -108,8 +92,7 @@
     const dashboard = document.querySelector("#dashboardView");
     const documentView = document.querySelector("#documentView");
     if (documentView?.classList.contains("active") && !dashboard?.classList.contains("active")) return;
-    const trigger = document.querySelector('#processMenu [data-doc="plan-examen-complexivo"]');
-    if (trigger) trigger.click();
+    document.querySelector('#processMenu [data-doc="plan-examen-complexivo"]')?.click();
   }
 
   function keepComplexivoDirect() {
@@ -126,6 +109,19 @@
     window.setTimeout(openComplexivoDirect, 0);
   }
 
+  function persistTemplateImport() {
+    if (document.documentElement.dataset.docTitTemplatePersist === "1") return;
+    document.documentElement.dataset.docTitTemplatePersist = "1";
+    document.addEventListener("click", event => {
+      if (event.target?.id !== "ptapply") return;
+      window.setTimeout(() => {
+        const active = activeDocumentId();
+        if (active === "complexivo") document.querySelector("#saveDraftBtn")?.click();
+        else document.querySelector("#saveBtn")?.click();
+      }, 120);
+    });
+  }
+
   function loadPlanningTemplates() {
     if (document.querySelector("script[data-doc-tit-planning-templates]")) return;
     const script = document.createElement("script");
@@ -139,6 +135,7 @@
     cleanLegacySidebar();
     fixSummaryGrammar();
     keepComplexivoDirect();
+    persistTemplateImport();
     loadPlanningTemplates();
   }
 
