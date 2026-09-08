@@ -1,6 +1,8 @@
 (() => {
   "use strict";
-  // Shared DOC-TIT sidebar navigation · v1
+  // Shared DOC-TIT sidebar navigation · v2
+
+  const LAST_DOCUMENT_KEY = "doc-tit-last-document";
 
   function normalizePath(path) {
     let value = String(path || "/").replace(/\\/g, "/");
@@ -29,11 +31,17 @@
     return base + String(doc.id || "").replace(/^\/+|\/+$/g, "") + "/";
   }
 
+  function rememberDocument(documentId) {
+    if (!documentId) return;
+    try { localStorage.setItem(LAST_DOCUMENT_KEY, documentId); } catch (_) {}
+  }
+
   function renderNavigation(container) {
     const docs = Array.isArray(window.DOC_TIT_DOCUMENTS) ? window.DOC_TIT_DOCUMENTS : [];
     if (!docs.length) return;
 
     const activeId = activeDocumentId();
+    rememberDocument(activeId);
     const groups = new Map();
     docs.forEach(doc => {
       const key = `${doc.process}::${doc.group}`;
@@ -62,6 +70,7 @@
         link.href = hrefFor(doc);
         link.dataset.documentId = doc.id;
         link.innerHTML = `<span class="doc-tit-nav-dot" aria-hidden="true"></span><span>${doc.title}</span>`;
+        link.addEventListener("click", () => rememberDocument(doc.id));
         if (doc.id === activeId) link.setAttribute("aria-current", "page");
         links.appendChild(link);
       });
