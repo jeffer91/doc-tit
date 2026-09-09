@@ -21,6 +21,14 @@
     }
   }
 
+  function codeWithPeriod(code, period) {
+    const original = String(code || "");
+    const base = original.replace(/-\d{4}-\d{2}$/, "");
+    const start = String(period?.start || "");
+    const match = start.match(/^(\d{4})-(\d{2})/);
+    return match ? `${base}-${match[1]}-${match[2]}` : original;
+  }
+
   ns.components.header = {
     render(api) {
       const {doc,ctx,pageW,pageNo,headerDrawn,imageFormat} = api;
@@ -103,8 +111,8 @@
         doc.text(periodLines,bx+colB/2,groupY,{align:"center",lineHeightFactor:1.02});
       }
 
-      // Control documental a 9 pt.
-      const code = String(ctx.code || "");
+      // Control documental a 9 pt. El código incluye automáticamente año y mes de inicio del período.
+      const code = codeWithPeriod(ctx.code, ctx.period);
       doc.setFont("helvetica","bold");
       doc.setFontSize(9);
       doc.text("Código:",cx+colC/2,top+h/2-7,{align:"center"});
