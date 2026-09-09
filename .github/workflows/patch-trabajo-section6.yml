@@ -1,0 +1,39 @@
+name: Patch Trabajo Section 6
+
+on:
+  push:
+    paths:
+      - ".github/workflows/patch-trabajo-section6.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply Section 6 patch
+        run: python .github/scripts/patch_trabajo_section6.py
+      - name: Validate JavaScript and wiring
+        run: |
+          node --check trabajo-titulacion/logistics-config.js
+          node --check trabajo-titulacion/process-config.js
+          node --check trabajo-titulacion/full-document.js
+          node --check trabajo-titulacion/app.js
+          grep -q 'type":"administrativeLogistics"' trabajo-titulacion/full-document.js
+          grep -q 'function renderAdministrativeLogistics' trabajo-titulacion/full-document.js
+          grep -q 'contentSnapshots?.administrativeLogistics' trabajo-titulacion/full-document.js
+          grep -q 'currentLogisticsSnapshot' trabajo-titulacion/app.js
+          grep -q 'logistics-config.js?v=20260909-section6-1' trabajo-titulacion/index.html
+          ! grep -q '"recursos":{' trabajo-titulacion/app.js
+      - name: Commit Section 6 implementation
+        run: |
+          git config user.name "jeffer91"
+          git config user.email "jeffersonvillarreal91@gmail.com"
+          git add trabajo-titulacion/full-document.js trabajo-titulacion/app.js trabajo-titulacion/index.html
+          git commit -m "Implement controlled Trabajo logistics section"
+          git push
