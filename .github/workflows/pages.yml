@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -15,7 +15,39 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  patch_trabajo_section4:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply Section 4 patch
+        run: python .github/scripts/patch_trabajo_section4.py
+      - name: Validate JavaScript
+        run: |
+          node --check trabajo-titulacion/requirements-config.js
+          node --check trabajo-titulacion/full-document.js
+          node --check trabajo-titulacion/app.js
+          grep -q 'type":"requirements"' trabajo-titulacion/full-document.js
+          grep -q 'function renderRequirements' trabajo-titulacion/full-document.js
+          grep -q 'contentSnapshots.requirements' trabajo-titulacion/full-document.js
+          grep -q 'currentRequirementsSnapshot' trabajo-titulacion/app.js
+          grep -q 'requirements-config.js?v=20260909-section4-1' trabajo-titulacion/index.html
+      - name: Commit patch
+        run: |
+          git config user.name "jeffer91"
+          git config user.email "jeffersonvillarreal91@gmail.com"
+          git add trabajo-titulacion/full-document.js trabajo-titulacion/app.js trabajo-titulacion/index.html
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Implement controlled Trabajo de Titulación requirements"
+            git push
+          fi
+
   deploy:
+    needs: patch_trabajo_section4
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -23,6 +55,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: main
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
