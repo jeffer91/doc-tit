@@ -19,14 +19,10 @@ jobs:
         shell: python
         run: |
           from pathlib import Path
-
           path=Path('complexivo/index.html')
           text=path.read_text(encoding='utf-8')
           old='<script src="app.js?v=20260904-tables-1"></script>'
-          new='''<script src="app.js?v=20260904-tables-1"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="operational-data.js?v=20260909-workspace-1"></script>
-  <script src="data-workspace.js?v=20260909-workspace-1"></script>'''
+          new=old+'\n  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>\n  <script src="operational-data.js?v=20260909-workspace-1"></script>\n  <script src="data-workspace.js?v=20260909-workspace-1"></script>'
           if 'data-workspace.js' not in text:
               if old not in text:
                   raise SystemExit('No se encontró el punto de inserción en complexivo/index.html')
