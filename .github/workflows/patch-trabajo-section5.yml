@@ -1,0 +1,37 @@
+name: Patch Trabajo Section 5
+
+on:
+  push:
+    paths:
+      - ".github/workflows/patch-trabajo-section5.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply Section 5 patch
+        run: python .github/scripts/patch_trabajo_section5.py
+      - name: Validate JavaScript and wiring
+        run: |
+          node --check trabajo-titulacion/process-config.js
+          node --check trabajo-titulacion/full-document.js
+          node --check trabajo-titulacion/app.js
+          grep -q 'type":"processDescription"' trabajo-titulacion/full-document.js
+          grep -q 'function renderProcessDescription' trabajo-titulacion/full-document.js
+          grep -q 'contentSnapshots?.processDescription' trabajo-titulacion/full-document.js
+          grep -q 'currentProcessSnapshot' trabajo-titulacion/app.js
+          grep -q 'process-config.js?v=20260909-section5-1' trabajo-titulacion/index.html
+      - name: Commit Section 5 implementation
+        run: |
+          git config user.name "jeffer91"
+          git config user.email "jeffersonvillarreal91@gmail.com"
+          git add trabajo-titulacion/full-document.js trabajo-titulacion/app.js trabajo-titulacion/index.html
+          git commit -m "Implement controlled Trabajo de Titulación process description"
+          git push
