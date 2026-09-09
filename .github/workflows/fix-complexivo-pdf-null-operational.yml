@@ -1,0 +1,84 @@
+name: Fix Complexivo PDF runtime error
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-complexivo-pdf-null-operational.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Patch operational plan null handling
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path('complexivo/pdf/sections/methodology/operational-plan.js')
+          text = path.read_text(encoding='utf-8')
+
+          replacements = [
+              (
+                  'const entered=Array.isArray(ctx.operationalPlan)?ctx.operationalPlan:[];',
+                  'const entered=(Array.isArray(ctx.operationalPlan)?ctx.operationalPlan:[]).filter(r=>r&&r.id);'
+              ),
+              (
+                  'const findSchedule=text=>schedule.find(r=>normalize(r.activity).includes(normalize(text)));',
+                  'const findSchedule=text=>schedule.find(r=>r&&normalize(r.activity).includes(normalize(text)));'
+              ),
+              (
+                  'const hasRealOperationalData=r=>[r.start,r.deadline,r.actualDate,r.person,r.status,r.observations].some(v=>String(v||"").trim());',
+                  'const hasRealOperationalData=r=>!!r && [r.start,r.deadline,r.actualDate,r.person,r.status,r.observations].some(v=>String(v||"").trim());'
+              ),
+          ]
+
+          for old, new in replacements:
+              if old not in text:
+                  raise SystemExit('Target not found: ' + old)
+              text = text.replace(old, new, 1)
+
+          path.write_text(text, encoding='utf-8')
+
+      - name: Validate JavaScript syntax
+        run: node --check complexivo/pdf/sections/methodology/operational-plan.js
+
+      - name: Reproduce PDF generation path
+        run: |
+          node <<'NODE'
+          global.window={DOC_TIT_COMPLEXIVO_PDF:{config:{areas:{}}}};
+          require('./complexivo/pdf/sections/methodology/operational-plan.js');
+          const ns=window.DOC_TIT_COMPLEXIVO_PDF;
+          const api={
+            ctx:{
+              operationalPlan:[],
+              schedule:[
+                {activity:'Examen Complexivo',start:'2026-10-28',end:'2026-10-31'},
+                {activity:'Examen Complexivo Supletorio',start:'2026-11-09',end:'2026-11-11'}
+              ]
+            },
+            heading(){}, paragraph(){}, tableCaption(){}, tableNote(){}, autoTable(){},
+            BODY:{left:0,right:0,top:0,bottom:0}, bodyW:100,
+            formatDateShort:v=>v,
+            normalize:v=>String(v||'').toLowerCase(),
+            getY:()=>0
+          };
+          ns.parts.methodology.operationalPlan(api);
+          api.ctx.operationalPlan=[null,{}, {id:'exam',start:'2026-10-28'}];
+          ns.parts.methodology.operationalPlan(api);
+          console.log('Complexivo operational plan runtime test: OK');
+          NODE
+
+      - name: Commit fix and remove one-time workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm .github/workflows/fix-complexivo-pdf-null-operational.yml
+          git add complexivo/pdf/sections/methodology/operational-plan.js .github/workflows/fix-complexivo-pdf-null-operational.yml
+          git commit -m "Fix Complexivo PDF undefined operational row error"
+          git push
