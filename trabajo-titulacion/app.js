@@ -24,13 +24,18 @@ const norm=v=>String(v??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLo
 const slug=v=>norm(v).replace(/\s+/g,"_");
 const activePeriod=()=>periods.find(p=>p.id===activePeriodId)||periods[0];
 
+function currentLegalBaseSnapshot(){
+  const block=window.DOC_TIT_TRABAJO_CONTENT?.legalBase;
+  if(!block||!Array.isArray(block.paragraphs)||!block.paragraphs.length)return null;
+  return JSON.parse(JSON.stringify(block));
+}
 function blankPayload(){
   const tables={};
   Object.entries(CONFIG.tables).forEach(([key,t])=>{tables[key]=(t.initialRows||[]).map(r=>({...r}));});
   return {schedule:CONFIG.schedule.map(a=>{
     const def=typeof a==="string"?{activity:a}:a;
     return {activity:def.activity,responsible:def.responsible||"",description:def.description||"",route:def.route||"",start:"",end:""};
-  }),tables,notes:""};
+  }),tables,notes:"",contentSnapshots:{legalBase:currentLegalBaseSnapshot()}};
 }
 function normalizePayloadData(data){
   const base=blankPayload();
@@ -48,7 +53,9 @@ function normalizePayloadData(data){
     if(Array.isArray(rows)&&rows.length) tables[key]=rows;
   });
 
-  return {...base,...data,schedule:base.schedule,tables,notes:data.notes||""};
+  const contentSnapshots={...(base.contentSnapshots||{}),...(data.contentSnapshots||{})};
+  if(!contentSnapshots.legalBase)contentSnapshots.legalBase=currentLegalBaseSnapshot();
+  return {...base,...data,schedule:base.schedule,tables,notes:data.notes||"",contentSnapshots};
 }
 
 function code(){
