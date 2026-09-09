@@ -1,0 +1,107 @@
+name: Correct Complexivo structure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/correct-complexivo-structure.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  correct:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Patch PDF structure and wording
+        shell: python
+        run: |
+          from pathlib import Path
+
+          # 1. Operational plan: only real entered data creates operational rows,
+          # distinguish general planning from the complementary operational schedule,
+          # and keep numbering consecutive when optional subsections are absent.
+          path = Path('complexivo/pdf/sections/methodology/operational-plan.js')
+          text = path.read_text(encoding='utf-8')
+          replacements = [
+              (
+                  'const active=plan.filter(hasRealOperationalData);',
+                  'const active=plan.filter(r=>hasRealOperationalData(byId.get(r.id)));'
+              ),
+              (
+                  'heading("3.11. Plan Operativo de Preparación, Configuración y Aplicación del Examen Complexivo",2,true);',
+                  'heading("3.11. Articulación con el Cronograma Operativo del Examen Complexivo",2,true);'
+              ),
+              (
+                  'paragraph("El cronograma general establece las ventanas del período. El plan operativo incorpora únicamente actividades que ya cuentan con información real de programación o seguimiento. Las fechas del examen ordinario y del supletorio se recuperan automáticamente del cronograma general cuando están registradas.");',
+                  'paragraph("El presente documento corresponde a la planificación general del proceso. La distribución específica por carrera, grupo, lugar, aula o laboratorio, fecha, hora, responsable de jornada y soporte se formaliza mediante el Cronograma Operativo del Examen Complexivo, instrumento complementario emitido una vez confirmadas las condiciones de ejecución.");\n    if(!active.length){\n      paragraph("Cuando no existen datos operativos confirmados, no se incorpora una matriz incompleta ni se imprimen campos pendientes; las fechas del examen ordinario y del supletorio permanecen únicamente en el cronograma general del período.");\n    }'
+              ),
+              (
+                  'heading("3.11.4. Secuencia de cierre posterior al supletorio",3,true);',
+                  'const closureNumber=tracking.length?"3.11.4":active.length?"3.11.3":"3.11.1";\n    heading(`${closureNumber}. Secuencia de cierre posterior al supletorio`,3,true);'
+              ),
+          ]
+          for old, new in replacements:
+              if old not in text:
+                  raise SystemExit('Operational plan target not found: ' + old[:100])
+              text = text.replace(old, new, 1)
+          path.write_text(text, encoding='utf-8')
+
+          # 2. Methodology: state scope clearly and avoid claiming capacity is already proven.
+          path = Path('complexivo/pdf/sections/methodology/index.js')
+          text = path.read_text(encoding='utf-8')
+          old = 'paragraph("El enfoque integra verificación de requisitos, preparación académica, diseño de instrumentos, organización logística, configuración tecnológica, aplicación, evaluación y mejora continua. Las entradas principales son los registros académicos, el perfil de egreso, la planificación del período, la distribución de estudiantes y los requerimientos de cada carrera.");'
+          new = old + '\n      paragraph("Esta planificación define ventanas, responsabilidades generales y demanda del período. El detalle por carrera, grupo, aula o laboratorio, horario, responsable de jornada y soporte se consolida en un cronograma operativo complementario cuando las condiciones han sido confirmadas.");'
+          if old not in text:
+              raise SystemExit('Methodology scope target not found')
+          text = text.replace(old, new, 1)
+          for old, new in [
+              ('Distribución vigente, cronograma operativo, asignación de espacios, checklist técnico y registro de responsables.', 'Distribución vigente y requerimientos para la elaboración del cronograma operativo, la asignación de espacios y el checklist técnico.'),
+              ('Jornadas organizadas con capacidad suficiente y condiciones equivalentes para los participantes.', 'Demanda logística consolidada para formalizar jornadas y recursos una vez confirmada la capacidad operativa disponible.'),
+          ]:
+              if old not in text:
+                  raise SystemExit('Methodology phase target not found: ' + old)
+              text = text.replace(old, new, 1)
+          path.write_text(text, encoding='utf-8')
+
+          # 3. Executive summary: do not imply that all nucleus assignments are already confirmed.
+          path = Path('complexivo/pdf/sections/executive-summary.js')
+          text = path.read_text(encoding='utf-8')
+          replacements = [
+              (
+                  'La preparación académica se estructura mediante cuatro Núcleos de Titulación, cada uno con docente responsable, guía, material, aula o recurso institucional y evidencia de desarrollo. La ejecución de los núcleos se articula con Integración Curricular o Titulación y con las Coordinaciones de Carrera.',
+                  'La preparación académica se estructura mediante cuatro Núcleos de Titulación. Sus fechas generales forman parte de esta planificación; las asignaciones específicas por carrera o grupo, docente, aula o recurso y evidencia se formalizan en el instrumento operativo correspondiente. La ejecución se articula con Integración Curricular o Titulación y con las Coordinaciones de Carrera.'
+              ),
+              (
+                  '["Preparación académica","Cuatro Núcleos de Titulación con docente, guía, material y evidencia"],',
+                  '["Preparación académica","Cuatro Núcleos de Titulación; asignaciones específicas formalizadas mediante instrumento operativo"],'
+              ),
+          ]
+          for old, new in replacements:
+              if old not in text:
+                  raise SystemExit('Executive summary target not found: ' + old[:100])
+              text = text.replace(old, new, 1)
+          path.write_text(text, encoding='utf-8')
+
+      - name: Validate JavaScript and corrected rules
+        run: |
+          node --check complexivo/pdf/sections/methodology/operational-plan.js
+          node --check complexivo/pdf/sections/methodology/index.js
+          node --check complexivo/pdf/sections/executive-summary.js
+          node --check complexivo/pdf/sections/seminars.js
+          node --check complexivo/pdf/sections/legal-basis.js
+          node --check complexivo/pdf/sections/laboratories.js
+          node --check complexivo/pdf/sections/annexes.js
+          ! grep -q 'Por definir' complexivo/pdf/sections/seminars.js
+          ! grep -q '\[ \] Verificado' complexivo/pdf/sections/annexes.js
+          ! grep -q '3.11.4. Secuencia de cierre posterior al supletorio' complexivo/pdf/sections/methodology/operational-plan.js
+
+      - name: Commit corrections
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add complexivo/pdf/sections/methodology/operational-plan.js complexivo/pdf/sections/methodology/index.js complexivo/pdf/sections/executive-summary.js
+          git commit -m "Correct Complexivo planning scope and numbering"
+          git push
