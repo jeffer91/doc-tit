@@ -4,6 +4,17 @@
   const processConfig = window.DOC_TIT_TRABAJO_PROCESS || {};
   const academicSystem = processConfig.grades?.system || "SISACAD";
   const tribunalMemberCount = Number(processConfig.defense?.tribunal?.memberCount) || 3;
+  const parameters = Object.freeze({
+    initialTutorings: 1,
+    tutoringsPerDraft: 1,
+    additionalTutorings: "bajo solicitud",
+    readerCount: 1,
+    virtualCommunicationLimit: "Sin límite",
+    defenseCount: 1,
+    systemUserCount: 1,
+    tribunalMemberCount,
+    academicSystem
+  });
 
   const logistics = Object.freeze({
     id: "GESTION_ADMINISTRATIVA_LOGISTICA_TITULACION_VIGENTE",
@@ -14,28 +25,18 @@
       academicSystem: "DOC_TIT_TRABAJO_PROCESS.grades.system",
       tribunalMemberCount: "DOC_TIT_TRABAJO_PROCESS.defense.tribunal.memberCount"
     }),
-    parameters: Object.freeze({
-      initialTutorings: 1,
-      tutoringsPerDraft: 1,
-      additionalTutorings: "bajo solicitud",
-      readerCount: 1,
-      virtualCommunicationLimit: "Sin límite",
-      defenseCount: 1,
-      systemUserCount: 1,
-      tribunalMemberCount,
-      academicSystem
-    }),
+    parameters,
     intro: "La gestión administrativa y logística en el proceso de titulación es fundamental para asegurar que cada estudiante reciba orientación y soporte adecuado de manera personalizada. La interacción directa entre el estudiante, el tutor y el coordinador de titulación permite un seguimiento preciso y adaptado a las necesidades individuales de cada participante en el proceso.",
     assignmentsTable: Object.freeze({
       title: "Elementos y Asignaciones para el Proceso de Titulación",
       columns: Object.freeze(["Elemento", "Descripción", "Cantidad por estudiante", "Responsable"]),
       rows: Object.freeze([
-        Object.freeze({order:1,element:"Tutorías",description:"1 tutoría inicial y 1 tutoría por cada borrador; adicional bajo solicitud.",quantity:"Variable según avance",responsibleRole:"Coordinador de Titulación"}),
-        Object.freeze({order:2,element:"Lector",description:"Evaluación de proyecto por lector asignado al estudiante.",quantity:"1 lector",responsibleRole:"Coordinador de Titulación"}),
-        Object.freeze({order:3,element:"Comunicación Virtual",description:"Contacto directo con tutor y lector a través de mensajes, correo o Teams.",quantity:"Sin límite",responsibleRole:"Coordinador de Titulación"}),
-        Object.freeze({order:4,element:"Defensa de Tesis",description:"Presentación y defensa única del proyecto de tesis ante el tribunal evaluador.",quantity:"1 defensa",responsibleRole:"Coordinador General de Carreras"}),
-        Object.freeze({order:5,element:`Sistema ${academicSystem}`,description:"Plataforma de registro y seguimiento académico; cada estudiante tiene su usuario.",quantity:"1 usuario",responsibleRole:"Departamento de Sistemas"}),
-        Object.freeze({order:6,element:"Tribunal Evaluador",description:`Comité de ${tribunalMemberCount} miembros (diferentes del tutor y lector) para evaluar la defensa de tesis.`,quantity:`${tribunalMemberCount} miembros`,responsibleRole:"Coordinador General de Carreras"})
+        Object.freeze({order:1,element:"Tutorías",description:`${parameters.initialTutorings} tutoría inicial y ${parameters.tutoringsPerDraft} tutoría por cada borrador; adicional ${parameters.additionalTutorings}.`,quantity:"Variable según avance",responsibleRole:"Coordinador de Titulación"}),
+        Object.freeze({order:2,element:"Lector",description:"Evaluación de proyecto por lector asignado al estudiante.",quantity:`${parameters.readerCount} lector`,responsibleRole:"Coordinador de Titulación"}),
+        Object.freeze({order:3,element:"Comunicación Virtual",description:"Contacto directo con tutor y lector a través de mensajes, correo o Teams.",quantity:parameters.virtualCommunicationLimit,responsibleRole:"Coordinador de Titulación"}),
+        Object.freeze({order:4,element:"Defensa de Tesis",description:"Presentación y defensa única del proyecto de tesis ante el tribunal evaluador.",quantity:`${parameters.defenseCount} defensa`,responsibleRole:"Coordinador General de Carreras"}),
+        Object.freeze({order:5,element:`Sistema ${parameters.academicSystem}`,description:"Plataforma de registro y seguimiento académico; cada estudiante tiene su usuario.",quantity:`${parameters.systemUserCount} usuario`,responsibleRole:"Departamento de Sistemas"}),
+        Object.freeze({order:6,element:"Tribunal Evaluador",description:`Comité de ${parameters.tribunalMemberCount} miembros (diferentes del tutor y lector) para evaluar la defensa de tesis.`,quantity:`${parameters.tribunalMemberCount} miembros`,responsibleRole:"Coordinador General de Carreras"})
       ]),
       note: "La tabla especifica los elementos y asignaciones necesarios para el desarrollo del proceso de titulación, adaptado para modalidad completamente virtual."
     }),
@@ -43,7 +44,7 @@
       title: "Recursos Digitales Asignados para el Proceso de Titulación",
       columns: Object.freeze(["Recurso Digital", "Descripción", "Acceso por Estudiante", "Responsable de Gestión"]),
       resources: Object.freeze([
-        Object.freeze({order:1,name:academicSystem,description:"Plataforma de registro y seguimiento académico",studentAccess:"Sí",responsibleRole:"Departamento de Sistemas",active:true}),
+        Object.freeze({order:1,name:parameters.academicSystem,description:"Plataforma de registro y seguimiento académico",studentAccess:"Sí",responsibleRole:"Departamento de Sistemas",active:true}),
         Object.freeze({order:2,name:"Microsoft Teams",description:"Comunicación directa y tutorías virtuales",studentAccess:"Sí",responsibleRole:"Coordinador de Titulación",active:true}),
         Object.freeze({order:3,name:"Correo Institucional",description:"Canal para envío de documentos y retroalimentación",studentAccess:"Sí",responsibleRole:"Área Académica",active:true}),
         Object.freeze({order:4,name:"Telegram",description:"Grupo por carrera para comunicados",studentAccess:"Sí",responsibleRole:"Coordinador de Titulación",active:true})
