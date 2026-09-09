@@ -35,10 +35,10 @@
 
   ns.parts.methodology.operationalPlan = function(api) {
     const {ctx,heading,paragraph,tableCaption,tableNote,autoTable,BODY,bodyW,formatDateShort,normalize} = api;
-    const entered=Array.isArray(ctx.operationalPlan)?ctx.operationalPlan:[];
+    const entered=(Array.isArray(ctx.operationalPlan)?ctx.operationalPlan:[]).filter(r=>r&&r.id);
     const byId=new Map(entered.map(r=>[r.id,r]));
     const schedule=Array.isArray(ctx.schedule)?ctx.schedule:[];
-    const findSchedule=text=>schedule.find(r=>normalize(r.activity).includes(normalize(text)));
+    const findSchedule=text=>schedule.find(r=>r&&normalize(r.activity).includes(normalize(text)));
     const exam=findSchedule("examen complexivo");
     const supplementary=findSchedule("supletorio");
 
@@ -52,7 +52,7 @@
       ...(byId.get(base.id)||{})
     }));
 
-    const hasRealOperationalData=r=>[r.start,r.deadline,r.actualDate,r.person,r.status,r.observations].some(v=>String(v||"").trim());
+    const hasRealOperationalData=r=>!!r && [r.start,r.deadline,r.actualDate,r.person,r.status,r.observations].some(v=>String(v||"").trim());
     const active=plan.filter(r=>hasRealOperationalData(byId.get(r.id)));
     const tracking=active.filter(r=>[r.actualDate,r.person,r.status,r.observations].some(v=>String(v||"").trim()));
     const date=v=>v?formatDateShort(v):"";
