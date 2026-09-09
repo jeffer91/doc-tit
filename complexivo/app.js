@@ -475,10 +475,10 @@
     return {year:d.getFullYear(),month:String(d.getMonth()+1).padStart(2,"0")};
   }
   function documentCode(doc,period){
-    // El RGI conserva literalmente el código documental asignado; el período no forma parte del código.
-    return `${doc.prefix}${doc.sequence}-${doc.process}`;
-  }
-  function docStoreKey(docId){ return `${state.activePeriodId}::${docId}`; }
+  const {year,month}=monthYear(period.start);
+  return `${doc.prefix}${doc.sequence}-${doc.process}-${year}-${month}`;
+}
+function docStoreKey(docId){ return `${state.activePeriodId}::${docId}`; }
   function getDocData(docId){ return state.documents[docStoreKey(docId)]||{}; }
   function getCachedAssets(docId){ return assetCache.get(docStoreKey(docId))||{}; }
   async function loadAssetsForDoc(docId){
