@@ -5,6 +5,7 @@ const TITLE="Planificación De Trabajo De Titulación";
 const AUTHOR_ROLE="Gestor de Procesos Académicos";
 const CONTENT_CONFIG=window.DOC_TIT_TRABAJO_CONTENT||{};
 const PROCESS_CONFIG=window.DOC_TIT_TRABAJO_PROCESS||{};
+const LOGISTICS_CONFIG=window.DOC_TIT_TRABAJO_LOGISTICS||{};
 const CONTENT=[
 {"type":"h","text":"1. Introducción","level":1},
 {"type":"h","text":"1.1. Contexto General","level":2},
@@ -26,7 +27,7 @@ const CONTENT=[
 {"type":"h","text":"1.4. Documentos de referencia","level":2},
 {"type":"p","text":"Esta planificación se articula con los siguientes documentos institucionales:","opts":{"indent":false}},
 {"type":"referenceDocs"},
-{"type":"h","text":"2. Base Legal","level":1},{"type":"legalBase"},{"type":"h","text":"3. Metodología","level":1},{"type":"methodology"},{"type":"h","text":"4. Requisitos Para La Aprobación De La Titulación","level":1},{"type":"requirements"},{"type":"h","text":"5. Descripción De Los Procesos De Titulación","level":1},{"type":"processDescription"},{"type":"h","text":"6. Gestión Administrativa Y Logística","level":1},{"type":"p","text":"La gestión administrativa y logística asegura que el estudiante cuente con seguimiento, canales de comunicación, recursos digitales, registro académico y soporte durante cada etapa."},{"type":"custom","name":"fixedAssignments"},{"type":"custom","name":"fixedResources"},{"type":"h","text":"6.1. Comunicación Directa Con El Tutor Y El Coordinador De Titulación","level":2},{"type":"h","text":"6.1.1. Seguimiento Individual Por El Tutor","level":3},{"type":"p","text":"El tutor mantiene comunicación directa con el estudiante, revisa avances, resuelve dudas y orienta la construcción académica de cada sección del trabajo."},{"type":"h","text":"6.1.2. Coordinación Con El Coordinador De Titulación","level":3},{"type":"p","text":"La coordinación verifica requisitos, documentación, cumplimiento del cronograma y organización de la defensa, atendiendo oportunamente incidencias administrativas."},{"type":"h","text":"7. Inducción De Titulación","level":1},{"type":"p","text":"La inducción proporciona una comprensión clara de las modalidades, requisitos, procedimientos, fechas y canales institucionales necesarios para desarrollar el proceso de titulación."},{"type":"h","text":"7.1. Orientación Sobre Modalidades De Titulación","level":2},{"type":"p","text":"Se explican las alternativas institucionales de titulación, sus características, los productos esperados y las condiciones para su desarrollo, de manera que el estudiante identifique correctamente la ruta que le corresponde."},{"type":"h","text":"7.2. Comunicación De Fechas Y Procesos Relevantes","level":2},{"type":"p","text":"Durante la inducción se socializan los hitos del cronograma, los procedimientos administrativos, los canales de comunicación y los responsables a quienes debe acudir el estudiante."},{"type":"h","text":"8. Informe Y Autorizaciones","level":1},{"type":"h","text":"8.1. Desarrollo Del Informe De Titulación","level":2},{"type":"p","text":"El informe de titulación documenta avances, gestiones y resultados del proceso y sirve como respaldo para la trazabilidad institucional."},{"type":"h","text":"8.1.1. Seguimiento Y Evaluación De Gestiones","level":3},{"type":"p","text":"El informe registra asignaciones, revisiones, resultados y principales incidencias del período, permitiendo identificar fortalezas y oportunidades de mejora."},{"type":"h","text":"8.2. Permisos Y Autorizaciones Financieras","level":2},{"type":"p","text":"Las autorizaciones financieras excepcionales, cuando existan, deben ser gestionadas y aprobadas únicamente por la unidad competente y conservar respaldo documental. Esta planificación no crea beneficios ni permisos automáticos."},{"type":"h","text":"8.2.1. Gestión De Permisos Para Estudiantes Con Pagos Pendientes","level":3},{"type":"p","text":"Cualquier solicitud excepcional debe tramitarse conforme a las políticas institucionales vigentes y no supone habilitación mientras no exista autorización formal."},{"type":"h","text":"8.2.2. Aprobación Por El Departamento De Facturación","level":3},{"type":"p","text":"La unidad financiera competente revisa y resuelve las solicitudes según las reglas vigentes y mantiene el seguimiento del cumplimiento de las obligaciones."},{"type":"h","text":"9. Cronograma De Actividades","level":1},{"type":"h","text":"9.1. Calendario De Actividades Por Proceso","level":2},{"type":"schedule"},{"type":"h","text":"9.2. Fases Del Trabajo De Titulación","level":2},{"type":"b","text":"Asignación de tutor y lector académico."},{"type":"b","text":"Entrega del primer borrador al tutor."},{"type":"b","text":"Entrega del segundo borrador al tutor."},{"type":"b","text":"Entrega del tercer borrador al tutor."},{"type":"b","text":"Aprobación final del tutor."},{"type":"b","text":"Revisión por parte del lector académico."},{"type":"b","text":"Confirmación de fecha y modalidad de defensa."},{"type":"b","text":"Defensa del trabajo de titulación."},{"type":"b","text":"Registro de calificaciones finales."},{"type":"optional"},{"type":"h","text":"10. Análisis De Resultados Y Mejora Continua","level":1},{"type":"p","text":"Al finalizar el período, la Coordinación de Titulación consolida información del proceso para evaluar desempeño, cumplimiento de plazos, resultados de defensa y oportunidades de mejora."},{"type":"b","text":"Eficiencia terminal: estudiantes que culminan en tiempo y forma / total de estudiantes del proceso × 100."},{"type":"b","text":"Tasa de aprobación en la defensa: estudiantes que aprueban la defensa / total de estudiantes del proceso × 100."},{"type":"b","text":"Índice de revisión de borradores a tiempo: borradores revisados dentro del plazo / total de borradores × 100."},{"type":"b","text":"Tiempo promedio de culminación: suma de tiempos individuales desde asignación de tutor hasta defensa / número total de estudiantes."},{"type":"b","text":"Índice de satisfacción: resultado consolidado de encuestas institucionales aplicadas al cierre."},{"type":"notes"},{"type":"image","key":"closingImage"},{"type":"h","text":"11. Bibliografía","level":1},{"type":"refs"}];
+{"type":"h","text":"2. Base Legal","level":1},{"type":"legalBase"},{"type":"h","text":"3. Metodología","level":1},{"type":"methodology"},{"type":"h","text":"4. Requisitos Para La Aprobación De La Titulación","level":1},{"type":"requirements"},{"type":"h","text":"5. Descripción De Los Procesos De Titulación","level":1},{"type":"processDescription"},{"type":"h","text":"6. Gestión Administrativa Y Logística","level":1},{"type":"administrativeLogistics"},{"type":"h","text":"7. Inducción De Titulación","level":1},{"type":"p","text":"La inducción proporciona una comprensión clara de las modalidades, requisitos, procedimientos, fechas y canales institucionales necesarios para desarrollar el proceso de titulación."},{"type":"h","text":"7.1. Orientación Sobre Modalidades De Titulación","level":2},{"type":"p","text":"Se explican las alternativas institucionales de titulación, sus características, los productos esperados y las condiciones para su desarrollo, de manera que el estudiante identifique correctamente la ruta que le corresponde."},{"type":"h","text":"7.2. Comunicación De Fechas Y Procesos Relevantes","level":2},{"type":"p","text":"Durante la inducción se socializan los hitos del cronograma, los procedimientos administrativos, los canales de comunicación y los responsables a quienes debe acudir el estudiante."},{"type":"h","text":"8. Informe Y Autorizaciones","level":1},{"type":"h","text":"8.1. Desarrollo Del Informe De Titulación","level":2},{"type":"p","text":"El informe de titulación documenta avances, gestiones y resultados del proceso y sirve como respaldo para la trazabilidad institucional."},{"type":"h","text":"8.1.1. Seguimiento Y Evaluación De Gestiones","level":3},{"type":"p","text":"El informe registra asignaciones, revisiones, resultados y principales incidencias del período, permitiendo identificar fortalezas y oportunidades de mejora."},{"type":"h","text":"8.2. Permisos Y Autorizaciones Financieras","level":2},{"type":"p","text":"Las autorizaciones financieras excepcionales, cuando existan, deben ser gestionadas y aprobadas únicamente por la unidad competente y conservar respaldo documental. Esta planificación no crea beneficios ni permisos automáticos."},{"type":"h","text":"8.2.1. Gestión De Permisos Para Estudiantes Con Pagos Pendientes","level":3},{"type":"p","text":"Cualquier solicitud excepcional debe tramitarse conforme a las políticas institucionales vigentes y no supone habilitación mientras no exista autorización formal."},{"type":"h","text":"8.2.2. Aprobación Por El Departamento De Facturación","level":3},{"type":"p","text":"La unidad financiera competente revisa y resuelve las solicitudes según las reglas vigentes y mantiene el seguimiento del cumplimiento de las obligaciones."},{"type":"h","text":"9. Cronograma De Actividades","level":1},{"type":"h","text":"9.1. Calendario De Actividades Por Proceso","level":2},{"type":"schedule"},{"type":"h","text":"9.2. Fases Del Trabajo De Titulación","level":2},{"type":"b","text":"Asignación de tutor y lector académico."},{"type":"b","text":"Entrega del primer borrador al tutor."},{"type":"b","text":"Entrega del segundo borrador al tutor."},{"type":"b","text":"Entrega del tercer borrador al tutor."},{"type":"b","text":"Aprobación final del tutor."},{"type":"b","text":"Revisión por parte del lector académico."},{"type":"b","text":"Confirmación de fecha y modalidad de defensa."},{"type":"b","text":"Defensa del trabajo de titulación."},{"type":"b","text":"Registro de calificaciones finales."},{"type":"optional"},{"type":"h","text":"10. Análisis De Resultados Y Mejora Continua","level":1},{"type":"p","text":"Al finalizar el período, la Coordinación de Titulación consolida información del proceso para evaluar desempeño, cumplimiento de plazos, resultados de defensa y oportunidades de mejora."},{"type":"b","text":"Eficiencia terminal: estudiantes que culminan en tiempo y forma / total de estudiantes del proceso × 100."},{"type":"b","text":"Tasa de aprobación en la defensa: estudiantes que aprueban la defensa / total de estudiantes del proceso × 100."},{"type":"b","text":"Índice de revisión de borradores a tiempo: borradores revisados dentro del plazo / total de borradores × 100."},{"type":"b","text":"Tiempo promedio de culminación: suma de tiempos individuales desde asignación de tutor hasta defensa / número total de estudiantes."},{"type":"b","text":"Índice de satisfacción: resultado consolidado de encuestas institucionales aplicadas al cierre."},{"type":"notes"},{"type":"image","key":"closingImage"},{"type":"h","text":"11. Bibliografía","level":1},{"type":"refs"}];
 const REFERENCES=[
 ...(CONTENT_CONFIG.introduction?.bibliography||[
 "Montes, P. (2019). Fundamentos de la educación superior: Teoría y práctica en el siglo XXI.",
@@ -567,6 +568,63 @@ async function generateAndDownload(ctx,filename){
     heading("5.4.3. Procedimiento de Evaluación en la Defensa de Grado",3,true);
     renderProcessSteps(defense.evaluationSteps||[],defense.evaluationCriteria||[]);
   }
+  function resolveAdministrativeLogistics(){
+    const snapshot=ctx.payload?.contentSnapshots?.administrativeLogistics;
+    if(snapshot&&snapshot.assignmentsTable&&snapshot.digitalResourcesTable&&snapshot.communication)return snapshot;
+    const current=LOGISTICS_CONFIG;
+    if(current&&current.assignmentsTable&&current.digitalResourcesTable&&current.communication)return current;
+    return null;
+  }
+  function renderAdministrativeLogistics(){
+    const block=resolveAdministrativeLogistics();
+    if(!block)throw new Error("No existe una configuración institucional validada de Gestión Administrativa y Logística.");
+
+    paragraph(block.intro||"");
+
+    const assignments=block.assignmentsTable||{};
+    const assignmentRows=(assignments.rows||[])
+      .slice()
+      .sort((a,b)=>(a.order||0)-(b.order||0))
+      .map(r=>[r.element||"",r.description||"",r.quantity||"",r.responsibleRole||""]);
+    apaTable(
+      assignments.title||"Elementos y Asignaciones para el Proceso de Titulación",
+      assignments.columns||["Elemento","Descripción","Cantidad por estudiante","Responsable"],
+      assignmentRows,
+      {0:{cellWidth:bodyW*.20},1:{cellWidth:bodyW*.39},2:{cellWidth:bodyW*.18},3:{cellWidth:bodyW*.23}},
+      assignments.note||""
+    );
+
+    const resources=block.digitalResourcesTable||{};
+    const resourceRows=(resources.resources||[])
+      .filter(r=>r.active!==false)
+      .slice()
+      .sort((a,b)=>(a.order||0)-(b.order||0))
+      .map(r=>[r.name||"",r.description||"",r.studentAccess||"",r.responsibleRole||""]);
+    apaTable(
+      resources.title||"Recursos Digitales Asignados para el Proceso de Titulación",
+      resources.columns||["Recurso Digital","Descripción","Acceso por Estudiante","Responsable de Gestión"],
+      resourceRows,
+      {0:{cellWidth:bodyW*.19},1:{cellWidth:bodyW*.39},2:{cellWidth:bodyW*.18},3:{cellWidth:bodyW*.24}},
+      resources.note||""
+    );
+
+    const communication=block.communication||{};
+    heading("6.1. Comunicación Directa con el Tutor y el Coordinador de Titulación",2,true);
+    paragraph(communication.intro||"");
+
+    heading("6.1.1. Seguimiento Individual por el Tutor",3,true);
+    (communication.tutorFollowUp||[]).forEach(item=>{
+      processNumberedTitle(item.number,item.title);
+      (item.paragraphs||[]).forEach(p=>processText(p,1,"o"));
+    });
+
+    heading("6.1.2. Coordinación con el Coordinador de Titulación",3,true);
+    (communication.coordinatorFollowUp||[]).forEach(item=>{
+      processNumberedTitle(item.number,item.title);
+      (item.paragraphs||[]).forEach(p=>processText(p,1,"o"));
+    });
+    if(clean(communication.closing))paragraph(communication.closing);
+  }
   function renderReferenceDocuments(){
     const docs=CONTENT_CONFIG.introduction?.referenceDocuments||[
       "Reglamento de Titulación del ITSQMET.",
@@ -589,30 +647,7 @@ async function generateAndDownload(ctx,filename){
     if(hasRows(tables.defensas)){
       apaTable("Organización de defensas del período",["Carrera","Inicio","Fin","Modalidad","Observaciones"],tables.defensas.filter(r=>Object.values(r).some(Boolean)).map(r=>[r.career||"",fmtDate(r.start),fmtDate(r.end),r.mode||"",r.observations||""]),{0:{cellWidth:bodyW*.30},1:{cellWidth:bodyW*.14},2:{cellWidth:bodyW*.14},3:{cellWidth:bodyW*.15},4:{cellWidth:bodyW*.27}});
     }
-  }else if(name==="fixedAssignments"){
-    apaTable("Elementos y asignaciones para el proceso de titulación",
-      ["Elemento","Descripción","Cantidad por estudiante","Responsable"],
-      [
-        ["Tutorías","Una tutoría inicial y acompañamiento por cada borrador; adicionales cuando corresponda.","Variable según avance","Coordinación de Titulación"],
-        ["Lector","Evaluación del proyecto por lector asignado.","1 lector","Coordinación de Titulación"],
-        ["Comunicación virtual","Contacto con tutor y lector mediante canales institucionales.","Sin límite","Coordinación de Titulación"],
-        ["Defensa de tesis","Presentación y defensa del proyecto ante tribunal evaluador.","1 defensa","Coordinación General de Carreras"],
-        ["Sistema SISACAD","Registro y seguimiento académico.","1 usuario","Departamento de Sistemas"],
-        ["Tribunal evaluador","Comité designado para evaluar la defensa.","3 miembros","Coordinación General de Carreras"]
-      ],
-      {0:{cellWidth:bodyW*.20},1:{cellWidth:bodyW*.39},2:{cellWidth:bodyW*.18},3:{cellWidth:bodyW*.23}},
-      "La tabla resume los elementos operativos descritos en la planificación fuente."
-    );
-  }else if(name==="fixedResources"){
-    const rows=hasRows(tables.recursos)
-      ? tables.recursos.filter(r=>Object.values(r).some(Boolean)).map(r=>[r.resource||"",r.use||"", "Según configuración", r.responsible||""])
-      : [
-        ["SISACAD","Plataforma de registro y seguimiento académico.","Sí","Departamento de Sistemas"],
-        ["Microsoft Teams","Comunicación directa y tutorías virtuales.","Sí","Coordinación de Titulación"],
-        ["Correo Institucional","Canal para envío de documentos y retroalimentación.","Sí","Área Académica"],
-        ["Telegram","Grupo por carrera para comunicados.","Sí","Coordinación de Titulación"]
-      ];
-    apaTable("Recursos digitales asignados para el proceso de titulación",["Recurso digital","Descripción","Acceso por estudiante","Responsable de gestión"],rows,{0:{cellWidth:bodyW*.19},1:{cellWidth:bodyW*.39},2:{cellWidth:bodyW*.18},3:{cellWidth:bodyW*.24}},"Los recursos pueden actualizarse según la configuración institucional vigente.");
+
   }
 }
 
@@ -627,6 +662,7 @@ async function generateAndDownload(ctx,filename){
       else if(item.type==="methodology")renderMethodology();
       else if(item.type==="requirements")renderRequirements();
       else if(item.type==="processDescription")renderProcessDescription();
+      else if(item.type==="administrativeLogistics")renderAdministrativeLogistics();
       else if(item.type==="image")inlineImage(item.key);
       else if(item.type==="schedule")renderSchedule();
       else if(item.type==="optional")renderOptionalData();
