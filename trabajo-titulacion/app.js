@@ -29,13 +29,18 @@ function currentLegalBaseSnapshot(){
   if(!block||!Array.isArray(block.paragraphs)||!block.paragraphs.length)return null;
   return JSON.parse(JSON.stringify(block));
 }
+function currentMethodologySnapshot(){
+  const block=window.DOC_TIT_TRABAJO_CONTENT?.methodology;
+  if(!block||!block.process||!Array.isArray(block.phases)||!block.phases.length)return null;
+  return JSON.parse(JSON.stringify(block));
+}
 function blankPayload(){
   const tables={};
   Object.entries(CONFIG.tables).forEach(([key,t])=>{tables[key]=(t.initialRows||[]).map(r=>({...r}));});
   return {schedule:CONFIG.schedule.map(a=>{
     const def=typeof a==="string"?{activity:a}:a;
     return {activity:def.activity,responsible:def.responsible||"",description:def.description||"",route:def.route||"",start:"",end:""};
-  }),tables,notes:"",contentSnapshots:{legalBase:currentLegalBaseSnapshot()}};
+  }),tables,notes:"",contentSnapshots:{legalBase:currentLegalBaseSnapshot(),methodology:currentMethodologySnapshot()}};
 }
 function normalizePayloadData(data){
   const base=blankPayload();
@@ -55,6 +60,7 @@ function normalizePayloadData(data){
 
   const contentSnapshots={...(base.contentSnapshots||{}),...(data.contentSnapshots||{})};
   if(!contentSnapshots.legalBase)contentSnapshots.legalBase=currentLegalBaseSnapshot();
+  if(!contentSnapshots.methodology)contentSnapshots.methodology=currentMethodologySnapshot();
   return {...base,...data,schedule:base.schedule,tables,notes:data.notes||"",contentSnapshots};
 }
 
