@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -15,7 +15,36 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  patch_trabajo_section3:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Apply Section 3 patch
+        run: python .github/scripts/patch_trabajo_section3.py
+      - name: Validate JavaScript
+        run: |
+          node --check trabajo-titulacion/content-config.js
+          node --check trabajo-titulacion/full-document.js
+          node --check trabajo-titulacion/app.js
+          grep -q 'type":"methodology"' trabajo-titulacion/full-document.js
+          grep -q 'function renderMethodology' trabajo-titulacion/full-document.js
+          grep -q 'currentMethodologySnapshot' trabajo-titulacion/app.js
+          if grep -q '3.2.1. Asignación De Tutor Y Lector' trabajo-titulacion/full-document.js; then exit 1; fi
+      - name: Commit patch
+        run: |
+          git config user.name "jeffer91"
+          git config user.email "jeffersonvillarreal91@gmail.com"
+          git add trabajo-titulacion/full-document.js trabajo-titulacion/app.js trabajo-titulacion/index.html
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Implement controlled Trabajo de Titulación methodology"
+            git push
+          fi
+
   deploy:
+    needs: patch_trabajo_section3
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
