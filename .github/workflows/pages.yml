@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -15,32 +15,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  patch_trabajo_section2:
-    if: github.event_name == 'push' && github.event.head_commit.message == 'Run Trabajo Section 2 patch'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Apply patch
-        run: python .github/scripts/patch_trabajo_section2.py
-      - name: Validate JavaScript
-        run: |
-          node --check trabajo-titulacion/content-config.js
-          node --check trabajo-titulacion/full-document.js
-          node --check trabajo-titulacion/app.js
-          grep -q 'type":"legalBase"' trabajo-titulacion/full-document.js
-          grep -q 'function legalParagraph' trabajo-titulacion/full-document.js
-          grep -q 'contentSnapshots' trabajo-titulacion/app.js
-          grep -q 'BASE_LEGAL_TRABAJO_TITULACION_VIGENTE' trabajo-titulacion/content-config.js
-          if grep -q 'La planificación se sustenta en la Constitución de la República del Ecuador' trabajo-titulacion/full-document.js; then exit 1; fi
-      - name: Commit patch
-        run: |
-          git config user.name "jeffer91"
-          git config user.email "jeffersonvillarreal91@gmail.com"
-          git add trabajo-titulacion/full-document.js trabajo-titulacion/app.js trabajo-titulacion/index.html
-          git commit -m "Implement validated Trabajo de Titulación legal base"
-          git push
-
   deploy:
     environment:
       name: github-pages
