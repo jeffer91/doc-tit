@@ -11,7 +11,7 @@
 
       heading("2.1. Marco normativo aplicable",2,true);
       paragraph("La Constitución de la República del Ecuador constituye el marco superior de referencia para los principios de educación, calidad, igualdad de oportunidades y formación integral. La Ley Orgánica de Educación Superior regula derechos, responsabilidades institucionales, egreso y titulación. El Reglamento a la LOES complementa aspectos vinculados con información, registro y gestión académica.");
-      paragraph("En el ámbito institucional, el Reglamento institucional del Área de Titulación y las disposiciones internas vigentes para el período determinan la forma de verificar requisitos, ejecutar la modalidad de titulación, aplicar criterios de evaluación, atender incidencias y registrar el cierre del proceso.");
+      paragraph("En el ámbito institucional, el Reglamento de la Unidad de Titulación y Eficiencia Terminal (UTET-REG-25, versión 2.0), aprobado por el OCS el 27 de marzo de 2025 mediante Resolución N.° ITSQMET-OCS-2025-03-02/27-MAR-2025, determina la forma de verificar requisitos, ejecutar las modalidades de titulación, aplicar criterios de evaluación, atender incidencias y registrar el cierre del proceso.");
 
       heading("2.2. Matriz de aplicación normativa",2,true);
       tableCaption("Normativa y aplicación dentro de la planificación");

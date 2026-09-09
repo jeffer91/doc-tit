@@ -164,9 +164,9 @@
       paragraph("Los anexos presentan la información consolidada del período mediante indicadores y gráficos generados automáticamente a partir de los mismos datos utilizados en la planificación. No se imprimen casillas vacías, valores ficticios ni expresiones pendientes de definición.",{indent:false});
 
       if(distribution.length){
-        heading("14.1. Anexo A - Resumen de población y lugar de ejecución",2,true);
         const cardH=246;
-        ensureSpace(cardH+12);
+        ensureSpace(cardH+82);
+        heading("14.1. Anexo A - Resumen de población y lugar de ejecución",2,true);
         const x=BODY.left,y=getY(),w=bodyW;
         roundedCard(doc,x,y,w,cardH);
 
@@ -205,10 +205,11 @@
       }
 
       if(distribution.length){
-        heading("14.2. Anexo B - Distribución por carrera y modalidad",2,true);
         const ranked=distribution.slice().sort((a,b)=>(Number(b.count)||0)-(Number(a.count)||0));
         const chunks=[];
         for(let i=0;i<ranked.length;i+=12) chunks.push(ranked.slice(i,i+12));
+        ensureSpace(414);
+        heading("14.2. Anexo B - Distribución por carrera y modalidad",2,true);
         chunks.forEach((chunk,index)=>{
           const cardH=330;
           ensureSpace(cardH+16);
@@ -232,10 +233,10 @@
       }
 
       if(schedule.length){
-        heading("14.3. Anexo C - Cronograma general del proceso",2,true);
         const rows=schedule.filter(r=>r.start||r.end);
         const cardH=Math.min(410,92+rows.length*30);
-        ensureSpace(cardH+14);
+        ensureSpace(cardH+84);
+        heading("14.3. Anexo C - Cronograma general del proceso",2,true);
         const x=BODY.left,y=getY(),w=bodyW;
         roundedCard(doc,x,y,w,cardH);
         setText(doc,FORMS.ink);
@@ -269,7 +270,8 @@
         setY(y+cardH+18);
       }
 
-      heading("14.4. Anexo D - Validación automática de consistencia",2,true);
+      ensureSpace(370);
+      heading("14.4. Anexo D – Control de consistencia de la planificación",2,true);
       const ev=policy.evaluation||{};
       const scheduleComplete=schedule.length===9 && schedule.every(r=>r.start&&r.end);
       const rangesValid=schedule.every(r=>!r.start||!r.end||r.start<=r.end);

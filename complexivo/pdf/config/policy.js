@@ -45,9 +45,9 @@
         application: "Exige trazabilidad de la información y articulación de los registros que respaldan el proceso."
       },
       {
-        norm: "Reglamento institucional del Área de Titulación",
-        provision: "Disposiciones institucionales vigentes para modalidades, requisitos, evaluación y cierre del proceso",
-        application: "Define el marco operativo interno que debe aplicarse al período generado."
+        norm: "Reglamento de la Unidad de Titulación y Eficiencia Terminal",
+        provision: "UTET-REG-25, versión 2.0; aprobado por el OCS el 27 de marzo de 2025 mediante Resolución N.° ITSQMET-OCS-2025-03-02/27-MAR-2025",
+        application: "Define modalidades, requisitos, responsabilidades, evaluación y lineamientos institucionales aplicables al proceso de titulación."
       }
     ]
   };

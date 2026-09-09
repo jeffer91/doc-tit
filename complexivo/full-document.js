@@ -302,7 +302,16 @@ const BODY = PDF_MODULES.config?.layout?.body || {
         }
         let take=Math.min(Math.max(available,1),lines.length-index);
         const remaining=lines.length-index-take;
-        if(remaining===1 && take>2) take-=1;
+        if(remaining===1 && take>2){
+          take-=1;
+        }else if(remaining===1 && take<=2 && lines.length-index>1){
+          newPage();
+          continue;
+        }
+        if(take===1 && lines.length-index>1){
+          newPage();
+          continue;
+        }
         if(take<=0){newPage();continue;}
         doc.setFont("times",style);
         doc.setFontSize(size);
@@ -338,27 +347,61 @@ const BODY = PDF_MODULES.config?.layout?.body || {
       y+=6;
     }
 
-    function heading(text,level=1,includeToc=true){
-      const style=level===3?"bolditalic":"bold";
-      const size=level===1?14:level===2?13:12.5;
-      const cleaned=clean(text);
+    function sentenceCaseHeading(text){
+      const source=clean(text);
+      const match=source.match(/^((?:\d+\.)+\s*)(.*)$/);
+      const prefix=match?match[1]:"";
+      let label=match?match[2]:source;
+      if(!label) return source;
 
-      // Los títulos fluyen con el contenido; ensureSpace evita títulos huérfanos.
+      label=label.toLocaleLowerCase("es-EC");
+      const protectedTerms=[
+        [/\bitsqmet\b/gi,"ITSQMET"],
+        [/\butet\b/gi,"UTET"],
+        [/\bocs\b/gi,"OCS"],
+        [/\bloes\b/gi,"LOES"],
+        [/\bapa\b/gi,"APA"],
+        [/\bpdf\b/gi,"PDF"],
+        [/instituto superior tecnológico quito metropolitano/gi,"Instituto Superior Tecnológico Quito Metropolitano"],
+        [/unidad de titulación y eficiencia terminal/gi,"Unidad de Titulación y Eficiencia Terminal"],
+        [/titulación y eficiencia terminal/gi,"Titulación y Eficiencia Terminal"],
+        [/núcleos de titulación/gi,"Núcleos de Titulación"],
+        [/examen complexivo/gi,"Examen Complexivo"],
+        [/cronograma operativo/gi,"Cronograma Operativo"]
+      ];
+      protectedTerms.forEach(([pattern,value])=>{ label=label.replace(pattern,value); });
+      label=label.replace(/\banexo\s+([a-d])\b/gi,(_,letter)=>`Anexo ${letter.toUpperCase()}`);
+      label=label.charAt(0).toLocaleUpperCase("es-EC")+label.slice(1);
+      return prefix+label;
+    }
+
+    function heading(text,level=1,includeToc=true){
+      const style=level>=3?"bolditalic":"bold";
+      const size=level===1?14:level===2?13:level===3?12.5:12;
+      const cleaned=sentenceCaseHeading(text);
+
+      // Cada capítulo de primer nivel comienza en página nueva, sin crear hojas vacías.
+      if(level===1 && y>BODY.top+1) newPage();
+
       doc.setFont("times",style);
       doc.setFontSize(size);
 
       const lines=doc.splitTextToSize(cleaned,bodyW);
-      const titleHeight=lines.length*22+10;
+      const before=level===1?0:level===2?10:6;
+      const after=level===1?18:level===2?12:8;
+      const titleHeight=before+(lines.length*22)+after;
+      const minFollowing=level===1?BODY.lineHeight*3:level===2?BODY.lineHeight*3:BODY.lineHeight*2;
 
-      // Nunca dejar un título huérfano: reservar el título + al menos dos líneas de contenido.
-      ensureSpace(titleHeight+(BODY.lineHeight*2)+12);
+      // Mantener títulos y subtítulos con una porción útil del bloque que los desarrolla.
+      ensureSpace(titleHeight+minFollowing+12);
+      y+=before;
 
       if(includeToc) toc.push({title:cleaned,level,page:doc.getNumberOfPages()});
 
       doc.setFont("times",style);
       doc.setFontSize(size);
       doc.text(lines,BODY.left,y,{align:"left"});
-      y+=lines.length*22+10;
+      y+=lines.length*22+after;
 
       const key=smartSectionKey(text);
       if(key && !analysisInjected.has(key)){
@@ -394,7 +437,13 @@ const BODY = PDF_MODULES.config?.layout?.body || {
     }
 
     function tableCaption(title){
-      ensureSpace(54);
+      doc.setFont("times","italic");
+      doc.setFontSize(11);
+      const lines=doc.splitTextToSize(title,bodyW);
+      const captionHeight=17+(lines.length*15)+12;
+
+      // Mantener "Tabla X + título" junto con el encabezado y el inicio de la tabla.
+      ensureSpace(captionHeight+84);
       tableCounter+=1;
       doc.setFont("times","bold");
       doc.setFontSize(11);
@@ -402,8 +451,8 @@ const BODY = PDF_MODULES.config?.layout?.body || {
       y+=17;
       doc.setFont("times","italic");
       doc.setFontSize(11);
-      doc.text(doc.splitTextToSize(title,bodyW),BODY.left,y);
-      y+=24;
+      doc.text(lines,BODY.left,y);
+      y+=lines.length*15+12;
       return tableCounter;
     }
 
@@ -536,14 +585,19 @@ const BODY = PDF_MODULES.config?.layout?.body || {
     function maybeInsertSectionImageBeforeHeading(){}
 
     function figureCaption(number,title){
-      ensureSpace(48);
+      doc.setFont("times","italic");
+      doc.setFontSize(11);
+      const lines=doc.splitTextToSize(title,bodyW);
+      const captionHeight=17+(lines.length*16)+8;
+
+      // Mantener identificación y título junto con el inicio de la figura.
+      ensureSpace(captionHeight+72);
       doc.setFont("times","bold");
       doc.setFontSize(11);
       doc.text("Figura "+number,BODY.left,y);
       y+=17;
       doc.setFont("times","italic");
       doc.setFontSize(11);
-      const lines=doc.splitTextToSize(title,bodyW);
       doc.text(lines,BODY.left,y);
       y+=lines.length*16+8;
     }
