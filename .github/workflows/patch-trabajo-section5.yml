@@ -37,3 +37,4 @@ jobs:
           git add trabajo-titulacion/process-config.js trabajo-titulacion/full-document.js trabajo-titulacion/app.js trabajo-titulacion/index.html
           git commit -m "Implement controlled Trabajo de Titulación process description"
           git push
+# retry 3
