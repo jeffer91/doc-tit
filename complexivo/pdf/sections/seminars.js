@@ -9,11 +9,11 @@
       const a=ns.config?.areas||{};
 
       heading("6. Núcleos de Titulación",1,true);
-      paragraph("La preparación académica se desarrolla mediante Seminarios de Titulación organizados en cuatro Núcleos de Titulación. Cada núcleo debe contar con docente responsable, guía, material, espacio o recurso institucional y evidencia de ejecución.",{indent:false});
+      paragraph("La preparación académica se desarrolla mediante Seminarios de Titulación organizados en cuatro Núcleos de Titulación. El presente documento establece su planificación general; la asignación específica por carrera, docente, aula, recurso y evidencia se formaliza mediante el instrumento operativo correspondiente cuando los datos han sido confirmados.",{indent:false});
       insertSectionImage("seminarsImage");
 
       heading("6.1. Objetivo de los Núcleos de Titulación",2,true);
-      paragraph("Los núcleos buscan reforzar competencias esenciales, articular conocimientos de diferentes asignaturas y preparar al estudiante para resolver de forma individual situaciones comparables con las que encontrará en el examen. Cada núcleo debe tener un propósito definido, contenidos priorizados, actividad o ejercicio de aplicación, responsable, recursos de apoyo y evidencia de desarrollo.");
+      paragraph("Los núcleos buscan reforzar competencias esenciales, articular conocimientos de diferentes asignaturas y preparar al estudiante para resolver de forma individual situaciones comparables con las que encontrará en el examen. Cada núcleo debe contar con propósito definido, contenidos priorizados, actividad o ejercicio de aplicación, recursos de apoyo y evidencia de desarrollo.");
 
       heading("6.2. Organización Académica",2,true);
       const scheduleRows=(ctx.schedule||[])
@@ -30,7 +30,7 @@
           styles:{font:"times",fontSize:8.7,cellPadding:4,textColor:0},
           headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
         });
-        tableNote("La duración y fechas corresponden al cronograma vigente del período.");
+        tableNote("Las fechas corresponden al cronograma general vigente del período.");
       }
       paragraph("La asignatura de Integración Curricular o Titulación articula los cuatro núcleos y permite ordenar contenidos, docentes, recursos y seguimiento. La designación docente se coordina entre "+(a.coordinacionGeneral||"Coordinación General de Carreras")+", "+(a.carreras||"Coordinaciones de Carrera")+" y "+(a.titulacion||"Titulación y Eficiencia Terminal")+".");
 
@@ -41,27 +41,10 @@
       bullet("• Retroalimentación sobre errores frecuentes y criterios de calidad.");
       bullet("• Disponibilidad de materiales y grabaciones institucionales cuando corresponda.");
 
-      heading("6.4. Asignación y control operativo de los cuatro núcleos",2,true);
-      const entered=Array.isArray(ctx.nucleusPlan)?ctx.nucleusPlan:[];
-      const byId=new Map(entered.map(r=>[r.id,r]));
-      const nucleusRows=[1,2,3,4].map((n,i)=>{
-        const row=byId.get(`nucleus${n}`)||{};
-        const scheduled=(ctx.schedule||[]).find(s=>String(s.activity||"").toLowerCase()===`núcleo ${n}`.toLowerCase());
-        const date=row.date||((scheduled?.start||scheduled?.end)?[formatDateShort(scheduled?.start),formatDateShort(scheduled?.end)].filter(Boolean).join(" – "):"Por definir");
-        const val=v=>String(v||"").trim()||"Por definir";
-        return [`Núcleo ${n}`,date,val(row.career),val(row.teacher),val(row.guide),val(row.material),val(row.classroom),val(row.evidence)];
-      });
-      tableCaption("Docentes, recursos y evidencias de los Núcleos de Titulación");
-      autoTable({
-        startY:api.getY(),
-        margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
-        head:[["Núcleo","Fecha","Carrera","Docente responsable","Guía entregada","Material cargado","Aula","Evidencia"]],
-        body:nucleusRows,
-        columnStyles:{0:{cellWidth:bodyW*0.10},1:{cellWidth:bodyW*0.14},2:{cellWidth:bodyW*0.16},3:{cellWidth:bodyW*0.19},4:{cellWidth:bodyW*0.10},5:{cellWidth:bodyW*0.10},6:{cellWidth:bodyW*0.09},7:{cellWidth:bodyW*0.12}},
-        styles:{font:"times",fontSize:6.8,cellPadding:2.8,textColor:0},
-        headStyles:{font:"times",fontStyle:"bold",fontSize:6.6,fillColor:[255,255,255],textColor:0}
-      });
-      tableNote("Los campos pendientes deben completarse con los datos reales de cada carrera o grupo; no se asignan docentes ni aulas de forma supuesta.");
+      heading("6.4. Formalización Operativa de los Núcleos",2,true);
+      paragraph("La planificación específica de cada carrera o grupo se consolida fuera del cuerpo principal de esta planificación. El instrumento operativo debe identificar, según corresponda, carrera o grupo, núcleo, docente responsable, fecha y hora, aula o recurso, guía, material y evidencia de ejecución.");
+      paragraph("La cantidad de registros operativos depende de la distribución real del período. Por esta razón, no se resume la asignación de todos los grupos en cuatro filas genéricas ni se imprimen campos sin información confirmada.");
+      paragraph("Una vez formalizada por las áreas responsables, esta información puede conservarse como anexo o cronograma operativo complementario del período, sin alterar las fechas generales establecidas en este documento.");
 
       heading("6.5. Seguimiento y Evidencias",2,true);
       paragraph("El seguimiento debe permitir comprobar que los cuatro núcleos se desarrollaron dentro de la ventana programada y con los responsables confirmados. Como evidencia pueden utilizarse guía, planificación docente, recursos, registro de participación, grabación, actividad desarrollada, material cargado y reporte de novedades.");
