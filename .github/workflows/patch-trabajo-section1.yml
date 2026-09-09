@@ -1,0 +1,166 @@
+name: Patch Trabajo Section 1
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/patch-trabajo-section1.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Implement controlled introduction
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path=Path('trabajo-titulacion/full-document.js')
+          text=path.read_text(encoding='utf-8')
+
+          if 'const CONTENT_CONFIG=window.DOC_TIT_TRABAJO_CONTENT||{};' not in text:
+              text=text.replace(
+                  'const AUTHOR_ROLE="Gestor de Procesos Académicos";\n',
+                  'const AUTHOR_ROLE="Gestor de Procesos Académicos";\nconst CONTENT_CONFIG=window.DOC_TIT_TRABAJO_CONTENT||{};\n',
+                  1
+              )
+
+          marker='{"type":"h","text":"2. Base Legal","level":1}'
+          start=text.index('const CONTENT=[')
+          second=text.index(marker,start)
+          intro='''const CONTENT=[
+            {"type":"h","text":"1. Introducción","level":1},
+            {"type":"h","text":"1.1. Contexto General","level":2},
+            {"type":"p","text":"El proceso de titulación en la educación superior constituye una etapa fundamental que marca el cierre del proceso formativo y la evaluación de competencias adquiridas por los estudiantes, permitiéndoles demostrar su capacidad para enfrentar problemas específicos de su disciplina (Montes, 2019). Según Calderón y Díaz (2017), la titulación no solo confirma la adquisición de conocimientos teóricos y prácticos, sino que también valida la aptitud del estudiante para integrarse de manera competente en el entorno profesional y contribuir al desarrollo de su campo."},
+            {"type":"p","text":"En el Instituto Superior Tecnológico Quito Metropolitano (ITSQMET), el proceso de titulación está estructurado para cumplir con estándares de calidad académica y garantizar una formación integral de sus estudiantes, en concordancia con los lineamientos de la educación superior en Ecuador. Tal como se plantea en la Ley Orgánica de Educación Superior (LOES), el objetivo principal de las instituciones de educación superior es asegurar que los graduados posean las habilidades necesarias para responder a las demandas del mercado laboral y contribuir significativamente al progreso del país (Castillo y Gómez, 2018)."},
+            {"type":"p","text":"Este enfoque también se sustenta en el concepto de eficiencia terminal, el cual busca que los estudiantes completen sus estudios en el tiempo previsto, optimizando recursos institucionales y minimizando la deserción (Torres, 2020). Según Escobar y Vásquez (2016), la eficiencia terminal es un indicador clave en las instituciones educativas, ya que impacta no solo en la reputación académica, sino también en la sostenibilidad financiera de la institución, al reducir costos asociados a la permanencia prolongada de los estudiantes en el sistema."},
+            {"type":"p","text":"El proceso de titulación en el ITSQMET, por lo tanto, no solo se centra en la evaluación del aprendizaje, sino que también procura asegurar que los estudiantes egresen con una formación sólida que les permita enfrentar un entorno laboral complejo y en constante cambio. En este sentido, el ITSQMET, al igual que otras instituciones educativas que buscan mantener altos estándares de calidad, promueve en sus egresados valores de ética, responsabilidad e innovación, aspectos clave para que puedan contribuir efectivamente en sus campos de especialización (González, 2019)."},
+            {"type":"p","text":"Este documento se encuentra alineado con el Reglamento del Proceso de Titulación vigente del ITSQMET y sus instructivos complementarios."},
+            {"type":"h","text":"1.2. Objetivos del Plan de Trabajo de Titulación","level":2},
+            {"type":"p","text":"Los objetivos principales de este Plan de Trabajo de Titulación son los siguientes:","opts":{"indent":false}},
+            {"type":"objective","number":1,"title":"Orientar a los Estudiantes en el Proceso de Titulación","text":"Proveer una guía detallada que acompañe a los estudiantes desde la planificación hasta la defensa de sus proyectos de titulación, asegurando que cada fase del proceso esté claramente estructurada y respaldada."},
+            {"type":"objective","number":2,"title":"Establecer Procedimientos Estandarizados","text":"Implementar protocolos claros y procedimientos eficientes que aseguren la homogeneidad en el desarrollo de los proyectos de titulación, facilitando la asignación de tutores, la revisión de documentos y la evaluación final de los estudiantes."},
+            {"type":"objective","number":3,"title":"Promover la Eficiencia Terminal","text":"Reducir el tiempo de permanencia en el proceso de titulación, asegurando que los estudiantes puedan completar sus estudios en los plazos establecidos sin comprometer la calidad del trabajo académico."},
+            {"type":"objective","number":4,"title":"Garantizar el Cumplimiento de Requisitos Académicos y Administrativos","text":"Asegurar que todos los requisitos relacionados con prácticas preprofesionales, vinculación, documentación, financiamiento y aprobación de créditos sean verificados y cumplidos antes de la defensa de titulación."},
+            {"type":"objective","number":5,"title":"Fomentar la Calidad y Rigor Académico en los Trabajos de Titulación","text":"Asegurar que los trabajos de titulación reflejen el nivel de competencia profesional y académica esperado, promoviendo la aplicación de métodos de investigación sólidos, análisis crítico y resolución de problemas específicos de cada carrera."},
+            {"type":"h","text":"1.3. Importancia de la Titulación y la Eficiencia Terminal","level":2},
+            {"type":"p","text":"La titulación es un pilar fundamental dentro de la trayectoria educativa de un estudiante, pues simboliza no solo la culminación exitosa de su formación académica, sino también el reconocimiento oficial de sus habilidades y conocimientos adquiridos en su especialidad. Un título no es simplemente un documento, sino una credencial que abre puertas en el ámbito profesional y que respalda la idoneidad y competencia del estudiante para contribuir efectivamente en su campo de trabajo. En este sentido, la titulación representa un compromiso tanto para el estudiante como para la institución, ya que asegura que los egresados posean las herramientas necesarias para enfrentar los retos y oportunidades de un entorno laboral dinámico y en constante evolución."},
+            {"type":"p","text":"La eficiencia terminal cobra una importancia especial en este proceso, ya que busca minimizar las barreras que puedan retrasar la finalización de los estudios. La eficiencia terminal no solo contribuye al éxito del estudiante al reducir tiempos y costos, sino que también optimiza los recursos de la institución, mejorando la tasa de graduación y fortaleciendo la reputación académica del ITSQMET. Este enfoque en la eficiencia permite que los estudiantes culminen su proceso formativo en los tiempos previstos, aumentando su motivación y facilitando su transición hacia el mercado laboral con una preparación completa y actualizada."},
+            {"type":"h","text":"1.4. Documentos de referencia","level":2},
+            {"type":"p","text":"Esta planificación se articula con los siguientes documentos institucionales:","opts":{"indent":false}},
+            {"type":"referenceDocs"},
+          '''
+          text=text[:start]+intro+text[second:]
+
+          ref_start=text.index('const REFERENCES=')
+          ref_end=text.index(';\nconst {jsPDF}',ref_start)+1
+          refs='''const REFERENCES=[
+            ...(CONTENT_CONFIG.introduction?.bibliography||[
+              "Montes, P. (2019). Fundamentos de la educación superior: Teoría y práctica en el siglo XXI.",
+              "Calderón, M. & Díaz, P. (2017). El proceso de titulación en la educación superior y su impacto en la formación profesional.",
+              "Castillo, R. & Gómez, M. (2018). Educación superior en Ecuador: Retos y perspectivas.",
+              "Torres, A. (2020). Eficiencia y calidad en la educación superior: Desafíos para las instituciones en Latinoamérica.",
+              "Escobar, C. & Vásquez, J. (2016). Eficiencia terminal en la educación superior: Un análisis de su impacto en la sostenibilidad institucional.",
+              "González, J. (2019). Calidad educativa y titulación en instituciones técnicas y tecnológicas."
+            ]),
+            "Instituto Superior Tecnológico Quito Metropolitano. (2022). Reglamento del Área de Titulación del ITSQMET.",
+            "Asamblea Constituyente del Ecuador. (2008). Constitución de la República del Ecuador.",
+            "Asamblea Nacional del Ecuador. (2010). Ley Orgánica de Educación Superior."
+          ]'''
+          text=text[:ref_start]+refs+text[ref_end:]
+
+          bullet_end='''    y+=4;\n  }\n  function heading(text,level=1,include=true){'''
+          if 'function objective(number,title,text)' not in text:
+              objective='''    y+=4;\n  }\n  function objective(number,title,text){
+    const x=BODY.left+18,maxW=bodyW-18,lineH=BODY.line;
+    const lead=`${number}. ${clean(title)}: `;
+    const description=clean(text);
+    doc.setFont("times","bold");doc.setFontSize(12);
+    const leadLines=doc.splitTextToSize(lead,maxW);
+    ensure((leadLines.length+3)*lineH);
+    if(leadLines.length>1){
+      leadLines.forEach(line=>{ensure(lineH);doc.setFont("times","bold");doc.text(line,x,y);y+=lineH;});
+      doc.setFont("times","normal");
+      doc.splitTextToSize(description,maxW).forEach(line=>{ensure(lineH);doc.text(line,x,y);y+=lineH;});
+    }else{
+      doc.setFont("times","bold");doc.text(lead,x,y);
+      const leadW=doc.getTextWidth(lead),available=Math.max(70,maxW-leadW);
+      const words=description.split(/\\s+/);let first=[],rest=[];
+      for(const word of words){
+        const candidate=[...first,word].join(" ");
+        doc.setFont("times","normal");
+        if(!rest.length&&doc.getTextWidth(candidate)<=available)first.push(word);else rest.push(word);
+      }
+      doc.setFont("times","normal");
+      if(first.length)doc.text(first.join(" "),x+leadW,y);
+      y+=lineH;
+      const remaining=rest.join(" ");
+      if(remaining)doc.splitTextToSize(remaining,maxW).forEach(line=>{ensure(lineH);doc.text(line,x,y);y+=lineH;});
+    }
+    y+=5;
+  }
+  function heading(text,level=1,include=true){'''
+              if bullet_end not in text:
+                  raise SystemExit('No se encontró el punto para insertar objective()')
+              text=text.replace(bullet_end,objective,1)
+
+          if 'function renderReferenceDocuments()' not in text:
+              target='''  function renderReferences(){\n    REFERENCES.forEach(ref=>paragraph(ref,{indent:false}));\n  }\n'''
+              replacement='''  function renderReferenceDocuments(){
+    const docs=CONTENT_CONFIG.introduction?.referenceDocuments||[
+      "Reglamento de Titulación del ITSQMET.",
+      "Instructivo para el Proceso de Titulación.",
+      "Formatos oficiales de evaluación y seguimiento.",
+      "Cronograma institucional aprobado para el período académico vigente."
+    ];
+    docs.forEach(item=>bullet(item));
+  }
+  function renderReferences(){
+    REFERENCES.forEach(ref=>paragraph(ref,{indent:false}));
+  }
+'''
+              if target not in text:
+                  raise SystemExit('No se encontró renderReferences()')
+              text=text.replace(target,replacement,1)
+
+          old='''      else if(item.type==="b")bullet(item.text);\n      else if(item.type==="image")inlineImage(item.key);'''
+          new='''      else if(item.type==="b")bullet(item.text);
+      else if(item.type==="objective")objective(item.number,item.title,item.text);
+      else if(item.type==="referenceDocs")renderReferenceDocuments();
+      else if(item.type==="image")inlineImage(item.key);'''
+          if old not in text:
+              raise SystemExit('No se encontró el switch de renderItems()')
+          text=text.replace(old,new,1)
+
+          path.write_text(text,encoding='utf-8')
+
+      - name: Validate JavaScript
+        run: |
+          node --check trabajo-titulacion/content-config.js
+          node --check trabajo-titulacion/full-document.js
+
+      - name: Validate Section 1 content
+        run: |
+          grep -q '1.1. Contexto General' trabajo-titulacion/full-document.js
+          grep -q 'Montes, 2019' trabajo-titulacion/full-document.js
+          grep -q 'type":"objective"' trabajo-titulacion/full-document.js
+          grep -q 'type":"referenceDocs"' trabajo-titulacion/full-document.js
+          grep -q 'DOC_TIT_TRABAJO_CONTENT' trabajo-titulacion/full-document.js
+          if grep -q 'La planificación articula el desarrollo académico del proyecto' trabajo-titulacion/full-document.js; then exit 1; fi
+
+      - name: Commit implementation
+        run: |
+          git config user.name "jeffer91"
+          git config user.email "jeffersonvillarreal91@gmail.com"
+          git add trabajo-titulacion/full-document.js
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Implement controlled Trabajo de Titulación introduction"
+            git push
+          fi
