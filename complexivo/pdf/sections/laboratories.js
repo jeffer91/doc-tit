@@ -9,30 +9,32 @@
       const a=ns.config?.areas||{};
       const t=totals(ctx.distribution);
       const places=Object.keys(t.byPlace);
+      const total=t.total||1;
 
       heading("8. Tecnología, Infraestructura y Capacidad",1,true);
-      paragraph("La infraestructura se planifica a partir de la distribución real del período "+lowerPeriod(ctx.period.name)+". La planificación contempla "+joinNatural(places)+" como lugares de ejecución y debe convertir la cantidad de estudiantes en requerimientos de espacios, equipos, software, conectividad, accesibilidad y acompañamiento tecnológico.",{indent:false});
+      paragraph("La infraestructura se planifica a partir de la demanda registrada para el período "+lowerPeriod(ctx.period.name)+". La distribución contempla "+joinNatural(places)+" como lugares de ejecución y permite dimensionar necesidades de espacios, equipos, software, conectividad, accesibilidad y acompañamiento tecnológico, sin asumir capacidades que todavía no hayan sido verificadas.",{indent:false});
 
-      heading("8.1. Criterios de Asignación y Capacidad",2,true);
-      paragraph("Cada cronograma operativo debe asignar un espacio cuya capacidad verificada sea suficiente para el número de estudiantes convocados simultáneamente, considerando puestos funcionales, condiciones de supervisión y recursos de respaldo disponibles.");
-      tableCaption("Demanda mínima a considerar por lugar de ejecución");
+      heading("8.1. Demanda por Lugar de Ejecución",2,true);
+      paragraph("La siguiente distribución representa la demanda académica prevista. No constituye, por sí sola, una certificación de capacidad instalada. La cantidad de jornadas, espacios, equipos y responsables se formaliza en el cronograma operativo una vez confirmada la disponibilidad institucional.");
+      tableCaption("Demanda de estudiantes por lugar de ejecución");
       autoTable({
         startY:api.getY(),
         margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},
-        head:[["Lugar","Estudiantes planificados","Criterio de capacidad","Validación requerida"]],
+        head:[["Lugar","Estudiantes planificados","Participación del total","Uso para la planificación"]],
         body:Object.entries(t.byPlace).map(([p,n])=>[
-          p,String(n),
-          "Capacidad de cada jornada de acuerdo con los estudiantes convocados simultáneamente",
-          "Espacio, equipos, software y conectividad confirmados antes de publicar el cronograma operativo"
+          p,
+          String(n),
+          ((Number(n)/total)*100).toFixed(1).replace(".0","")+" %",
+          "Dimensionamiento de jornadas, espacios, equipos y soporte"
         ]),
-        columnStyles:{0:{cellWidth:bodyW*0.16},1:{cellWidth:bodyW*0.18},2:{cellWidth:bodyW*0.30},3:{cellWidth:bodyW*0.36}},
-        styles:{font:"times",fontSize:8.4,cellPadding:4,textColor:0},
+        columnStyles:{0:{cellWidth:bodyW*0.18},1:{cellWidth:bodyW*0.19},2:{cellWidth:bodyW*0.19},3:{cellWidth:bodyW*0.44}},
+        styles:{font:"times",fontSize:8.5,cellPadding:4,textColor:0},
         headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
       });
-      tableNote("Los valores específicos de capacidad física se incorporan cuando hayan sido verificados por "+(a.infraestructuraFisica||"Infraestructura Física y Servicios Generales")+" y las áreas responsables de la jornada.");
+      tableNote("La capacidad física y tecnológica se acredita mediante los instrumentos operativos y evidencias de cada jornada, no mediante una estimación automática en esta planificación general.");
 
       heading("8.2. Equipos, Software y Conectividad",2,true);
-      bullet("• Equipo funcional para cada estudiante convocado y unidades de respaldo según disponibilidad institucional.");
+      bullet("• Equipo funcional para cada estudiante convocado simultáneamente y unidades de respaldo según disponibilidad institucional.");
       bullet("• Software requerido por la carrera instalado, licenciado y probado antes de la jornada.");
       bullet("• Conectividad suficiente para plataformas, autenticación, entrega y respaldo cuando el instrumento la requiera.");
       bullet("• Restricciones de acceso y recursos configuradas de acuerdo con las condiciones del examen.");
@@ -44,7 +46,7 @@
       paragraph("Toda jornada debe contar con mecanismos de continuidad frente a fallas previsibles: equipo alterno, recuperación de archivos, registro del tiempo afectado y procedimiento de reprogramación cuando la incidencia impida concluir el examen en condiciones válidas.");
 
       heading("8.4. Coordinación Tecnológica para la Aplicación",2,true);
-      paragraph("La preparación tecnológica debe definir responsables por aula o jornada, canal de atención, escalamiento de incidencias, mecanismo de respaldo y relación con el responsable académico. Las intervenciones técnicas deben resolver la novedad sin alterar el contenido académico ni otorgar ventajas indebidas.");
+      paragraph("La preparación tecnológica debe definir responsables por aula o jornada, canal de atención, escalamiento de incidencias, mecanismo de respaldo y relación con el responsable académico. Estos datos forman parte del cronograma o checklist operativo de la jornada y se confirman antes de su comunicación a los estudiantes.");
 
       heading("8.5. Preparación de Aulas y Plataforma",2,true);
       paragraph("La preparación digital sigue la secuencia: creación del aula o espacio institucional, asociación de carrera o grupo, configuración de usuarios y permisos, validación de accesos, carga de recursos autorizados y revisión de disponibilidad. La responsabilidad principal corresponde a "+(a.ti||"Coordinación de Tecnología de la Información")+", con participación de "+(a.desarrolloSistemas||"Unidad de Desarrollo de Sistemas")+", "+(a.titulacion||"Titulación y Eficiencia Terminal")+" y "+(a.carreras||"Coordinaciones de Carrera")+".");
@@ -63,7 +65,7 @@
         styles:{font:"times",fontSize:8.2,cellPadding:4,textColor:0},
         headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0}
       });
-      tableNote("Los accesos deben validarse antes de comunicar el aula o recurso a los estudiantes.");
+      tableNote("Los controles se documentan con información real de la jornada y constituyen evidencia complementaria de la planificación.");
 
       heading("8.6. Configuración del Examen Complexivo",2,true);
       paragraph("La configuración comprende la incorporación del banco de preguntas aprobado, la estructura del componente teórico, la configuración del tiempo, la preparación del componente práctico, los permisos, el mecanismo de entrega y los criterios de respaldo. Titulación y Eficiencia Terminal coordina esta actividad con "+(a.ti||"Coordinación de Tecnología de la Información")+" y "+(a.carreras||"Coordinaciones de Carrera")+".");
@@ -77,7 +79,7 @@
       paragraph("Toda novedad detectada debe registrarse, asignarse al área correspondiente, corregirse y someterse a una segunda validación antes de habilitar el examen.");
 
       heading("8.8. Validación y Habilitación Final",2,true);
-      paragraph("La habilitación final se realiza únicamente después de confirmar que el aula, usuarios, instrumentos, tiempos, materiales, espacios, equipos, conectividad, responsables y mecanismos de contingencia se encuentran disponibles. Titulación y Eficiencia Terminal consolida la validación final antes de la comunicación definitiva a los estudiantes.");
+      paragraph("La habilitación final de cada jornada se realiza después de confirmar aula, usuarios, instrumentos, tiempos, materiales, espacios, equipos, conectividad, responsables y mecanismos de contingencia. La presente planificación general identifica la demanda y el procedimiento; la evidencia de viabilidad queda documentada en el cronograma operativo, checklist técnico y registros de validación emitidos para la ejecución.");
     }
   };
 })();
