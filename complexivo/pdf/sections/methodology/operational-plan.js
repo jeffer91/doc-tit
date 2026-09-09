@@ -53,13 +53,16 @@
     }));
 
     const hasRealOperationalData=r=>[r.start,r.deadline,r.actualDate,r.person,r.status,r.observations].some(v=>String(v||"").trim());
-    const active=plan.filter(hasRealOperationalData);
+    const active=plan.filter(r=>hasRealOperationalData(byId.get(r.id)));
     const tracking=active.filter(r=>[r.actualDate,r.person,r.status,r.observations].some(v=>String(v||"").trim()));
     const date=v=>v?formatDateShort(v):"";
     const value=v=>String(v||"").trim();
 
-    heading("3.11. Plan Operativo de Preparación, Configuración y Aplicación del Examen Complexivo",2,true);
-    paragraph("El cronograma general establece las ventanas del período. El plan operativo incorpora únicamente actividades que ya cuentan con información real de programación o seguimiento. Las fechas del examen ordinario y del supletorio se recuperan automáticamente del cronograma general cuando están registradas.");
+    heading("3.11. Articulación con el Cronograma Operativo del Examen Complexivo",2,true);
+    paragraph("El presente documento corresponde a la planificación general del proceso. La distribución específica por carrera, grupo, lugar, aula o laboratorio, fecha, hora, responsable de jornada y soporte se formaliza mediante el Cronograma Operativo del Examen Complexivo, instrumento complementario emitido una vez confirmadas las condiciones de ejecución.");
+    if(!active.length){
+      paragraph("Cuando no existen datos operativos confirmados, no se incorpora una matriz incompleta ni se imprimen campos pendientes; las fechas del examen ordinario y del supletorio permanecen únicamente en el cronograma general del período.");
+    }
 
     if(active.length){
       heading("3.11.1. Programación operativa",3,true);
@@ -109,7 +112,8 @@
       });
     }
 
-    heading("3.11.4. Secuencia de cierre posterior al supletorio",3,true);
+    const closureNumber=tracking.length?"3.11.4":active.length?"3.11.3":"3.11.1";
+    heading(`${closureNumber}. Secuencia de cierre posterior al supletorio`,3,true);
     paragraph("Después del examen supletorio, el proceso continúa con la consolidación de resultados, el registro de calificaciones, la verificación de estudiantes sin estado final, el respaldo de evidencias, el cierre de aulas y plataformas y la elaboración del informe final. El proceso se considera cerrado únicamente cuando estas actividades cuentan con responsable, estado y evidencia.");
   };
 })();

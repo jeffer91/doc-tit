@@ -20,7 +20,7 @@
 
       heading("12.1. Alcance del período",2,true);
       paragraph("La población planificada corresponde a "+t.total+" estudiantes distribuidos en "+places+". La organización por carrera y lugar de ejecución determina la demanda de espacios, equipos, conectividad, docentes responsables y mecanismos de soporte. La presencialidad constituye la regla general de aplicación; cualquier modalidad virtual requiere justificación y autorización institucional expresa.");
-      paragraph("La preparación académica se estructura mediante cuatro Núcleos de Titulación, cada uno con docente responsable, guía, material, aula o recurso institucional y evidencia de desarrollo. La ejecución de los núcleos se articula con Integración Curricular o Titulación y con las Coordinaciones de Carrera.");
+      paragraph("La preparación académica se estructura mediante cuatro Núcleos de Titulación. Sus fechas generales forman parte de esta planificación; las asignaciones específicas por carrera o grupo, docente, aula o recurso y evidencia se formalizan en el instrumento operativo correspondiente. La ejecución se articula con Integración Curricular o Titulación y con las Coordinaciones de Carrera.");
 
       tableCaption("Síntesis de condiciones principales del proceso");
       autoTable({
@@ -31,7 +31,7 @@
           ["Período",ctx.period.name],
           ["Población",t.total+" estudiantes"],
           ["Lugares de ejecución",places],
-          ["Preparación académica","Cuatro Núcleos de Titulación con docente, guía, material y evidencia"],
+          ["Preparación académica","Cuatro Núcleos de Titulación; asignaciones específicas formalizadas mediante instrumento operativo"],
           ["Modalidad","Presencial como regla general; virtual únicamente mediante excepción autorizada"],
           ["Componente teórico",ev.theoreticalWeight+" % de la nota final; "+ev.theoreticalQuestions+" preguntas; "+ev.theoreticalMinutes+" minutos"],
           ["Componente práctico",ev.practicalWeight+" % de la nota final; actividad individual definida por carrera"],
