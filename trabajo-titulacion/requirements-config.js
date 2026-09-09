@@ -61,7 +61,7 @@
         Object.freeze({
           title: "3. Presentación del Expediente",
           items: Object.freeze([
-            Object.freeze({label:"Presentación física",text:"La documentación debe presentarse en una carpeta plástica de color específico asignado a cada carrera, con vinchas para perforado que aseguren el orden de los documentos."}),
+            "La documentación debe presentarse en una carpeta plástica de color específico asignado a cada carrera, con vinchas para perforado que aseguren el orden de los documentos.",
             Object.freeze({label:"Estudiantes de Provincia",text:"Pueden enviar la carpeta mediante un servicio de mensajería a la Secretaría Académica en la sede La Tola, indicando la atención a la persona responsable designada en las instrucciones oficiales."})
           ])
         })
@@ -80,7 +80,7 @@
         Object.freeze({
           title: "2. Presentación del Expediente",
           items: Object.freeze([
-            Object.freeze({label:"Presentación física",text:"Los documentos deben ser organizados en una carpeta plástica con tapa transparente y de color específico asignado a cada carrera, entregada en la Secretaría Académica en el horario estipulado para recepción de expedientes."})
+            "Los documentos deben ser organizados en una carpeta plástica con tapa transparente y de color específico asignado a cada carrera, entregada en la Secretaría Académica en el horario estipulado para recepción de expedientes."
           ])
         })
       ])
