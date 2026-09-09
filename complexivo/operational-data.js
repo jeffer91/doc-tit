@@ -51,7 +51,7 @@
         <td><input class="op-person" type="text" value="${escapeAttr(r.person||"")}" placeholder="Nombre, si se dispone"></td>
         <td><textarea class="op-product" rows="2">${escapeHtml(r.product||"")}</textarea></td>
         <td><textarea class="op-evidence" rows="2">${escapeHtml(r.evidence||"")}</textarea></td>
-        <td><select class="op-status">${STATUS_OPTIONS.map(s=>`<option value="${s}" ${s===(r.status||"Planificado")?"selected":""}>${s}</option>`).join("")}</select></td>
+        <td><select class="op-status"><option value="" ${!r.status?"selected":""}>Sin estado</option>${STATUS_OPTIONS.map(s=>`<option value="${s}" ${s===r.status?"selected":""}>${s}</option>`).join("")}</select></td>
         <td><textarea class="op-observations" rows="2" placeholder="Novedades del período">${escapeHtml(r.observations||"")}</textarea></td>
       </tr>`).join("");
   }
@@ -83,7 +83,7 @@
       person:tr.querySelector(".op-person")?.value.trim()||"",
       product:tr.querySelector(".op-product")?.value.trim()||"",
       evidence:tr.querySelector(".op-evidence")?.value.trim()||"",
-      status:tr.querySelector(".op-status")?.value||"Planificado",
+      status:tr.querySelector(".op-status")?.value||"",
       observations:tr.querySelector(".op-observations")?.value.trim()||""
     }));
   }
@@ -148,10 +148,10 @@
     panel.className="panel";
     panel.id="operationalDataPanel";
     panel.innerHTML=`
-      <div class="panel-head"><div><span class="eyebrow">3. Plan operativo y núcleos</span><h3>Actividades, responsables, fechas y evidencias</h3><p class="section-help">Completa las fechas y datos reales del período. Las fechas no se inventan; si todavía no están definidas, pueden quedar pendientes hasta contar con la programación aprobada.</p></div></div>
+      <div class="panel-head"><div><span class="eyebrow">3. Plan operativo y núcleos</span><h3>Actividades, responsables, fechas y evidencias</h3><p class="section-help">Completa únicamente información real y confirmada del período. Los campos pueden quedar vacíos hasta contar con la programación aprobada.</p></div></div>
       <h4 class="operational-subtitle">Plan operativo del Examen Complexivo</h4>
       <div class="operational-table-wrap"><table class="operational-table"><thead><tr><th>Actividad</th><th>Inicio</th><th>Fecha límite</th><th>Responsable principal</th><th>Área de coordinación</th><th>Persona responsable</th><th>Producto esperado</th><th>Evidencia</th><th>Estado</th><th>Observaciones</th></tr></thead><tbody id="operationalPlanBody"></tbody></table></div>
-      <p class="operational-note">Estas actividades alimentan directamente la sección 3.11 del PDF y permiten documentar la preparación, configuración, prueba, aplicación y cierre.</p>
+      <p class="operational-note">Solo las actividades con información operativa registrada se incorporan al PDF. Las filas sin datos permanecen fuera del documento.</p>
       <h4 class="operational-subtitle">Docentes y control de los cuatro Núcleos de Titulación</h4>
       <div class="operational-table-wrap"><table class="operational-table nucleus"><thead><tr><th>Núcleo</th><th>Fecha</th><th>Carrera</th><th>Docente responsable</th><th>Guía entregada</th><th>Material cargado</th><th>Aula</th><th>Evidencia</th></tr></thead><tbody id="nucleusPlanBody"></tbody></table></div>
     `;
