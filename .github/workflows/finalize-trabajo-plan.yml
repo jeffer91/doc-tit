@@ -1,0 +1,60 @@
+name: Finalize Trabajo Planning
+
+on:
+  push:
+    paths:
+      - '.github/workflows/finalize-trabajo-plan.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Apply final corrections
+        run: python .github/scripts/finalize_trabajo_plan.py
+      - name: Validate JavaScript
+        run: |
+          node --check trabajo-titulacion/authorizations-config.js
+          node --check trabajo-titulacion/content-config.js
+          node --check trabajo-titulacion/process-config.js
+          node --check trabajo-titulacion/recommendations-config.js
+          node --check trabajo-titulacion/full-document.js
+          node --check trabajo-titulacion/app.js
+          node --check shared/institutional-config.js
+      - name: Validate document wiring
+        run: |
+          grep -q 'DOC_TIT_TRABAJO_AUTHORIZATIONS' trabajo-titulacion/full-document.js
+          grep -q '"type":"authorizations"' trabajo-titulacion/full-document.js
+          grep -q '4.2.1. Modalidades Híbrida, Presencial y Online' trabajo-titulacion/full-document.js
+          grep -q '4.7. Actualización de Datos' trabajo-titulacion/full-document.js
+          grep -q '"12. Recomendaciones"' trabajo-titulacion/full-document.js
+          grep -q '"13. Bibliografía"' trabajo-titulacion/full-document.js
+          grep -q 'for(let p=2;p<=total;p++)' trabajo-titulacion/full-document.js
+          grep -q 'numberedParagraph(index+1,raw)' trabajo-titulacion/full-document.js
+          grep -q 'authorizations:currentAuthorizationsSnapshot()' trabajo-titulacion/app.js
+          grep -q 'status!=="Aprobado"' trabajo-titulacion/app.js
+          grep -q 'Unidad de Gestión de Procesos Académicos' shared/institutional-config.js
+          grep -q 'authorizations-config.js' trabajo-titulacion/index.html
+          grep -q 'resolved_by_current_regulation' trabajo-titulacion/process-config.js
+          grep -q 'technicalVersion: "B"' trabajo-titulacion/content-config.js
+      - name: Ensure deprecated visible inputs are absent from new template flow
+        run: |
+          ! grep -q 'XLSX.utils.book_append_sheet(wb,ws,t.sheet)' trabajo-titulacion/app.js
+          grep -q '<section class="panel" hidden aria-hidden="true">' trabajo-titulacion/index.html
+      - name: Commit corrected app
+        run: |
+          git config user.name 'jeffer91'
+          git config user.email 'jeffersonvillarreal91@gmail.com'
+          git add trabajo-titulacion/full-document.js trabajo-titulacion/app.js trabajo-titulacion/content-config.js trabajo-titulacion/process-config.js trabajo-titulacion/index.html shared/institutional-config.js
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+          else
+            git commit -m 'Finalize Trabajo planning document corrections'
+            git push
+          fi
