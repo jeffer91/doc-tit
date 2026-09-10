@@ -1,6 +1,6 @@
 (() => {
 "use strict";
-const CONFIG={"documentKey":"plan-trabajo-titulacion","title":"Planificación de Trabajo de Titulación","shortName":"Trabajo_Titulacion","codePrefix":"UGPA-RGI2-01-PRO-56-","requiredTable":null,"schedule":[{"activity":"Asignación de Tutor y Lector","responsible":"Coordinador de Titulación / Coordinación General de Carreras","description":"Designación del tutor y lector para acompañamiento y revisión académica."},{"activity":"Reunión Inicial con Tutor","responsible":"Estudiante / Tutor","description":"Primer encuentro para acordar plan de trabajo y objetivos."},{"activity":"Entrega del Primer Borrador","responsible":"Estudiante","description":"Presentación del primer borrador para revisión del tutor."},{"activity":"Retroalimentación del Primer Borrador","responsible":"Tutor","description":"Revisión y comentarios sobre el primer borrador."},{"activity":"Entrega del Segundo Borrador","responsible":"Estudiante","description":"Segundo borrador con incorporación de observaciones."},{"activity":"Retroalimentación del Segundo Borrador","responsible":"Tutor","description":"Revisión y comentarios sobre el segundo borrador."},{"activity":"Entrega del Tercer Borrador","responsible":"Estudiante","description":"Versión avanzada ajustada según revisiones previas."},{"activity":"Aprobación Final del Tercer Borrador por Tutor","responsible":"Tutor","description":"Aprobación del tutor para habilitar revisión del lector."},{"activity":"Revisión del Proyecto por el Lector","responsible":"Lector","description":"Revisión técnica y formal del trabajo aprobado por tutor."},{"activity":"Aprobación Final del Proyecto","responsible":"Lector","description":"Validación final previa a defensa."},{"activity":"Confirmación de Fecha de Defensa","responsible":"Coordinador de Titulación / Coordinación General de Carreras","description":"Confirmación y comunicación de fecha y modalidad de defensa."},{"activity":"Preparación para la Defensa","responsible":"Estudiante","description":"Ajustes finales y preparación de la defensa."},{"activity":"Defensa de Tesis","responsible":"Estudiante / Tribunal Evaluador / Coordinación General de Carreras","description":"Presentación y defensa del trabajo ante tribunal."},{"activity":"Registro Final de Calificaciones","responsible":"Coordinador de Titulación / Coordinación General de Carreras","description":"Registro de calificaciones finales en el sistema institucional."}],"activityAliases":{"Asignación de Tutor y Lector":["asignacion tutor lector","tutor y lector"],"Reunión Inicial con Tutor":["reunion tutor","reunion inicial"],"Entrega del Primer Borrador":["borrador 1","primer borrador","primer avance"],"Retroalimentación del Primer Borrador":["retroalimentacion borrador 1","revision primer borrador"],"Entrega del Segundo Borrador":["borrador 2","segundo borrador","segundo avance"],"Retroalimentación del Segundo Borrador":["retroalimentacion borrador 2","revision segundo borrador"],"Entrega del Tercer Borrador":["borrador 3","tercer borrador","tercer avance"],"Aprobación Final del Tercer Borrador por Tutor":["aprobacion tutor","aprobacion tercer borrador"],"Revisión del Proyecto por el Lector":["revision lector","revision proyecto lector"],"Aprobación Final del Proyecto":["aprobacion final","aprobacion lector"],"Confirmación de Fecha de Defensa":["confirmacion defensa","fecha defensa"],"Preparación para la Defensa":["preparacion defensa"],"Defensa de Tesis":["defensa","defensa tesis","defensa trabajo"],"Registro Final de Calificaciones":["registro notas","calificaciones finales"]},"tables":{"carreras":{"label":"Carreras y estudiantes","title":"Carreras participantes","help":"Registra carrera, modalidad, lugar y cantidad.","sheet":"CARRERAS","sheetAliases":["distribucion"],"requiredFields":["career","count"],"columns":[{"field":"career","label":"Carrera","aliases":["programa"],"width":38},{"field":"modality","label":"Modalidad","aliases":["tipo"],"width":18},{"field":"place","label":"Lugar","aliases":["sede"],"width":16},{"field":"count","label":"Cantidad","aliases":["cant","estudiantes","numero estudiantes"],"type":"number","width":12}]},"tutores":{"label":"Tutor y lector","title":"Asignación académica","help":"Completa únicamente cuando las asignaciones ya estén definidas.","sheet":"TUTORES_LECTORES","sheetAliases":["tutores","lectores"],"requiredFields":["career"],"columns":[{"field":"career","label":"Carrera","width":34},{"field":"tutor","label":"Tutor","aliases":["docente tutor"],"width":26},{"field":"reader","label":"Lector","aliases":["lector revisor"],"width":26},{"field":"observations","label":"Observaciones","aliases":["obs"],"width":34}]},"defensas":{"label":"Defensas","title":"Organización de defensas","help":"Registra rangos por carrera cuando ya estén definidos.","sheet":"DEFENSAS","requiredFields":["career"],"columns":[{"field":"career","label":"Carrera","width":32},{"field":"start","label":"Fecha inicio","aliases":["inicio","desde"],"type":"date","width":15},{"field":"end","label":"Fecha fin","aliases":["fin","hasta"],"type":"date","width":15},{"field":"mode","label":"Modalidad","aliases":["tipo"],"width":16},{"field":"observations","label":"Observaciones","width":30}]}}}
+const CONFIG={"documentKey":"plan-trabajo-titulacion","title":"Planificación de Trabajo de Titulación","shortName":"Trabajo_Titulacion","codePrefix":"UGPA-RGI2-01-PRO-56-","requiredTable":null,"schedule":[{"activity":"Asignación de Tutor y Lector","responsible":"Coordinador de Titulación / Coordinación General de Carreras","description":"Designación del tutor y lector para acompañamiento y revisión académica."},{"activity":"Reunión Inicial con Tutor","responsible":"Estudiante / Tutor","description":"Primer encuentro para acordar plan de trabajo y objetivos."},{"activity":"Entrega del Primer Borrador","responsible":"Estudiante","description":"Presentación del primer borrador para revisión del tutor."},{"activity":"Retroalimentación del Primer Borrador","responsible":"Tutor","description":"Revisión y comentarios sobre el primer borrador."},{"activity":"Entrega del Segundo Borrador","responsible":"Estudiante","description":"Segundo borrador con incorporación de observaciones."},{"activity":"Retroalimentación del Segundo Borrador","responsible":"Tutor","description":"Revisión y comentarios sobre el segundo borrador."},{"activity":"Entrega del Tercer Borrador","responsible":"Estudiante","description":"Versión avanzada ajustada según revisiones previas."},{"activity":"Aprobación Final del Tercer Borrador por Tutor","responsible":"Tutor","description":"Aprobación del tutor para habilitar revisión del lector."},{"activity":"Revisión del Proyecto por el Lector","responsible":"Lector","description":"Revisión técnica y formal del trabajo aprobado por tutor."},{"activity":"Aprobación Final del Proyecto","responsible":"Lector","description":"Validación final previa a defensa."},{"activity":"Confirmación de Fecha de Defensa","responsible":"Coordinador de Titulación / Coordinación General de Carreras","description":"Confirmación y comunicación de fecha y modalidad de defensa."},{"activity":"Preparación para la Defensa","responsible":"Estudiante","description":"Ajustes finales y preparación de la defensa."},{"activity":"Defensa de Tesis","responsible":"Estudiante / Tribunal Evaluador / Coordinación General de Carreras","description":"Presentación y defensa del trabajo ante tribunal."},{"activity":"Registro Final de Calificaciones","responsible":"Coordinador de Titulación / Coordinación General de Carreras","description":"Registro de calificaciones finales en el sistema institucional."}],"activityAliases":{"Asignación de Tutor y Lector":["asignacion tutor lector","tutor y lector"],"Reunión Inicial con Tutor":["reunion tutor","reunion inicial"],"Entrega del Primer Borrador":["borrador 1","primer borrador","primer avance"],"Retroalimentación del Primer Borrador":["retroalimentacion borrador 1","revision primer borrador"],"Entrega del Segundo Borrador":["borrador 2","segundo borrador","segundo avance"],"Retroalimentación del Segundo Borrador":["retroalimentacion borrador 2","revision segundo borrador"],"Entrega del Tercer Borrador":["borrador 3","tercer borrador","tercer avance"],"Aprobación Final del Tercer Borrador por Tutor":["aprobacion tutor","aprobacion tercer borrador"],"Revisión del Proyecto por el Lector":["revision lector","revision proyecto lector"],"Aprobación Final del Proyecto":["aprobacion final","aprobacion lector"],"Confirmación de Fecha de Defensa":["confirmacion defensa","fecha defensa"],"Preparación para la Defensa":["preparacion defensa"],"Defensa de Tesis":["defensa","defensa tesis","defensa trabajo"],"Registro Final de Calificaciones":["registro notas","calificaciones finales"]},"tables":{}}
 const SCHEDULE_CONFIG=window.DOC_TIT_TRABAJO_SCHEDULE||{};
 const MONTHS=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const FALLBACK_PERIODS=[
@@ -89,7 +89,7 @@ function blankPayload(){
     const def=typeof a==="string"?{activity:a}:a;
     return {id:def.id||`actividad_${String(i+1).padStart(2,"0")}`,order:Number(def.order)||i+1,phaseId:def.phaseId||"",activity:def.activity||"",responsible:def.responsible||"",description:def.description||"",route:def.route||"",start:"",end:"",deadline:"",observation:"",active:def.active!==false};
   });
-  return {schedule,scheduleMeta:{version:1,status:"Borrador"},tables,notes:"",contentSnapshots:{legalBase:currentLegalBaseSnapshot(),methodology:currentMethodologySnapshot(),requirements:currentRequirementsSnapshot(),processDescription:currentProcessSnapshot(),administrativeLogistics:currentLogisticsSnapshot(),induction:currentInductionSnapshot(),authorizations:currentAuthorizationsSnapshot(),scheduleStructure:structure,resultsAnalysis:currentResultsAnalysisSnapshot(),conclusions:currentConclusionsSnapshot(),recommendations:currentRecommendationsSnapshot()}};
+  return {schedule,scheduleMeta:{version:1,status:"Borrador"},tables,contentSnapshots:{legalBase:currentLegalBaseSnapshot(),methodology:currentMethodologySnapshot(),requirements:currentRequirementsSnapshot(),processDescription:currentProcessSnapshot(),administrativeLogistics:currentLogisticsSnapshot(),induction:currentInductionSnapshot(),authorizations:currentAuthorizationsSnapshot(),scheduleStructure:structure,resultsAnalysis:currentResultsAnalysisSnapshot(),conclusions:currentConclusionsSnapshot(),recommendations:currentRecommendationsSnapshot()}};
 }
 function normalizePayloadData(data){
   const base=blankPayload();
@@ -145,7 +145,7 @@ function normalizePayloadData(data){
   if(!contentSnapshots.conclusions)contentSnapshots.conclusions=currentConclusionsSnapshot();
   if(!contentSnapshots.recommendations)contentSnapshots.recommendations=currentRecommendationsSnapshot();
   const scheduleMeta={...(base.scheduleMeta||{}),...(data.scheduleMeta||{})};
-  return {...base,...data,schedule:base.schedule,scheduleMeta,tables,notes:data.notes||"",contentSnapshots};
+  return {...base,...data,schedule:base.schedule,scheduleMeta,tables ,contentSnapshots};
 }
 
 function code(){
@@ -288,7 +288,7 @@ function renderTable(key){
   body.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{payload.tables[b.dataset.del].splice(+b.dataset.row,1); if(!payload.tables[b.dataset.del].length)payload.tables[b.dataset.del].push({});renderTable(b.dataset.del);progress();localSave();});
 }
 function renderAssets(){
-  [["logo","logoPreview"],["introImage","introImagePreview"],["methodologyImage","methodologyImagePreview"],["closingImage","closingImagePreview"]].forEach(([k,id])=>{
+  [["logo","logoPreview"]].forEach(([k,id])=>{
     const el=$("#"+id); el.innerHTML=assets[k]?`<img src="${assets[k]}" alt="">`:"Opcional";
     if(k==="logo"&&!assets[k])el.textContent="Sin imagen";
   });
@@ -341,10 +341,10 @@ async function loadCurrent(){
       for(const [key,value] of Object.entries(cloudAssets||{})){try{await writeLocalAsset(key,value);}catch(e){}}
     }catch(e){console.warn(e);}
   }
-  $("#notesInput").value=payload.notes||"";renderSections();renderAssets();progress();localSave();
+  renderSections();renderAssets();progress();localSave();
 }
 async function save(){
-  payload.notes=$("#notesInput").value.trim();localSave();
+  localSave();
   const data={periodKey:activePeriodId,documentKey:CONFIG.documentKey,processCode:"PRO-56",title:CONFIG.title,documentCode:code(),payload,complete:scheduleComplete()&&firstTableComplete()&&!!assets.logo};
   if(cloudReady){try{await window.DocTitCloud.upsertDocument(data);setStatus("Borrador guardado en Supabase","success");}catch(e){setStatus("Guardado local; no se pudo sincronizar","error");}}else setStatus("Borrador guardado localmente","success");
 }
@@ -531,7 +531,6 @@ function showImport(parsed){
   if(btn) btn.onclick=()=>{
     payload=normalizePayloadData(pendingImport);
     pendingImport=null;
-    $("#notesInput").value=payload.notes||"";
     renderSections();
     progress();
     localSave();
@@ -540,7 +539,7 @@ function showImport(parsed){
 }
 function downloadTemplate(){
   const wb=XLSX.utils.book_new();const p=activePeriod();
-  const info=[["PLANTILLA DE DATOS · "+CONFIG.title],["Instrucciones"],["1. Completa únicamente las celdas necesarias."],["2. No cambies el nombre de las hojas si no es necesario."],["3. La app reconoce alias como Inicio/Fecha inicio/Desde y Fin/Fecha fin/Hasta."],["4. Puedes dejar datos pendientes y volver a importar después."],["5. Cada actividad activa del CRONOGRAMA debe tener al menos una fecha o plazo. El cronograma debe aprobarse en la app y el logo institucional es obligatorio. Las demás secciones se generan desde configuración institucional controlada."]];
+  const info=[["PLANTILLA DE DATOS · "+CONFIG.title],["Instrucciones"],["1. Completa únicamente las celdas necesarias."],["2. No cambies el nombre de las hojas si no es necesario."],["3. La app reconoce alias como Inicio/Fecha inicio/Desde y Fin/Fecha fin/Hasta."],["4. Puedes completar el cronograma por etapas y volver a importarlo después."],["5. Cada actividad activa del CRONOGRAMA debe tener al menos una fecha o plazo. El cronograma debe aprobarse en la app y el logo institucional es obligatorio. Las demás secciones se generan desde configuración institucional controlada."]];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(info),"INSTRUCCIONES");
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([
     ["Campo","Valor"],
@@ -555,7 +554,6 @@ function downloadTemplate(){
   XLSX.writeFile(wb,"Plantilla_"+CONFIG.shortName+"_"+p.name.replace(/[^A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ]+/g,"-")+".xlsx");
 }
 async function generate(){
-  payload.notes=$("#notesInput").value.trim();
   const scheduleErrors=scheduleValidation();if(scheduleErrors.length){alert("Corrige el cronograma antes de generar el PDF:\n\n"+scheduleErrors.join("\n"));return;}
   if(payload.scheduleMeta?.status!=="Aprobado"){alert("Aprueba el cronograma antes de generar el PDF definitivo.");return;}
   if(CONFIG.requiredTable && !firstTableComplete()){alert("Completa al menos una fila de "+CONFIG.tables[CONFIG.requiredTable].label+".");return;}
@@ -581,9 +579,8 @@ function bind(){
   $("#periodSelect").onchange=async e=>{activePeriodId=e.target.value;localStorage.setItem(ACTIVE_KEY,activePeriodId);renderPeriods();await loadCurrent();};
   $("#downloadTemplateBtn").onclick=downloadTemplate;
   $("#importInput").onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const wb=XLSX.read(await f.arrayBuffer(),{type:"array",cellDates:true});showImport(parseImport(wb));}catch(err){alert("No se pudo leer la plantilla: "+err.message);}e.target.value="";};
-  $("#notesInput").onchange=()=>{payload.notes=$("#notesInput").value.trim();localSave();};
   $("#saveBtn").onclick=save;$("#saveBtnBottom").onclick=save;$("#generateBtn").onclick=generate;$("#generateBtnBottom").onclick=generate;
-  [["logoUpload","logo"],["introImageUpload","introImage"],["methodologyImageUpload","methodologyImage"],["closingImageUpload","closingImage"]].forEach(([id,key])=>$("#"+id).onchange=e=>{const f=e.target.files?.[0];if(f)storeImage(key,f);e.target.value="";});
+  [["logoUpload","logo"]].forEach(([id,key])=>$("#"+id).onchange=e=>{const f=e.target.files?.[0];if(f)storeImage(key,f);e.target.value="";});
 }
 localLoad();renderPeriods();renderSections();renderAssets();progress();bind();initPeriodDialog();initCloud();
 })();

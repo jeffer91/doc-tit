@@ -37,8 +37,8 @@
     </header>
 
     <div class="toolbar">
-      <button class="secondary" id="downloadTemplateBtn">↓ Plantilla de datos</button>
-      <label class="secondary" style="cursor:pointer">↑ Importar datos
+      <button class="secondary" id="downloadTemplateBtn">↓ Plantilla del cronograma</button>
+      <label class="secondary" style="cursor:pointer">↑ Importar cronograma
         <input type="file" id="importInput" accept=".xlsx,.xls" hidden>
       </label>
       <button class="secondary" id="saveBtn">Guardar borrador</button>
@@ -52,19 +52,10 @@
     </section>
 
     <div id="dynamicSections"></div>
-
-    <section class="panel" hidden aria-hidden="true">
-      <div class="panel-head"><div><span class="eyebrow">Información adicional</span><h3>Observaciones del período</h3><p class="help">Escribe únicamente particularidades que no estén cubiertas por las tablas.</p></div></div>
-      <div class="field"><textarea id="notesInput" placeholder="Observaciones, excepciones o instrucciones particulares…"></textarea></div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head"><div><span class="eyebrow">Identidad institucional</span><h3>Logo institucional</h3><p class="help">El logo institucional se utiliza en la cabecera y es el único recurso gráfico requerido por esta planificación.</p></div></div>
+<section class="panel">
+      <div class="panel-head"><div><span class="eyebrow">Identidad institucional</span><h3>Logo institucional</h3><p class="help">Se solicita únicamente el logo institucional porque forma parte de la cabecera del formato.</p></div></div>
       <div class="asset-grid">
         <label class="asset"><strong>Logo institucional *</strong><span class="preview" id="logoPreview">Sin imagen</span><input id="logoUpload" type="file" accept="image/png,image/jpeg,image/webp"></label>
-        <label class="asset" hidden aria-hidden="true"><strong>Imagen de introducción</strong><span class="preview" id="introImagePreview">Opcional</span><input id="introImageUpload" type="file" accept="image/png,image/jpeg,image/webp"></label>
-        <label class="asset" hidden aria-hidden="true"><strong>Imagen de metodología</strong><span class="preview" id="methodologyImagePreview">Opcional</span><input id="methodologyImageUpload" type="file" accept="image/png,image/jpeg,image/webp"></label>
-        <label class="asset" hidden aria-hidden="true"><strong>Imagen de cierre/evaluación</strong><span class="preview" id="closingImagePreview">Opcional</span><input id="closingImageUpload" type="file" accept="image/png,image/jpeg,image/webp"></label>
       </div>
     </section>
 
@@ -103,9 +94,9 @@
 <script src="indicators-config.js?v=20260910-finalfix-1"></script>
 <script src="conclusions-config.js?v=20260910-finalfix-1"></script>
 <script src="recommendations-config.js?v=20260910-finalfix-1"></script>
-<script src="full-document.js?v=20260910-finalfix-1"></script>
+<script src="full-document.js?v=20260910-inputs-2"></script>
 <script src="cloud.js?v=20260902-7"></script>
-<script src="app.js?v=20260910-finalfix-1"></script>
+<script src="app.js?v=20260910-inputs-2"></script>
 
 <script src="../shared/documents.js?v=20260904-1"></script>
 <script src="../shared/institutional-config.js?v=20260910-finalfix-1"></script>
