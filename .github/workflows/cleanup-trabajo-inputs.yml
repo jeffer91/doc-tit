@@ -1,0 +1,46 @@
+name: Cleanup Trabajo Inputs
+
+on:
+  push:
+    paths:
+      - '.github/workflows/cleanup-trabajo-inputs.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Apply cleanup
+        run: python .github/scripts/cleanup_trabajo_inputs.py
+      - name: Validate JavaScript
+        run: |
+          node --check trabajo-titulacion/app.js
+          node --check trabajo-titulacion/full-document.js
+      - name: Validate visible inputs
+        run: |
+          ! grep -q 'Información adicional' trabajo-titulacion/index.html
+          ! grep -q 'notesInput' trabajo-titulacion/index.html
+          ! grep -q 'introImageUpload' trabajo-titulacion/index.html
+          ! grep -q 'methodologyImageUpload' trabajo-titulacion/index.html
+          ! grep -q 'closingImageUpload' trabajo-titulacion/index.html
+          ! grep -q 'notesInput' trabajo-titulacion/app.js
+          ! grep -q 'Carreras y estudiantes' trabajo-titulacion/app.js
+          grep -q 'Plantilla del cronograma' trabajo-titulacion/index.html
+          grep -q 'Logo institucional' trabajo-titulacion/index.html
+      - name: Commit cleanup
+        run: |
+          git config user.name 'jeffer91'
+          git config user.email 'jeffersonvillarreal91@gmail.com'
+          git add trabajo-titulacion/index.html trabajo-titulacion/app.js
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+          else
+            git commit -m 'Keep only inputs used by Trabajo planning format'
+            git push
+          fi
