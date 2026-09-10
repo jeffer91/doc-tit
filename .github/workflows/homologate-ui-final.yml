@@ -18,34 +18,15 @@ jobs:
           node-version: '20'
       - name: Apply UI homologation
         run: python .github/scripts/homologate_ui_final.py
-      - name: Check Complexivo app
-        run: node --check complexivo/app.js
-      - name: Check Complexivo workspace
-        run: node --check complexivo/data-workspace.js
-      - name: Check shared module UI
-        run: node --check shared/module-ui.js
-      - name: Validate homologated structure
+      - name: Capture generated UI and syntax output
         run: |
-          grep -q 'Completa únicamente las tablas necesarias del período' complexivo/app.js
-          grep -q 'id="dataWorkspacePercent"' complexivo/data-workspace.js
-          grep -q 'Recursos del documento' complexivo/data-workspace.js
-          grep -q 'Cronograma general' shared/module-ui.js
-          grep -q 'Fechas y responsables de las actividades del proceso' shared/module-ui.js
-          grep -q 'data-card-action="download"' shared/module-ui.js
-          grep -q 'const tablePercent=requiredTables' shared/module-ui.js
-          grep -q 'ready=pending===0' shared/module-ui.js
-          grep -q 'doc-standard-workspace-state' shared/module-ui.css
-          grep -q 'module-ui.js?v=20260910-audit-4' trabajo-titulacion/index.html
-          grep -q 'data-workspace.js?v=20260910-audit-4' complexivo/index.html
-      - name: Commit homologated UI
+          cp shared/module-ui.js .github/debug-module-ui.js
+          node --check shared/module-ui.js > .github/debug-module-ui.log 2>&1 || true
+      - name: Commit diagnostics
         run: |
           git config user.name 'jeffer91'
           git config user.email 'jeffersonvillarreal91@gmail.com'
-          git add complexivo/app.js complexivo/data-workspace.js complexivo/index.html shared/module-ui.js shared/module-ui.css trabajo-titulacion/index.html articulo-academico/index.html
-          if git diff --cached --quiet; then
-            echo 'No changes to commit'
-          else
-            git commit -m 'Align DOC-TIT workspaces and completion states'
-            git push
-          fi
-# retry-3
+          git add .github/debug-module-ui.js .github/debug-module-ui.log
+          git commit -m 'Capture temporary DOC-TIT UI diagnostics'
+          git push
+# diagnostic-run
