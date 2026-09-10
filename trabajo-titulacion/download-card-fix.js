@@ -31,8 +31,22 @@
     });
   }
 
+  function saveWorkbook(wb, filename){
+    const data = XLSX.write(wb, {bookType:"xlsx", type:"array"});
+    const blob = new Blob([data], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
   function downloadScheduleTemplate(){
-    if (!window.XLSX?.utils) {
+    if (!window.XLSX?.utils || !window.XLSX?.write) {
       alert("No se pudo cargar el módulo de Excel. Recarga la página e inténtalo nuevamente.");
       return;
     }
@@ -84,23 +98,38 @@
     ];
     XLSX.utils.book_append_sheet(wb, scheduleSheet, "CRONOGRAMA");
 
-    const filename = `Plantilla_Trabajo_Titulacion_${safeFilePart(period)}.xlsx`;
-    XLSX.writeFile(wb, filename);
+    saveWorkbook(wb, `Plantilla_Trabajo_Titulacion_${safeFilePart(period)}.xlsx`);
   }
 
-  document.addEventListener("click", event => {
-    const button = event.target.closest?.('[data-card-action="download"]');
-    if (!button) return;
-
+  function isScheduleDownloadButton(button){
+    if (!button?.matches?.('[data-card-action="download"]')) return false;
     const card = button.closest(".doc-standard-card");
     const title = card?.querySelector(".doc-standard-card-title")?.textContent?.trim() || "";
-    if (title !== "Cronograma general") return;
+    return title === "Cronograma general";
+  }
 
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-    downloadScheduleTemplate();
-  }, true);
+  function bindDownloadButtons(){
+    $$('[data-card-action="download"]').forEach(button => {
+      if (!isScheduleDownloadButton(button) || button.dataset.directScheduleDownload === "1") return;
+      button.dataset.directScheduleDownload = "1";
+      button.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        downloadScheduleTemplate();
+      }, true);
+    });
+  }
 
-  window.DocTitTrabajoDownload = Object.freeze({ downloadScheduleTemplate });
+  const observer = new MutationObserver(bindDownloadButtons);
+  observer.observe(document.documentElement, {childList:true, subtree:true});
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bindDownloadButtons, {once:true});
+  } else {
+    bindDownloadButtons();
+  }
+
+  window.addEventListener("load", bindDownloadButtons, {once:true});
+  window.DocTitTrabajoDownload = Object.freeze({ downloadScheduleTemplate, bindDownloadButtons });
 })();
