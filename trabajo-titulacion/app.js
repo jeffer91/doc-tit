@@ -65,6 +65,11 @@ function currentResultsAnalysisSnapshot(){
   if(!block||!Array.isArray(block.indicators)||!block.indicators.length)return null;
   return JSON.parse(JSON.stringify(block));
 }
+function currentConclusionsSnapshot(){
+  const block=window.DOC_TIT_TRABAJO_CONCLUSIONS;
+  if(!block||!Array.isArray(block.conclusions)||!block.conclusions.length)return null;
+  return JSON.parse(JSON.stringify(block));
+}
 function blankPayload(){
   const tables={};
   Object.entries(CONFIG.tables).forEach(([key,t])=>{tables[key]=(t.initialRows||[]).map(r=>({...r}));});
@@ -74,7 +79,7 @@ function blankPayload(){
     const def=typeof a==="string"?{activity:a}:a;
     return {id:def.id||`actividad_${String(i+1).padStart(2,"0")}`,order:Number(def.order)||i+1,phaseId:def.phaseId||"",activity:def.activity||"",responsible:def.responsible||"",description:def.description||"",route:def.route||"",start:"",end:"",deadline:"",observation:"",active:def.active!==false};
   });
-  return {schedule,scheduleMeta:{version:1,status:"Borrador"},tables,notes:"",contentSnapshots:{legalBase:currentLegalBaseSnapshot(),methodology:currentMethodologySnapshot(),requirements:currentRequirementsSnapshot(),processDescription:currentProcessSnapshot(),administrativeLogistics:currentLogisticsSnapshot(),induction:currentInductionSnapshot(),scheduleStructure:structure,resultsAnalysis:currentResultsAnalysisSnapshot()}};
+  return {schedule,scheduleMeta:{version:1,status:"Borrador"},tables,notes:"",contentSnapshots:{legalBase:currentLegalBaseSnapshot(),methodology:currentMethodologySnapshot(),requirements:currentRequirementsSnapshot(),processDescription:currentProcessSnapshot(),administrativeLogistics:currentLogisticsSnapshot(),induction:currentInductionSnapshot(),scheduleStructure:structure,resultsAnalysis:currentResultsAnalysisSnapshot(),conclusions:currentConclusionsSnapshot()}};
 }
 function normalizePayloadData(data){
   const base=blankPayload();
@@ -126,6 +131,7 @@ function normalizePayloadData(data){
   if(!contentSnapshots.induction)contentSnapshots.induction=currentInductionSnapshot();
   if(!contentSnapshots.scheduleStructure)contentSnapshots.scheduleStructure=structure||currentScheduleStructureSnapshot();
   if(!contentSnapshots.resultsAnalysis)contentSnapshots.resultsAnalysis=currentResultsAnalysisSnapshot();
+  if(!contentSnapshots.conclusions)contentSnapshots.conclusions=currentConclusionsSnapshot();
   const scheduleMeta={...(base.scheduleMeta||{}),...(data.scheduleMeta||{})};
   return {...base,...data,schedule:base.schedule,scheduleMeta,tables,notes:data.notes||"",contentSnapshots};
 }
@@ -192,7 +198,7 @@ function formatCell(v,type){
 }
 function renderSections(){
   const host=$("#dynamicSections");
-  let html=`<section class="panel"><div class="panel-head"><div><span class="eyebrow">1. Cronograma</span><h3>Cronograma de Trabajo de Titulación</h3><p class="help">Las actividades institucionales están precargadas. Cada actividad activa debe tener al menos una fecha o plazo. Puedes editar, agregar, desactivar y reordenar actividades para este período.</p></div><button class="secondary" type="button" id="addScheduleBtn">+ Agregar actividad</button></div>
+  let html=`<section class="panel"><div class="panel-head"><div><span class="eyebrow">1. Cronograma</span><h3>Cronograma de Trabajo de Titulación</h3><p class="help">Las actividades institucionales están precargadas. Cada actividad activa debe tener al menos una fecha o plazo. Puedes editar, agregar, desactivar y reordenar actividades para este período.</p></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="pill" id="scheduleApprovalState"></span><button class="secondary" type="button" id="approveScheduleBtn">Aprobar cronograma</button><button class="secondary" type="button" id="addScheduleBtn">+ Agregar actividad</button></div></div>
   <div class="table-scroll"><table class="data-table"><thead><tr><th>Orden</th><th>Actividad</th><th>Fecha inicio</th><th>Fecha fin</th><th>Fecha límite</th><th>Descripción</th><th>Responsable</th><th>Observación</th><th>Activo</th><th></th></tr></thead><tbody id="scheduleBody"></tbody></table></div></section>`;
   let n=2;
   Object.entries(CONFIG.tables).forEach(([key,t])=>{
@@ -202,6 +208,15 @@ function renderSections(){
   host.innerHTML=html;
   renderSchedule();
   Object.keys(CONFIG.tables).forEach(renderTable);
+  const approvalState=$("#scheduleApprovalState");
+  if(approvalState)approvalState.textContent="Estado: "+(payload.scheduleMeta?.status||"Borrador");
+  const approveSchedule=$("#approveScheduleBtn");
+  if(approveSchedule)approveSchedule.onclick=()=>{
+    const errors=scheduleValidation();
+    if(errors.length){alert("No se puede aprobar el cronograma:\n\n"+errors.join("\n"));return;}
+    payload.scheduleMeta={...(payload.scheduleMeta||{}),version:Number(payload.scheduleMeta?.version)||1,status:"Aprobado"};
+    localSave();renderSections();progress();setStatus("Cronograma aprobado para el período","success");
+  };
   const addSchedule=$("#addScheduleBtn");
   if(addSchedule)addSchedule.onclick=()=>{
     payload.schedule.push({id:`custom_${Date.now()}`,order:payload.schedule.length+1,phaseId:"",activity:"Nueva actividad",description:"",responsible:"",start:"",end:"",deadline:"",observation:"",active:true});
@@ -254,7 +269,7 @@ function scheduleValidation(){
   });
   return errors;
 }
-function scheduleComplete(){return scheduleValidation().length===0;}
+function scheduleComplete(){return scheduleValidation().length===0&&payload.scheduleMeta?.status==="Aprobado";}
 
 function renderTable(key){
   const t=CONFIG.tables[key],rows=payload.tables[key]||[];
@@ -389,6 +404,7 @@ function parseImport(wb){
 
   const sname=wb.SheetNames.find(n=>norm(n).includes("cronograma"));
   if(sname){
+    out.scheduleMeta={...(out.scheduleMeta||{}),status:"Borrador"};
     const rows=XLSX.utils.sheet_to_json(wb.Sheets[sname],{defval:""});
     const map=rows.length?mapHeaders(rows[0],[
       {field:"order",label:"Orden",aliases:["secuencia"]},

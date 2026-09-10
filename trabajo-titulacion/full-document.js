@@ -9,6 +9,7 @@ const LOGISTICS_CONFIG=window.DOC_TIT_TRABAJO_LOGISTICS||{};
 const INDUCTION_CONFIG=window.DOC_TIT_TRABAJO_INDUCTION||{};
 const SCHEDULE_CONFIG=window.DOC_TIT_TRABAJO_SCHEDULE||{};
 const INDICATORS_CONFIG=window.DOC_TIT_TRABAJO_INDICATORS||{};
+const CONCLUSIONS_CONFIG=window.DOC_TIT_TRABAJO_CONCLUSIONS||{};
 const CONTENT=[
 {"type":"h","text":"1. Introducción","level":1},
 {"type":"h","text":"1.1. Contexto General","level":2},
@@ -30,7 +31,7 @@ const CONTENT=[
 {"type":"h","text":"1.4. Documentos de referencia","level":2},
 {"type":"p","text":"Esta planificación se articula con los siguientes documentos institucionales:","opts":{"indent":false}},
 {"type":"referenceDocs"},
-{"type":"h","text":"2. Base Legal","level":1},{"type":"legalBase"},{"type":"h","text":"3. Metodología","level":1},{"type":"methodology"},{"type":"h","text":"4. Requisitos Para La Aprobación De La Titulación","level":1},{"type":"requirements"},{"type":"h","text":"5. Descripción De Los Procesos De Titulación","level":1},{"type":"processDescription"},{"type":"h","text":"6. Gestión Administrativa Y Logística","level":1},{"type":"administrativeLogistics"},{"type":"h","text":"7. Inducción De Titulación","level":1},{"type":"induction"},{"type":"h","text":"8. Informe Y Autorizaciones","level":1},{"type":"h","text":"8.1. Desarrollo Del Informe De Titulación","level":2},{"type":"p","text":"El informe de titulación documenta avances, gestiones y resultados del proceso y sirve como respaldo para la trazabilidad institucional."},{"type":"h","text":"8.1.1. Seguimiento Y Evaluación De Gestiones","level":3},{"type":"p","text":"El informe registra asignaciones, revisiones, resultados y principales incidencias del período, permitiendo identificar fortalezas y oportunidades de mejora."},{"type":"h","text":"8.2. Permisos Y Autorizaciones Financieras","level":2},{"type":"p","text":"Las autorizaciones financieras excepcionales, cuando existan, deben ser gestionadas y aprobadas únicamente por la unidad competente y conservar respaldo documental. Esta planificación no crea beneficios ni permisos automáticos."},{"type":"h","text":"8.2.1. Gestión De Permisos Para Estudiantes Con Pagos Pendientes","level":3},{"type":"p","text":"Cualquier solicitud excepcional debe tramitarse conforme a las políticas institucionales vigentes y no supone habilitación mientras no exista autorización formal."},{"type":"h","text":"8.2.2. Aprobación Por El Departamento De Facturación","level":3},{"type":"p","text":"La unidad financiera competente revisa y resuelve las solicitudes según las reglas vigentes y mantiene el seguimiento del cumplimiento de las obligaciones."},{"type":"h","text":"9. Cronograma De Actividades","level":1},{"type":"scheduleSection"},{"type":"h","text":"10. Análisis De Resultados Y Mejora Continua","level":1},{"type":"resultsAnalysis"},{"type":"h","text":"11. Bibliografía","level":1},{"type":"refs"}];
+{"type":"h","text":"2. Base Legal","level":1},{"type":"legalBase"},{"type":"h","text":"3. Metodología","level":1},{"type":"methodology"},{"type":"h","text":"4. Requisitos Para La Aprobación De La Titulación","level":1},{"type":"requirements"},{"type":"h","text":"5. Descripción De Los Procesos De Titulación","level":1},{"type":"processDescription"},{"type":"h","text":"6. Gestión Administrativa Y Logística","level":1},{"type":"administrativeLogistics"},{"type":"h","text":"7. Inducción De Titulación","level":1},{"type":"induction"},{"type":"h","text":"8. Informe Y Autorizaciones","level":1},{"type":"h","text":"8.1. Desarrollo Del Informe De Titulación","level":2},{"type":"p","text":"El informe de titulación documenta avances, gestiones y resultados del proceso y sirve como respaldo para la trazabilidad institucional."},{"type":"h","text":"8.1.1. Seguimiento Y Evaluación De Gestiones","level":3},{"type":"p","text":"El informe registra asignaciones, revisiones, resultados y principales incidencias del período, permitiendo identificar fortalezas y oportunidades de mejora."},{"type":"h","text":"8.2. Permisos Y Autorizaciones Financieras","level":2},{"type":"p","text":"Las autorizaciones financieras excepcionales, cuando existan, deben ser gestionadas y aprobadas únicamente por la unidad competente y conservar respaldo documental. Esta planificación no crea beneficios ni permisos automáticos."},{"type":"h","text":"8.2.1. Gestión De Permisos Para Estudiantes Con Pagos Pendientes","level":3},{"type":"p","text":"Cualquier solicitud excepcional debe tramitarse conforme a las políticas institucionales vigentes y no supone habilitación mientras no exista autorización formal."},{"type":"h","text":"8.2.2. Aprobación Por El Departamento De Facturación","level":3},{"type":"p","text":"La unidad financiera competente revisa y resuelve las solicitudes según las reglas vigentes y mantiene el seguimiento del cumplimiento de las obligaciones."},{"type":"h","text":"9. Cronograma De Actividades","level":1},{"type":"scheduleSection"},{"type":"h","text":"10. Análisis De Resultados Y Mejora Continua","level":1},{"type":"resultsAnalysis"},{"type":"h","text":"11. Conclusiones","level":1},{"type":"conclusions"},{"type":"h","text":"12. Bibliografía","level":1},{"type":"refs"}];
 const REFERENCES=[
 ...(CONTENT_CONFIG.introduction?.bibliography||[
 "Montes, P. (2019). Fundamentos de la educación superior: Teoría y práctica en el siglo XXI.",
@@ -738,6 +739,50 @@ async function generateAndDownload(ctx,filename){
     }
     if(clean(block.improvementText))paragraph(block.improvementText);
   }
+  function resolveConclusions(){
+    const snapshot=ctx.payload?.contentSnapshots?.conclusions;
+    if(snapshot&&Array.isArray(snapshot.conclusions)&&snapshot.conclusions.length)return snapshot;
+    const current=CONCLUSIONS_CONFIG;
+    if(current&&Array.isArray(current.conclusions)&&current.conclusions.length)return current;
+    return null;
+  }
+  function conclusionConditionMet(item){
+    const condition=clean(item?.condition||"always").toLowerCase();
+    if(!condition||condition==="always")return true;
+    if(condition==="cronograma_aprobado")return ctx.payload?.scheduleMeta?.status==="Aprobado";
+    return false;
+  }
+  function conclusionText(item){
+    let raw=String(item?.textBase||"");
+    const allowed=new Set(item?.variablesAllowed||[]);
+    if(raw.includes("[PERIODO_ACADEMICO]")){
+      if(!allowed.has("PERIODO_ACADEMICO"))throw new Error(`La conclusión ${item?.id||""} intenta usar una variable no autorizada.`);
+      const periodName=clean(ctx.period?.name);
+      if(!periodName)throw new Error("No existe un período académico seleccionado para generar las conclusiones.");
+      raw=raw.replaceAll("[PERIODO_ACADEMICO]",periodName);
+    }
+    return clean(raw);
+  }
+  function renderConclusions(){
+    const block=resolveConclusions();
+    if(!block)throw new Error("No existe una configuración institucional validada de conclusiones de planificación.");
+    const active=(block.conclusions||[]).filter(item=>item?.active!==false).slice().sort((a,b)=>(Number(a.order)||9999)-(Number(b.order)||9999));
+    if(!active.length)throw new Error("No existen conclusiones institucionales activas para esta planificación.");
+    const forbidden=(block.forbiddenExecutionPhrases||[]).map(x=>clean(x).toLowerCase()).filter(Boolean);
+    active.forEach((item,index)=>{
+      if(!conclusionConditionMet(item)){
+        if(clean(item?.condition).toLowerCase()==="cronograma_aprobado")throw new Error("Para generar las conclusiones, el cronograma del período debe estar completo y aprobado.");
+        return;
+      }
+      const raw=conclusionText(item);
+      if(!raw)throw new Error(`La conclusión ${item?.id||index+1} no tiene texto institucional.`);
+      const lower=raw.toLowerCase();
+      const bad=forbidden.find(phrase=>lower.includes(phrase));
+      if(bad)throw new Error(`La conclusión ${item?.id||index+1} contiene lenguaje de resultados no permitido: “${bad}”.`);
+      listHeading(`${index+1}.`);
+      paragraph(raw,{indent:false});
+    });
+  }
   function renderReferenceDocuments(){
     const docs=CONTENT_CONFIG.introduction?.referenceDocuments||[
       "Reglamento de Titulación del ITSQMET.",
@@ -780,6 +825,7 @@ async function generateAndDownload(ctx,filename){
       else if(item.type==="image")inlineImage(item.key);
       else if(item.type==="scheduleSection")renderScheduleSection();
       else if(item.type==="resultsAnalysis")renderResultsAnalysis();
+      else if(item.type==="conclusions")renderConclusions();
       else if(item.type==="optional")renderOptionalData();
       else if(item.type==="notes")renderNotes();
       else if(item.type==="refs")renderReferences();
