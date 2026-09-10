@@ -54,6 +54,14 @@
     const eyebrow=$(".panel-head .eyebrow",progressPanel),h3=$(".panel-head h3",progressPanel);
     if(eyebrow)eyebrow.textContent="Carga de información";
     if(h3)h3.textContent="Tablas del documento";
+    const panelHead=$(".panel-head",progressPanel);
+    let headStatus=$("#docStandardWorkspaceHeadStatus",progressPanel);
+    if(panelHead&&!headStatus){
+      headStatus=document.createElement("div");headStatus.id="docStandardWorkspaceHeadStatus";headStatus.className="doc-standard-workspace-head-status";
+      const state=document.createElement("span");state.id="docStandardWorkspaceState";state.className="doc-standard-workspace-state pending";state.textContent="Pendiente";
+      headStatus.appendChild(state);panelHead.appendChild(headStatus);
+    }
+    const progressLabel=$("#progressLabel");if(headStatus&&progressLabel&&progressLabel.parentElement!==headStatus)headStatus.insertBefore(progressLabel,headStatus.firstChild);
     if(!$(".doc-standard-workspace-note",progressPanel)){
       const note=document.createElement("p");
       note.className="doc-standard-workspace-note";
@@ -72,6 +80,9 @@
     }
     const actions=$(".doc-standard-workspace-actions",summary);
     if(toolbar&&actions&&toolbar.parentElement!==actions)actions.appendChild(toolbar);
+    const downloadBtn=$("#downloadTemplateBtn");if(downloadBtn)downloadBtn.textContent="Descargar plantilla";
+    const importInput=$("#importInput"),importLabel=importInput?.closest("label");
+    if(importLabel){const textNode=Array.from(importLabel.childNodes).find(n=>n.nodeType===Node.TEXT_NODE);if(textNode)textNode.textContent="Subir plantilla ";}
 
     if(!$("#docStandardTableTitle",progressPanel)){
       const title=document.createElement("div");title.id="docStandardTableTitle";title.className="doc-standard-group-title";title.textContent="Tablas estructuradas";progressPanel.appendChild(title);
@@ -130,22 +141,19 @@
   }
 
   function logoComplete(){return !!$("#logoPreview img");}
-  function scheduleCompleteFromProgress(){
-    const value=pct(),logo=logoComplete()?1:0;
-    return value-50-(25*logo)>=25;
-  }
-
   function panelState(panel){
     const schedule=!!$("#scheduleBody",panel);
     const eyebrow=$(".eyebrow",panel)?.textContent?.trim()||"";
     const optional=/opcional/i.test(eyebrow);
     if(schedule){
       const rows=$$("#scheduleBody tr",panel);
-      const complete=scheduleCompleteFromProgress();
+      const activeRows=rows.filter(tr=>{const check=$('input[type="checkbox"][data-f="active"]',tr);return !check||check.checked;});
+      const approval=$("#scheduleApprovalState",panel)?.textContent?.replace(/^Estado:\s*/i,"").trim()||"";
       let dated=0;
-      rows.forEach(tr=>{const dates=$$('input[type="date"]',tr);if(dates.length&&dates.some(el=>el.value))dated++;});
-      const approval=$("#scheduleApprovalState",panel)?.textContent?.replace(/^Estado:\s*/i,"").trim();
-      const meta=approval?`${dated} de ${rows.length} actividades con programación · ${approval}`:`${dated} de ${rows.length} actividades con fechas`;
+      activeRows.forEach(tr=>{const dates=$$('input[type="date"]',tr);if(dates.length&&dates.some(el=>el.value))dated++;});
+      const datesComplete=activeRows.length>0&&activeRows.every(tr=>{const dates=$$('input[type="date"]',tr);if(!dates.length)return false;return documentId==="trabajo-titulacion"?dates.some(el=>el.value):dates.every(el=>el.value);});
+      const complete=datesComplete&&(!approval||/^Aprobado$/i.test(approval));
+      const meta=approval?`${dated} de ${activeRows.length} actividades con programación · ${approval}`:`${dated} de ${activeRows.length} actividades con fechas`;
       return {required:true,complete,status:complete?"Completa":"Pendiente",kind:complete?"complete":"pending",meta};
     }
     const inputs=$$("input,select,textarea",panel).filter(el=>el.type!=="button"&&el.type!=="file");
@@ -154,12 +162,16 @@
   }
 
   function cardForPanel(panel,index){
-    const title=$("h3",panel)?.textContent?.trim()||`Tabla ${index+1}`;
-    const desc=$(".help",panel)?.textContent?.trim()||"Información estructurada del documento.";
+    const schedule=!!$("#scheduleBody",panel);
+    const title=schedule?"Cronograma general":($("h3",panel)?.textContent?.trim()||`Tabla ${index+1}`);
+    const desc=schedule?"Fechas y responsables de las actividades del proceso.":($(".help",panel)?.textContent?.trim()||"Información estructurada del documento.");
     const state=panelState(panel);
     const card=document.createElement("article");card.className="doc-standard-card";
-    card.innerHTML=`<div class="doc-standard-card-main"><div class="doc-standard-card-title-row"><span class="doc-standard-card-title">${esc(title)}</span><span class="doc-standard-card-chip ${state.kind}">${esc(state.status)}</span><span class="doc-standard-card-chip ${state.required?"required":"optional"}">${state.required?"Obligatoria":"Complementaria"}</span></div><p class="doc-standard-card-desc">${esc(desc)}</p><div class="doc-standard-card-meta">${esc(state.meta)}</div></div><div class="doc-standard-card-actions"><button type="button">Abrir tabla</button></div>`;
-    card.querySelector("button").addEventListener("click",()=>openEditor(panel));
+    const scheduleActions=schedule&&documentId==="trabajo-titulacion"?'<button type="button" data-card-action="download">Descargar</button><button type="button" data-card-action="upload">Subir</button>':'';
+    card.innerHTML=`<div class="doc-standard-card-main"><div class="doc-standard-card-title-row"><span class="doc-standard-card-title">${esc(title)}</span><span class="doc-standard-card-chip ${state.kind}">${esc(state.status)}</span><span class="doc-standard-card-chip ${state.required?"required":"optional"}">${state.required?"Obligatoria":"Complementaria"}</span></div><p class="doc-standard-card-desc">${esc(desc)}</p><div class="doc-standard-card-meta">${esc(state.meta)}</div></div><div class="doc-standard-card-actions">${scheduleActions}<button type="button" class="primary-action" data-card-action="open">Abrir tabla</button></div>`;
+    $('[data-card-action="open"]',card)?.addEventListener("click",()=>openEditor(panel));
+    $('[data-card-action="download"]',card)?.addEventListener("click",()=>$("#downloadTemplateBtn")?.click());
+    $('[data-card-action="upload"]',card)?.addEventListener("click",()=>$("#importInput")?.click());
     return {card,state};
   }
 
@@ -168,8 +180,8 @@
     const tableHost=$("#docStandardTableCards"),resourceHost=$("#docStandardResourceCards");
     if(!tableHost||!resourceHost)return {pending:1};
     tableHost.innerHTML="";resourceHost.innerHTML="";
-    const states=[];
-    dynamicPanels().forEach((panel,index)=>{const item=cardForPanel(panel,index);tableHost.appendChild(item.card);states.push(item.state);});
+    const states=[],tableStates=[];
+    dynamicPanels().forEach((panel,index)=>{const item=cardForPanel(panel,index);tableHost.appendChild(item.card);states.push(item.state);tableStates.push(item.state);});
 
     const logo=logoPanel();
     if(logo){
@@ -179,7 +191,9 @@
       card.querySelector("button").addEventListener("click",()=>openEditor(logo));resourceHost.appendChild(card);
       states.push({required:true,complete:ok});
     }
-    return {pending:states.filter(s=>s.required&&!s.complete).length};
+    const requiredTables=tableStates.filter(s=>s.required);
+    const completeRequiredTables=requiredTables.filter(s=>s.complete).length;
+    return {pending:states.filter(s=>s.required&&!s.complete).length,requiredTables:requiredTables.length,completeRequiredTables,logoOk:logoComplete(),complementaryTables:tableStates.filter(s=>!s.required).length};
   }
 
   function updateAuto(){
@@ -190,12 +204,16 @@
 
   function updateAll(){
     refreshTimer=null;
-    const {pending}=buildCards(),ready=pending===0&&pct()>=100;
-    const btn=$("#generateBtn"),state=$("#docStandardState"),headline=$("#docStandardSummaryHeadline"),detail=$("#docStandardSummaryDetail");
+    const {pending,requiredTables,completeRequiredTables,logoOk,complementaryTables}=buildCards(),ready=pending===0;
+    const tablePercent=requiredTables?Math.round((completeRequiredTables/requiredTables)*100):100;
+    const btn=$("#generateBtn"),state=$("#docStandardState"),workspaceState=$("#docStandardWorkspaceState"),headline=$("#docStandardSummaryHeadline"),detail=$("#docStandardSummaryDetail"),progressLabel=$("#progressLabel"),progressBar=$("#progressBar");
+    if(progressLabel)progressLabel.textContent=`${tablePercent}% completo`;
+    if(progressBar)progressBar.style.width=`${tablePercent}%`;
     if(btn){btn.classList.toggle("ready",ready);btn.classList.toggle("pending",!ready);btn.disabled=!ready;btn.textContent=ready?"Generar PDF":`Generar PDF · ${Math.max(1,pending)} pendiente${pending===1?"":"s"}`;}
     if(state){state.classList.toggle("state-ready",ready);state.classList.toggle("state-pending",!ready);state.textContent=ready?"Listo para generar":"Pendiente";}
-    if(headline)headline.textContent=ready?"Documento listo para generar":`${pending} elemento${pending===1?"":"s"} pendiente${pending===1?"":"s"} para generar el PDF`;
-    if(detail)detail.textContent=ready?"Todos los datos obligatorios están completos.":"Las tablas complementarias no bloquean la generación.";
+    if(workspaceState){workspaceState.classList.toggle("ready",ready);workspaceState.classList.toggle("pending",!ready);workspaceState.textContent=ready?"Listo":"Pendiente";}
+    if(headline)headline.textContent=ready?"Información obligatoria completa":`${pending} elemento${pending===1?"":"s"} pendiente${pending===1?"":"s"} para generar el PDF`;
+    if(detail)detail.textContent=`${completeRequiredTables} de ${requiredTables} tablas obligatorias completas · ${complementaryTables} tablas complementarias · logo ${logoOk?"cargado":"pendiente"}`;
     updateAuto();
   }
 

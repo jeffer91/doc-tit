@@ -56,6 +56,8 @@
       .legacy-requirements-panel{display:none!important}
       .data-workspace{border:1px solid #d9e3ec;background:#fff;padding:0;overflow:hidden}
       .data-workspace-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:22px 24px;border-bottom:1px solid #e5ebf0}
+      .data-workspace-head-meta{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+      .data-workspace-percent{font-size:11px;color:#667687;font-weight:800;white-space:nowrap}
       .data-workspace-head h3{margin:4px 0 6px;font-size:20px;color:#102c46}
       .data-workspace-head p{margin:0;color:#667687;font-size:13px;line-height:1.5;max-width:680px}
       .data-workspace-status{display:inline-flex;align-items:center;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:800;background:#fff1ef;color:#a13d31;white-space:nowrap}
@@ -280,9 +282,9 @@
         <div>
           <span class="eyebrow">Carga de información</span>
           <h3>Tablas del documento</h3>
-          <p>Cada documento administra sus propias tablas. Puedes editar una tabla dentro de la app o descargar/subir una plantilla de Excel sin reemplazar las demás.</p>
+          <p>Completa únicamente la información que alimenta el formato final. El período, el código y los datos institucionales se generan automáticamente.</p>
         </div>
-        <span id="dataWorkspaceStatus" class="data-workspace-status">Pendiente</span>
+        <div class="data-workspace-head-meta"><span id="dataWorkspacePercent" class="data-workspace-percent">0% completo</span><span id="dataWorkspaceStatus" class="data-workspace-status">Pendiente</span></div>
       </div>
       <div class="data-workspace-summary">
         <div><strong id="dataWorkspaceHeadline">Revisando información…</strong><span id="dataWorkspaceDetail"></span></div>
@@ -294,9 +296,9 @@
       <div id="dataWorkspaceFlash" class="data-workspace-flash"></div>
       <div class="data-group-title">Tablas estructuradas</div>
       <div id="dataTableCards" class="data-card-list"></div>
-      <div class="data-group-title">Otros datos del documento</div>
+      <div class="data-group-title">Recursos del documento</div>
       <div id="dataResourceCards" class="data-card-list data-resource-list"></div>
-      <p class="data-workspace-note">Las tablas obligatorias determinan si el documento está listo para generarse. Las tablas complementarias pueden llenarse cuando exista información operativa confirmada; no se inventan datos pendientes.</p>
+      <p class="data-workspace-note">Las tablas obligatorias y el logo institucional determinan si el documento está listo para generarse. Las tablas complementarias no bloquean la generación.</p>
       <input id="dataWorkspaceImport" class="data-import-input" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
     `;
     const legacy=$("#requirementsList")?.closest("section.panel");
@@ -364,13 +366,16 @@
     const logoOk=resourceState("logo").complete;
     const pending=(requiredTables.length-completeTables)+(logoOk?0:1);
     const status=$("#dataWorkspaceStatus");
+    const percent=$("#dataWorkspacePercent");
     const headline=$("#dataWorkspaceHeadline");
     const detail=$("#dataWorkspaceDetail");
     if(status){
       status.textContent=pending?"Pendiente":"Listo";
       status.classList.toggle("ready",pending===0);
     }
-    if(headline) headline.textContent=pending?`${pending} elemento(s) pendiente(s) para generar el PDF`:"Información obligatoria completa";
+    const tablePercent=requiredTables.length?Math.round((completeTables/requiredTables.length)*100):100;
+    if(percent) percent.textContent=`${tablePercent}% completo`;
+    if(headline) headline.textContent=pending?`${pending} elemento${pending===1?"":"s"} pendiente${pending===1?"":"s"} para generar el PDF`:"Información obligatoria completa";
     if(detail) detail.textContent=`${completeTables} de ${requiredTables.length} tablas obligatorias completas · ${TABLES.length-requiredTables.length} tablas complementarias · logo ${logoOk?"cargado":"pendiente"}`;
   }
 

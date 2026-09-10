@@ -23,3 +23,15 @@
 
 @media(max-width:1050px){.doc-standard-layout{grid-template-columns:1fr}.doc-standard-side .panel{position:static}}
 @media(max-width:720px){.doc-standard-heading{flex-direction:column}.doc-standard-badges{justify-content:flex-start;min-width:0;width:100%}.doc-standard-workspace-summary{flex-direction:column;align-items:stretch}.doc-standard-workspace-actions{justify-content:flex-start}.doc-standard-card{grid-template-columns:1fr}.doc-standard-card-actions{justify-content:flex-start}.doc-standardized-page dialog .period-builder{grid-template-columns:1fr!important}}
+
+/* Final homologation: workspace state and card actions */
+.doc-standard-workspace .panel-head{align-items:flex-start!important}
+.doc-standard-workspace-head-status{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.doc-standard-workspace-head-status .progress-label{font-size:11px!important;color:#687386!important;font-weight:800!important;white-space:nowrap}
+.doc-standard-workspace-state{display:inline-flex;align-items:center;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:800;white-space:nowrap}
+.doc-standard-workspace-state.pending{background:#fde8e8;color:#991b1b}
+.doc-standard-workspace-state.ready{background:#e8f5ee;color:#166534}
+.doc-standard-card-actions button{border:0;border-radius:8px;padding:7px 10px;font:inherit;font-size:11px;font-weight:700;cursor:pointer;background:#e9eff5;color:#173755}
+.doc-standard-card-actions button.primary-action{background:#153b62;color:#fff}
+.doc-standard-card-actions button:hover{filter:brightness(.97)}
+@media(max-width:720px){.doc-standard-workspace-head-status{justify-content:flex-start}}

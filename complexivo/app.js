@@ -73,7 +73,7 @@
         sequence: "01",
         process: "PRO-56",
         version: "1.0",
-        description: "Completa el cronograma, la distribución y cualquier información adicional. La app analiza el texto libre y genera el PDF completo directamente.",
+        description: "Completa únicamente las tablas necesarias del período. El resto del documento se genera automáticamente con la configuración institucional vigente.",
         requirements: [
           {id:"period", label:"Período académico", source:"Automático", automatic:true},
           {id:"schedule", label:"Cronograma", source:"Fechas de las 9 actividades", automatic:false},
