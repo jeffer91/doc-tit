@@ -4,16 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#0b2d4f">
-    <link rel="icon" type="image/svg+xml" href="../shared/favicon.svg?v=20260904-1">
+  <link rel="icon" type="image/svg+xml" href="../shared/favicon.svg?v=20260904-1">
   <title>DOC-TIT · Planificación de Trabajo de Titulación</title>
   <link rel="stylesheet" href="styles.css?v=20260902-7">
   <link rel="stylesheet" href="../shared/sidebar.css?v=20260904-1">
+  <link rel="stylesheet" href="../shared/module-ui.css?v=20260910-audit-1">
 </head>
 <body>
 <div class="app">
   <aside class="sidebar">
     <a class="nav-back" href="../">← DOC-TIT · menú general</a>
-    <div class="brand"><div class="brand-mark">UTET</div><div><strong>DOC-TIT</strong><span>Trabajo de Titulación</span></div></div>
+    <div class="brand"><div class="brand-mark">UTET</div><div><strong>DOC-TIT</strong><span>Gestión documental</span></div></div>
     <div class="period-box">
       <label>Período académico</label>
       <div class="period-row">
@@ -46,13 +47,14 @@
     </div>
 
     <section class="panel">
-      <div class="panel-head"><div><span class="eyebrow">Estado</span><h3>Completitud del documento</h3></div><span class="progress-label" id="progressLabel">0%</span></div>
+      <div class="panel-head"><div><span class="eyebrow">Carga de información</span><h3>Datos del documento</h3></div><span class="progress-label" id="progressLabel">0%</span></div>
       <div class="progress"><span id="progressBar"></span></div>
       <div id="importReport" class="import-report hidden"></div>
     </section>
 
     <div id="dynamicSections"></div>
-<section class="panel">
+
+    <section class="panel">
       <div class="panel-head"><div><span class="eyebrow">Identidad institucional</span><h3>Logo institucional</h3><p class="help">Se solicita únicamente el logo institucional porque forma parte de la cabecera del formato.</p></div></div>
       <div class="asset-grid">
         <label class="asset"><strong>Logo institucional *</strong><span class="preview" id="logoPreview">Sin imagen</span><input id="logoUpload" type="file" accept="image/png,image/jpeg,image/webp"></label>
@@ -94,13 +96,13 @@
 <script src="indicators-config.js?v=20260910-finalfix-1"></script>
 <script src="conclusions-config.js?v=20260910-finalfix-1"></script>
 <script src="recommendations-config.js?v=20260910-finalfix-1"></script>
-<script src="full-document.js?v=20260910-inputs-2"></script>
+<script src="full-document.js?v=20260910-audit-1"></script>
 <script src="cloud.js?v=20260902-7"></script>
 <script src="app.js?v=20260910-inputs-2"></script>
-
 <script src="../shared/documents.js?v=20260904-1"></script>
 <script src="../shared/institutional-config.js?v=20260910-finalfix-1"></script>
-<script src="../shared/pdf/standards.js?v=20260904-1"></script>
+<script src="../shared/pdf/standards.js?v=20260910-audit-1"></script>
 <script src="../shared/sidebar.js?v=20260904-1"></script>
+<script src="../shared/module-ui.js?v=20260910-audit-1"></script>
 </body>
 </html>
