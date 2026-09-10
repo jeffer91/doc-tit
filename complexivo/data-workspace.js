@@ -96,6 +96,15 @@
       .data-workspace-flash{margin:0 24px 16px;padding:10px 12px;border-radius:9px;background:#eaf4ff;color:#24537c;font-size:11px;font-weight:700;display:none}
       .data-workspace-flash.show{display:block}
       .data-workspace-flash.error{background:#fff0ef;color:#9b3d32}
+      .doc-badges{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+      .doc-generate-wrap{display:flex;align-items:center;margin-left:2px}
+      #generateBtn.doc-generate-top{border:0;border-radius:10px;padding:9px 14px;color:#fff;font-size:11px;font-weight:800;line-height:1;min-height:34px;box-shadow:none;transition:background .16s ease,transform .16s ease;white-space:nowrap}
+      #generateBtn.doc-generate-top.ready{background:#14532d;cursor:pointer}
+      #generateBtn.doc-generate-top.ready:hover{background:#166534;transform:translateY(-1px)}
+      #generateBtn.doc-generate-top.pending{background:#8b1f1f;cursor:not-allowed}
+      #generateBtn.doc-generate-top:disabled{opacity:1;filter:none}
+      .doc-badges #docStateBadge.gate-ready{background:#e8f5ee;color:#166534}
+      .doc-badges #docStateBadge.gate-pending{background:#fde8e8;color:#991b1b}
       @media(max-width:900px){
         .data-workspace-head,.data-workspace-summary{flex-direction:column;align-items:stretch}
         .data-workspace-actions{justify-content:flex-start}
@@ -217,6 +226,50 @@
     return {complete:true,status:"Opcional",kind:"optional",meta:""};
   }
 
+  function generationGate(){
+    const requiredTables=TABLES.filter(t=>t.required);
+    const incomplete=requiredTables.filter(t=>!tableState(t.id).complete);
+    const logoOk=resourceState("logo").complete;
+    const pending=incomplete.length+(logoOk?0:1);
+    return {pending,ready:pending===0,incomplete,logoOk};
+  }
+
+  function ensureTopGenerateButton(){
+    const btn=$("#generateBtn");
+    const badges=$(".doc-badges");
+    if(!btn||!badges)return null;
+    let wrap=$("#docGenerateWrap");
+    if(!wrap){
+      wrap=document.createElement("div");
+      wrap.id="docGenerateWrap";
+      wrap.className="doc-generate-wrap";
+      badges.appendChild(wrap);
+    }
+    if(btn.parentElement!==wrap)wrap.appendChild(btn);
+    btn.setAttribute("form","documentForm");
+    btn.classList.add("doc-generate-top");
+    return btn;
+  }
+
+  function updateTopGenerateButton(){
+    const btn=ensureTopGenerateButton();
+    if(!btn)return;
+    const gate=generationGate();
+    btn.disabled=!gate.ready;
+    btn.classList.toggle("ready",gate.ready);
+    btn.classList.toggle("pending",!gate.ready);
+    btn.textContent=gate.ready?"Generar PDF":`Generar PDF · ${gate.pending} pendiente${gate.pending===1?"":"s"}`;
+    btn.title=gate.ready?"Generar el PDF final":"Completa los elementos obligatorios pendientes para generar el PDF";
+
+    const state=$("#docStateBadge");
+    if(state){
+      state.classList.remove("neutral");
+      state.classList.toggle("gate-ready",gate.ready);
+      state.classList.toggle("gate-pending",!gate.ready);
+      state.textContent=gate.ready?"Listo para generar":`${gate.pending} pendiente${gate.pending===1?"":"s"}`;
+    }
+  }
+
   function ensureWorkspace(){
     if($("#dataWorkspace")) return $("#dataWorkspace");
     const column=$(".content-column");
@@ -331,6 +384,7 @@
       markEditorPanels();
       renderTableCards();
       renderResourceCards();
+      updateTopGenerateButton();
       renderSummary();
     },50);
   }
