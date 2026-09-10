@@ -170,7 +170,7 @@
     const scheduleActions=schedule&&documentId==="trabajo-titulacion"?'<button type="button" data-card-action="download">Descargar</button><button type="button" data-card-action="upload">Subir</button>':'';
     card.innerHTML=`<div class="doc-standard-card-main"><div class="doc-standard-card-title-row"><span class="doc-standard-card-title">${esc(title)}</span><span class="doc-standard-card-chip ${state.kind}">${esc(state.status)}</span><span class="doc-standard-card-chip ${state.required?"required":"optional"}">${state.required?"Obligatoria":"Complementaria"}</span></div><p class="doc-standard-card-desc">${esc(desc)}</p><div class="doc-standard-card-meta">${esc(state.meta)}</div></div><div class="doc-standard-card-actions">${scheduleActions}<button type="button" class="primary-action" data-card-action="open">Abrir tabla</button></div>`;
     $('[data-card-action="open"]',card)?.addEventListener("click",()=>openEditor(panel));
-    $('[data-card-action="download"]',card)?.addEventListener("click",()=>$("#downloadTemplateBtn")?.click());
+    $('[data-card-action="download"]',card)?.addEventListener("click",event=>{event.preventDefault();event.stopPropagation();const source=$("#downloadTemplateBtn");if(typeof source?.onclick==="function")source.onclick.call(source,event);else source?.click();});
     $('[data-card-action="upload"]',card)?.addEventListener("click",()=>$("#importInput")?.click());
     return {card,state};
   }
