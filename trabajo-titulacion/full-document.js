@@ -8,6 +8,7 @@ const PROCESS_CONFIG=window.DOC_TIT_TRABAJO_PROCESS||{};
 const LOGISTICS_CONFIG=window.DOC_TIT_TRABAJO_LOGISTICS||{};
 const INDUCTION_CONFIG=window.DOC_TIT_TRABAJO_INDUCTION||{};
 const SCHEDULE_CONFIG=window.DOC_TIT_TRABAJO_SCHEDULE||{};
+const INDICATORS_CONFIG=window.DOC_TIT_TRABAJO_INDICATORS||{};
 const CONTENT=[
 {"type":"h","text":"1. Introducción","level":1},
 {"type":"h","text":"1.1. Contexto General","level":2},
@@ -29,7 +30,7 @@ const CONTENT=[
 {"type":"h","text":"1.4. Documentos de referencia","level":2},
 {"type":"p","text":"Esta planificación se articula con los siguientes documentos institucionales:","opts":{"indent":false}},
 {"type":"referenceDocs"},
-{"type":"h","text":"2. Base Legal","level":1},{"type":"legalBase"},{"type":"h","text":"3. Metodología","level":1},{"type":"methodology"},{"type":"h","text":"4. Requisitos Para La Aprobación De La Titulación","level":1},{"type":"requirements"},{"type":"h","text":"5. Descripción De Los Procesos De Titulación","level":1},{"type":"processDescription"},{"type":"h","text":"6. Gestión Administrativa Y Logística","level":1},{"type":"administrativeLogistics"},{"type":"h","text":"7. Inducción De Titulación","level":1},{"type":"induction"},{"type":"h","text":"8. Informe Y Autorizaciones","level":1},{"type":"h","text":"8.1. Desarrollo Del Informe De Titulación","level":2},{"type":"p","text":"El informe de titulación documenta avances, gestiones y resultados del proceso y sirve como respaldo para la trazabilidad institucional."},{"type":"h","text":"8.1.1. Seguimiento Y Evaluación De Gestiones","level":3},{"type":"p","text":"El informe registra asignaciones, revisiones, resultados y principales incidencias del período, permitiendo identificar fortalezas y oportunidades de mejora."},{"type":"h","text":"8.2. Permisos Y Autorizaciones Financieras","level":2},{"type":"p","text":"Las autorizaciones financieras excepcionales, cuando existan, deben ser gestionadas y aprobadas únicamente por la unidad competente y conservar respaldo documental. Esta planificación no crea beneficios ni permisos automáticos."},{"type":"h","text":"8.2.1. Gestión De Permisos Para Estudiantes Con Pagos Pendientes","level":3},{"type":"p","text":"Cualquier solicitud excepcional debe tramitarse conforme a las políticas institucionales vigentes y no supone habilitación mientras no exista autorización formal."},{"type":"h","text":"8.2.2. Aprobación Por El Departamento De Facturación","level":3},{"type":"p","text":"La unidad financiera competente revisa y resuelve las solicitudes según las reglas vigentes y mantiene el seguimiento del cumplimiento de las obligaciones."},{"type":"h","text":"9. Cronograma De Actividades","level":1},{"type":"scheduleSection"},{"type":"h","text":"10. Análisis De Resultados Y Mejora Continua","level":1},{"type":"p","text":"Al finalizar el período, la Coordinación de Titulación consolida información del proceso para evaluar desempeño, cumplimiento de plazos, resultados de defensa y oportunidades de mejora."},{"type":"b","text":"Eficiencia terminal: estudiantes que culminan en tiempo y forma / total de estudiantes del proceso × 100."},{"type":"b","text":"Tasa de aprobación en la defensa: estudiantes que aprueban la defensa / total de estudiantes del proceso × 100."},{"type":"b","text":"Índice de revisión de borradores a tiempo: borradores revisados dentro del plazo / total de borradores × 100."},{"type":"b","text":"Tiempo promedio de culminación: suma de tiempos individuales desde asignación de tutor hasta defensa / número total de estudiantes."},{"type":"b","text":"Índice de satisfacción: resultado consolidado de encuestas institucionales aplicadas al cierre."},{"type":"notes"},{"type":"image","key":"closingImage"},{"type":"h","text":"11. Bibliografía","level":1},{"type":"refs"}];
+{"type":"h","text":"2. Base Legal","level":1},{"type":"legalBase"},{"type":"h","text":"3. Metodología","level":1},{"type":"methodology"},{"type":"h","text":"4. Requisitos Para La Aprobación De La Titulación","level":1},{"type":"requirements"},{"type":"h","text":"5. Descripción De Los Procesos De Titulación","level":1},{"type":"processDescription"},{"type":"h","text":"6. Gestión Administrativa Y Logística","level":1},{"type":"administrativeLogistics"},{"type":"h","text":"7. Inducción De Titulación","level":1},{"type":"induction"},{"type":"h","text":"8. Informe Y Autorizaciones","level":1},{"type":"h","text":"8.1. Desarrollo Del Informe De Titulación","level":2},{"type":"p","text":"El informe de titulación documenta avances, gestiones y resultados del proceso y sirve como respaldo para la trazabilidad institucional."},{"type":"h","text":"8.1.1. Seguimiento Y Evaluación De Gestiones","level":3},{"type":"p","text":"El informe registra asignaciones, revisiones, resultados y principales incidencias del período, permitiendo identificar fortalezas y oportunidades de mejora."},{"type":"h","text":"8.2. Permisos Y Autorizaciones Financieras","level":2},{"type":"p","text":"Las autorizaciones financieras excepcionales, cuando existan, deben ser gestionadas y aprobadas únicamente por la unidad competente y conservar respaldo documental. Esta planificación no crea beneficios ni permisos automáticos."},{"type":"h","text":"8.2.1. Gestión De Permisos Para Estudiantes Con Pagos Pendientes","level":3},{"type":"p","text":"Cualquier solicitud excepcional debe tramitarse conforme a las políticas institucionales vigentes y no supone habilitación mientras no exista autorización formal."},{"type":"h","text":"8.2.2. Aprobación Por El Departamento De Facturación","level":3},{"type":"p","text":"La unidad financiera competente revisa y resuelve las solicitudes según las reglas vigentes y mantiene el seguimiento del cumplimiento de las obligaciones."},{"type":"h","text":"9. Cronograma De Actividades","level":1},{"type":"scheduleSection"},{"type":"h","text":"10. Análisis De Resultados Y Mejora Continua","level":1},{"type":"resultsAnalysis"},{"type":"h","text":"11. Bibliografía","level":1},{"type":"refs"}];
 const REFERENCES=[
 ...(CONTENT_CONFIG.introduction?.bibliography||[
 "Montes, P. (2019). Fundamentos de la educación superior: Teoría y práctica en el siglo XXI.",
@@ -701,6 +702,42 @@ async function generateAndDownload(ctx,filename){
       (item.paragraphs||[]).forEach(p=>processText(p,1,"o"));
     });
   }
+  function resolveResultsAnalysis(){
+    const snapshot=ctx.payload?.contentSnapshots?.resultsAnalysis;
+    if(snapshot&&Array.isArray(snapshot.indicators)&&snapshot.indicators.length)return snapshot;
+    const current=INDICATORS_CONFIG;
+    if(current&&Array.isArray(current.indicators)&&current.indicators.length)return current;
+    return null;
+  }
+  function validateIndicatorCatalog(block){
+    const active=(block?.indicators||[]).filter(item=>item?.active!==false);
+    if(!active.length)throw new Error("No existe un catálogo institucional activo de indicadores de titulación.");
+    active.forEach((item,index)=>{
+      if(!clean(item.name)||!clean(item.description)||!clean(item.formulaText)){
+        throw new Error(`El indicador ${item?.id||index+1} no tiene nombre, descripción y fórmula institucional completos.`);
+      }
+    });
+    return active.slice().sort((a,b)=>(Number(a.order)||9999)-(Number(b.order)||9999));
+  }
+  function renderResultsAnalysis(){
+    const block=resolveResultsAnalysis();
+    if(!block)throw new Error("No existe una configuración institucional validada de indicadores de titulación.");
+    const indicators=validateIndicatorCatalog(block);
+
+    paragraph(block.intro||"");
+    paragraph(block.lead||"Los indicadores utilizados incluyen:",{indent:false});
+
+    indicators.forEach(indicator=>{
+      processBullet(indicator.name||"",indicator.description||"",1,"•");
+      processBullet("Fórmula",indicator.formulaText||"",1,"");
+    });
+
+    if(clean(block.sourcesText))paragraph(block.sourcesText);
+    else if(Array.isArray(block.informationSources)&&block.informationSources.length){
+      paragraph(`La información se recopila desde fuentes oficiales como ${block.informationSources.join(", ")}.`);
+    }
+    if(clean(block.improvementText))paragraph(block.improvementText);
+  }
   function renderReferenceDocuments(){
     const docs=CONTENT_CONFIG.introduction?.referenceDocuments||[
       "Reglamento de Titulación del ITSQMET.",
@@ -742,6 +779,7 @@ async function generateAndDownload(ctx,filename){
       else if(item.type==="induction")renderInduction();
       else if(item.type==="image")inlineImage(item.key);
       else if(item.type==="scheduleSection")renderScheduleSection();
+      else if(item.type==="resultsAnalysis")renderResultsAnalysis();
       else if(item.type==="optional")renderOptionalData();
       else if(item.type==="notes")renderNotes();
       else if(item.type==="refs")renderReferences();
