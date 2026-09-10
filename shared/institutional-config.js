@@ -21,6 +21,7 @@
         preparedRole: "Coordinador de Titulación y Eficiencia Terminal"
       }),
       "trabajo-titulacion": Object.freeze({
+        unit: "Unidad de Gestión de Procesos Académicos",
         preparedRole: "Gestor de Procesos Académicos"
       })
     }),

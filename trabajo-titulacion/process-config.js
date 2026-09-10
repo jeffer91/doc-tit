@@ -3,25 +3,25 @@
 
   const processConfig = Object.freeze({
     id: "PROCESO_TRABAJO_TITULACION_VIGENTE",
-    technicalVersion: "A",
+    technicalVersion: "B",
     status: "Vigente",
     effectiveFrom: null,
 
     conflicts: Object.freeze({
       projectDuration: Object.freeze({
-        status: "pending_validation",
-        validatedValue: null,
-        sourceClaims: Object.freeze({ section3: "dos meses", section5: "cuatro meses" })
+        status: "resolved_by_current_regulation",
+        validatedValue: "dentro del período académico vigente conforme al cronograma institucional aprobado",
+        sourceClaims: Object.freeze({ historicalSection3: "dos meses", historicalSection5: "cuatro meses", currentRegulation: "período académico vigente conforme al cronograma institucional" })
       }),
       tutorDefenseParticipation: Object.freeze({
-        status: "pending_validation",
-        validatedValue: null,
-        sourceClaims: Object.freeze({ section3: "no participa", section5: "se notifica la defensa" })
+        status: "resolved_by_current_regulation",
+        validatedValue: "acompañamiento y validación previa; la defensa corresponde al tribunal evaluador designado",
+        sourceClaims: Object.freeze({ historicalSection3: "no participa", historicalSection5: "se notifica la defensa", currentRegulation: "el tutor valida la entrega final antes de la defensa" })
       }),
       readerDefenseParticipation: Object.freeze({
-        status: "pending_validation",
-        validatedValue: null,
-        sourceClaims: Object.freeze({ section3: "no participa", section5_1_2: "observa y evalúa la defensa", section5_4_1: "se notifica la defensa" })
+        status: "resolved_by_current_regulation",
+        validatedValue: "sin función automática en la defensa; solo participa si existe designación formal aplicable",
+        sourceClaims: Object.freeze({ historicalSection3: "no participa", historicalSection5: "observa y evalúa la defensa", currentRegulation: "la defensa se realiza ante el tribunal evaluador designado" })
       })
     }),
 
@@ -47,7 +47,6 @@
         Object.freeze({label:"Retroalimentación",text:"Proporcionar observaciones y recomendaciones adicionales para mejorar la calidad del trabajo antes de la defensa final."}),
         Object.freeze({label:"Evaluación Independiente",text:"El lector tiene la responsabilidad de ofrecer una perspectiva independiente del trabajo, contribuyendo a una evaluación integral y balanceada."}),
         Object.freeze({label:"Asignación de Calificaciones",text:"Junto con el tutor, el lector asigna una calificación preliminar al trabajo de titulación, la cual se registra y comunica antes de la defensa."}),
-        Object.freeze({label:"Desempeño en la Defensa",text:"El lector observa y evalúa la defensa de grado, asegurándose de que el estudiante demuestre dominio sobre el contenido y una capacidad de argumentación sólida en su presentación final.",conflictKey:"readerDefenseParticipation"})
       ])
     }),
 
@@ -73,10 +72,10 @@
       ]),
       milestonesIntro: "El desarrollo del proyecto de tesis debe cumplir con un cronograma específico de plazos y entregas parciales para asegurar un avance continuo y una revisión adecuada por parte del tutor. Los plazos y entregas clave incluyen:",
       milestones: Object.freeze([
-        Object.freeze({number:1,title:"Entrega del Marco Investigativo",deadline:"Al primer mes de iniciado el proyecto de tesis.",text:"El estudiante debe presentar un primer borrador del marco investigativo, que incluye la revisión de literatura y los objetivos del proyecto. El tutor revisará y proporcionará retroalimentación."}),
-        Object.freeze({number:2,title:"Entrega de la Hipótesis y Diseño Metodológico",deadline:"Al segundo mes.",text:"El estudiante debe entregar una formulación clara de la hipótesis y el diseño metodológico que seguirá para comprobarla. Esto incluye la descripción de métodos de recolección de datos y técnicas de análisis."}),
-        Object.freeze({number:3,title:"Entrega de Resultados y Análisis Preliminar",deadline:"Al tercer mes.",text:"El estudiante debe presentar los resultados iniciales obtenidos y un análisis preliminar que muestre cómo los datos recolectados sustentan la hipótesis planteada."}),
-        Object.freeze({number:4,title:"Entrega del Proyecto Final",deadline:"Final del cuarto mes.",text:"El proyecto de tesis completo, incluyendo conclusiones y recomendaciones, debe ser entregado en su totalidad. El tutor revisará el documento final para su aprobación y preparación para la defensa de grado."})
+        Object.freeze({number:1,title:"Entrega del Marco Investigativo",deadline:"Según el cronograma institucional aprobado para el período.",text:"El estudiante debe presentar un primer borrador del marco investigativo, que incluye la revisión de literatura y los objetivos del proyecto. El tutor revisará y proporcionará retroalimentación."}),
+        Object.freeze({number:2,title:"Entrega de la Hipótesis y Diseño Metodológico",deadline:"Según el cronograma institucional aprobado para el período.",text:"El estudiante debe entregar una formulación clara de la hipótesis y el diseño metodológico que seguirá para comprobarla. Esto incluye la descripción de métodos de recolección de datos y técnicas de análisis."}),
+        Object.freeze({number:3,title:"Entrega de Resultados y Análisis Preliminar",deadline:"Según el cronograma institucional aprobado para el período.",text:"El estudiante debe presentar los resultados iniciales obtenidos y un análisis preliminar que muestre cómo los datos recolectados sustentan la hipótesis planteada."}),
+        Object.freeze({number:4,title:"Entrega del Proyecto Final",deadline:"Según el cronograma institucional aprobado para el período.",text:"El proyecto de tesis completo, incluyendo conclusiones y recomendaciones, debe ser entregado en su totalidad. El tutor revisará el documento final para su aprobación y preparación para la defensa de grado."})
       ]),
       milestonesClosing: "Estos plazos aseguran que el estudiante avance de manera ordenada y cumpla con los estándares de calidad requeridos. Además, los plazos y entregas parciales permiten que el tutor pueda guiar al estudiante, brindar retroalimentación y asegurar la coherencia y calidad del trabajo a lo largo del proceso."
     }),
@@ -105,7 +104,7 @@
       intro: "La defensa de grado es la etapa final en el proceso de titulación, en la cual el estudiante presenta y sustenta su proyecto de tesis ante un tribunal evaluador. Este procedimiento formal permite a los evaluadores valorar la capacidad del estudiante para articular sus ideas, defender sus resultados y demostrar su dominio sobre el tema investigado. La organización de esta defensa implica la asignación de una fecha específica, la composición de un tribunal evaluador y un protocolo detallado para el desarrollo de la evaluación.",
       dateSteps: Object.freeze([
         Object.freeze({number:1,title:"Coordinación de la Fecha",paragraphs:Object.freeze(["La coordinación de titulación es responsable de definir la fecha de la defensa de grado, en función de la disponibilidad de los miembros del tribunal, del estudiante y de la logística institucional. Esta fecha se establece de acuerdo con el calendario académico y se comunica al estudiante con suficiente antelación."])}),
-        Object.freeze({number:2,title:"Confirmación y Notificación",paragraphs:Object.freeze(["Una vez asignada, la fecha de la defensa se notifica oficialmente al estudiante, al tutor, al lector y a los miembros del tribunal evaluador. Este aviso incluye detalles sobre el lugar, la hora y los requisitos previos para la defensa."]),conflictKeys:Object.freeze(["tutorDefenseParticipation","readerDefenseParticipation"])}),
+        Object.freeze({number:2,title:"Confirmación y Notificación",paragraphs:Object.freeze(["Una vez asignada, la fecha de la defensa se notifica oficialmente al estudiante y a los miembros del tribunal evaluador. La comunicación incluye el lugar, la hora y los requisitos previos para la defensa; otros actores académicos serán notificados únicamente cuando corresponda conforme a su designación formal."]),conflictKeys:Object.freeze(["tutorDefenseParticipation","readerDefenseParticipation"])}),
         Object.freeze({number:3,title:"Plazos y Requisitos",paragraphs:Object.freeze(["La defensa de grado debe llevarse a cabo en un plazo específico después de la entrega final del proyecto de tesis y el registro de notas en el sistema. La coordinación asegura que todos los documentos y requisitos estén completos y verificados antes de confirmar la fecha de defensa."])})
       ]),
       tribunal: Object.freeze({
@@ -118,15 +117,15 @@
         selection: "La elección de los miembros del tribunal se realiza con base en su formación y experiencia en el área temática del proyecto de tesis, garantizando así una evaluación justa y objetiva.",
         responsibilities: "Cada miembro del tribunal tiene la responsabilidad de evaluar el desempeño del estudiante durante la defensa, formular preguntas relevantes y asignar una calificación objetiva en función de los criterios de evaluación establecidos."
       }),
-      presentationTime: "generalmente entre 15 y 20 minutos",
+      presentationTime: "hasta 20 minutos",
       evaluationCriteria: Object.freeze([
         Object.freeze({label:"Claridad y Calidad de la Presentación",text:"Evaluación de la estructura, el lenguaje y la organización de la exposición."}),
         Object.freeze({label:"Dominio del Tema y Capacidad de Argumentación",text:"Capacidad del estudiante para explicar y defender sus resultados."}),
         Object.freeze({label:"Relevancia y Coherencia de la Investigación",text:"Adecuación del trabajo presentado respecto a los objetivos planteados y su relevancia en el campo profesional."})
       ]),
       evaluationSteps: Object.freeze([
-        Object.freeze({number:1,title:"Presentación del Proyecto por el Estudiante",paragraphs:Object.freeze(["El estudiante inicia la defensa con una presentación estructurada de su proyecto de tesis, en la que expone el contexto, los objetivos, la metodología, los resultados y las conclusiones de su trabajo. La presentación debe ser clara, coherente y ajustarse a un tiempo establecido, generalmente entre 15 y 20 minutos."])}),
-        Object.freeze({number:2,title:"Ronda de Preguntas",paragraphs:Object.freeze(["Tras la presentación, cada miembro del tribunal tiene la oportunidad de formular preguntas y solicitar aclaraciones sobre el proyecto. Esta ronda permite evaluar la capacidad del estudiante para defender sus resultados y su comprensión sobre el tema investigado. Las preguntas abordan tanto aspectos teóricos como prácticos, y el estudiante debe responder con precisión y fundamentación."])}),
+        Object.freeze({number:1,title:"Presentación del Proyecto por el Estudiante",paragraphs:Object.freeze(["El estudiante inicia la defensa con una presentación estructurada de su proyecto de tesis, en la que expone el contexto, los objetivos, la metodología, los resultados y las conclusiones de su trabajo. La presentación debe ser clara, coherente y ajustarse a un tiempo máximo de 20 minutos."])}),
+        Object.freeze({number:2,title:"Ronda de Preguntas",paragraphs:Object.freeze(["Tras la presentación, cada miembro del tribunal tiene la oportunidad de formular preguntas y solicitar aclaraciones sobre el proyecto. Esta ronda, con una duración máxima de 10 minutos, permite evaluar la capacidad del estudiante para defender sus resultados y su comprensión sobre el tema investigado. Las preguntas abordan tanto aspectos teóricos como prácticos, y el estudiante debe responder con precisión y fundamentación."])}),
         Object.freeze({number:3,title:"Evaluación y Asignación de Calificación",paragraphs:Object.freeze(["Una vez concluida la ronda de preguntas, el tribunal procede a deliberar en privado. Los evaluadores asignan una calificación final basada en criterios como:"]),criteria:true,closing:"La calificación asignada integra tanto la evaluación del proyecto escrito como el desempeño durante la defensa oral."}),
         Object.freeze({number:4,title:"Comunicación del Resultado",paragraphs:Object.freeze(["Al finalizar la deliberación, el tribunal informa al estudiante del resultado de la evaluación, dándole a conocer su calificación final y proporcionándole, en su caso, recomendaciones para mejorar su trabajo en futuras aplicaciones profesionales o académicas."])})
       ])

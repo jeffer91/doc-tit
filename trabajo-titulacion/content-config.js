@@ -20,13 +20,13 @@
 
   const methodology = Object.freeze({
     id: "METODOLOGIA_TRABAJO_TITULACION_VIGENTE",
-    technicalVersion: "A",
+    technicalVersion: "B",
     status: "Vigente",
     effectiveFrom: null,
     process: Object.freeze({
       name: "Trabajo de Titulación",
       code: "UTET-PRO-96",
-      projectDuration: "dos meses"
+      projectDuration: "dentro del período académico vigente conforme al cronograma institucional aprobado"
     }),
     processParagraphs: Object.freeze([
       "El proceso de trabajo de titulación, establecido en el documento UTET-PRO-96, está diseñado para guiar a los estudiantes en la culminación de sus estudios de manera estructurada y eficiente. Este proceso involucra una serie de actividades coordinadas que aseguran que el trabajo de titulación cumpla con los estándares académicos de calidad, alineados con el perfil de egreso y las competencias requeridas de cada carrera.",
@@ -39,7 +39,7 @@
         title: "Asignación de Tutor y Lector",
         paragraphs: Object.freeze([
           "Una vez que el estudiante ha cumplido con los prerrequisitos para iniciar el trabajo de titulación, el coordinador de titulación asigna un tutor y un lector para el proyecto de tesis. La función del tutor es guiar al estudiante en la construcción de su proyecto, supervisando cada avance y asegurándose de que el trabajo cumpla con los estándares académicos. El lector, por su parte, actúa como un segundo evaluador, revisando el trabajo desde una perspectiva complementaria para garantizar la calidad y profundidad del análisis.",
-          "La asignación del tutor y el lector considera la especialización y experiencia de los docentes, alineándolos con el tema y los objetivos de la investigación del estudiante. Se establece un plazo de dos meses para la culminación del proyecto bajo la guía del tutor."
+          "La asignación del tutor y el lector considera la especialización y experiencia de los docentes, alineándolos con el tema y los objetivos de la investigación del estudiante. La culminación del proyecto deberá realizarse dentro del período académico vigente, conforme al cronograma institucional aprobado para la modalidad."
         ])
       }),
       Object.freeze({
@@ -62,7 +62,7 @@
         title: "Revisión y Envío de Notas",
         paragraphs: Object.freeze([
           "Una vez el proyecto de tesis ha sido completado, tanto el tutor como el lector realizan una revisión exhaustiva del documento, evaluando la calidad del trabajo en cuanto a su contenido teórico, metodológico y analítico. Cada uno asigna dos notas que reflejan la comprensión y la capacidad del estudiante para resolver problemas en su campo de estudio.",
-          "Estas notas son enviadas por correo y registradas en el sistema institucional, garantizando transparencia en el proceso de calificación. Ni el tutor ni el lector estarán presentes en la defensa de grado del estudiante, lo cual permite que el tribunal evaluador pueda realizar una revisión imparcial del trabajo presentado."
+          "Estas notas son enviadas por correo y registradas en el sistema institucional, garantizando transparencia en el proceso de calificación. La defensa de grado se desarrolla ante el tribunal evaluador designado institucionalmente; la participación de otros actores académicos dependerá de su designación formal y del cronograma vigente."
         ])
       }),
       Object.freeze({
@@ -79,18 +79,18 @@
   window.DOC_TIT_TRABAJO_CONTENT = Object.freeze({
     introduction: Object.freeze({
       referenceDocuments: Object.freeze([
-        "Reglamento de Titulación del ITSQMET.",
+        "Reglamento de la Unidad de Titulación y Eficiencia Terminal (UTET-REG-25, versión 2.0).",
         "Instructivo para el Proceso de Titulación.",
         "Formatos oficiales de evaluación y seguimiento.",
         "Cronograma institucional aprobado para el período académico vigente."
       ]),
       bibliography: Object.freeze([
-        "Montes, P. (2019). Fundamentos de la educación superior: Teoría y práctica en el siglo XXI.",
-        "Calderón, M. & Díaz, P. (2017). El proceso de titulación en la educación superior y su impacto en la formación profesional.",
-        "Castillo, R. & Gómez, M. (2018). Educación superior en Ecuador: Retos y perspectivas.",
-        "Torres, A. (2020). Eficiencia y calidad en la educación superior: Desafíos para las instituciones en Latinoamérica.",
-        "Escobar, C. & Vásquez, J. (2016). Eficiencia terminal en la educación superior: Un análisis de su impacto en la sostenibilidad institucional.",
-        "González, J. (2019). Calidad educativa y titulación en instituciones técnicas y tecnológicas."
+        "Montes, P. (2019). Fundamentos de la educación superior: Teoría y práctica en el siglo XXI. Quito: Editorial Educación Contemporánea.",
+        "Calderón, M. & Díaz, P. (2017). El proceso de titulación en la educación superior y su impacto en la formación profesional. Lima: Revista de Educación y Sociedad.",
+        "Castillo, R. & Gómez, M. (2018). Educación superior en Ecuador: Retos y perspectivas. Quito: Editorial Universitaria Ecuatoriana.",
+        "Torres, A. (2020). Eficiencia y calidad en la educación superior: Desafíos para las instituciones en Latinoamérica. Buenos Aires: Editorial Académica del Sur.",
+        "Escobar, C. & Vásquez, J. (2016). Eficiencia terminal en la educación superior: Un análisis de su impacto en la sostenibilidad institucional. Bogotá: Revista Latinoamericana de Educación Superior.",
+        "González, J. (2019). Calidad educativa y titulación en instituciones técnicas y tecnológicas. Santiago: Fondo Editorial Tecnológico."
       ])
     }),
     legalBase: Object.freeze({

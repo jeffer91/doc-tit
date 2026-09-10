@@ -1,12 +1,13 @@
 (() => {
 "use strict";
 const KIND="trabajo";
-const TITLE="Planificación De Trabajo De Titulación";
+const TITLE="Planificación de Trabajo de Titulación";
 const AUTHOR_ROLE="Gestor de Procesos Académicos";
 const CONTENT_CONFIG=window.DOC_TIT_TRABAJO_CONTENT||{};
 const PROCESS_CONFIG=window.DOC_TIT_TRABAJO_PROCESS||{};
 const LOGISTICS_CONFIG=window.DOC_TIT_TRABAJO_LOGISTICS||{};
 const INDUCTION_CONFIG=window.DOC_TIT_TRABAJO_INDUCTION||{};
+const AUTHORIZATIONS_CONFIG=window.DOC_TIT_TRABAJO_AUTHORIZATIONS||{};
 const SCHEDULE_CONFIG=window.DOC_TIT_TRABAJO_SCHEDULE||{};
 const INDICATORS_CONFIG=window.DOC_TIT_TRABAJO_INDICATORS||{};
 const CONCLUSIONS_CONFIG=window.DOC_TIT_TRABAJO_CONCLUSIONS||{};
@@ -32,7 +33,7 @@ const CONTENT=[
 {"type":"h","text":"1.4. Documentos de referencia","level":2},
 {"type":"p","text":"Esta planificación se articula con los siguientes documentos institucionales:","opts":{"indent":false}},
 {"type":"referenceDocs"},
-{"type":"h","text":"2. Base Legal","level":1},{"type":"legalBase"},{"type":"h","text":"3. Metodología","level":1},{"type":"methodology"},{"type":"h","text":"4. Requisitos Para La Aprobación De La Titulación","level":1},{"type":"requirements"},{"type":"h","text":"5. Descripción De Los Procesos De Titulación","level":1},{"type":"processDescription"},{"type":"h","text":"6. Gestión Administrativa Y Logística","level":1},{"type":"administrativeLogistics"},{"type":"h","text":"7. Inducción De Titulación","level":1},{"type":"induction"},{"type":"h","text":"8. Informe Y Autorizaciones","level":1},{"type":"h","text":"8.1. Desarrollo Del Informe De Titulación","level":2},{"type":"p","text":"El informe de titulación documenta avances, gestiones y resultados del proceso y sirve como respaldo para la trazabilidad institucional."},{"type":"h","text":"8.1.1. Seguimiento Y Evaluación De Gestiones","level":3},{"type":"p","text":"El informe registra asignaciones, revisiones, resultados y principales incidencias del período, permitiendo identificar fortalezas y oportunidades de mejora."},{"type":"h","text":"8.2. Permisos Y Autorizaciones Financieras","level":2},{"type":"p","text":"Las autorizaciones financieras excepcionales, cuando existan, deben ser gestionadas y aprobadas únicamente por la unidad competente y conservar respaldo documental. Esta planificación no crea beneficios ni permisos automáticos."},{"type":"h","text":"8.2.1. Gestión De Permisos Para Estudiantes Con Pagos Pendientes","level":3},{"type":"p","text":"Cualquier solicitud excepcional debe tramitarse conforme a las políticas institucionales vigentes y no supone habilitación mientras no exista autorización formal."},{"type":"h","text":"8.2.2. Aprobación Por El Departamento De Facturación","level":3},{"type":"p","text":"La unidad financiera competente revisa y resuelve las solicitudes según las reglas vigentes y mantiene el seguimiento del cumplimiento de las obligaciones."},{"type":"h","text":"9. Cronograma De Actividades","level":1},{"type":"scheduleSection"},{"type":"h","text":"10. Análisis De Resultados Y Mejora Continua","level":1},{"type":"resultsAnalysis"},{"type":"h","text":"11. Conclusiones","level":1},{"type":"conclusions"},{"type":"h","text":"12. Recomendaciones","level":1},{"type":"recommendations"},{"type":"h","text":"13. Bibliografía","level":1},{"type":"refs"}];
+{"type":"h","text":"2. Base Legal","level":1},{"type":"legalBase"},{"type":"h","text":"3. Metodología","level":1},{"type":"methodology"},{"type":"h","text":"4. Requisitos Para La Aprobación De La Titulación","level":1},{"type":"requirements"},{"type":"h","text":"5. Descripción De Los Procesos De Titulación","level":1},{"type":"processDescription"},{"type":"h","text":"6. Gestión Administrativa Y Logística","level":1},{"type":"administrativeLogistics"},{"type":"h","text":"7. Inducción De Titulación","level":1},{"type":"induction"},{"type":"h","text":"8. Informe y Autorizaciones","level":1},{"type":"authorizations"},{"type":"h","text":"9. Cronograma de Actividades","level":1},{"type":"scheduleSection"},{"type":"h","text":"10. Análisis De Resultados Y Mejora Continua","level":1},{"type":"resultsAnalysis"},{"type":"h","text":"11. Conclusiones","level":1},{"type":"conclusions"},{"type":"h","text":"12. Recomendaciones","level":1},{"type":"recommendations"},{"type":"h","text":"13. Bibliografía","level":1},{"type":"refs"}];
 const REFERENCES=[
 ...(CONTENT_CONFIG.introduction?.bibliography||[
 "Montes, P. (2019). Fundamentos de la educación superior: Teoría y práctica en el siglo XXI.",
@@ -42,13 +43,37 @@ const REFERENCES=[
 "Escobar, C. & Vásquez, J. (2016). Eficiencia terminal en la educación superior: Un análisis de su impacto en la sostenibilidad institucional.",
 "González, J. (2019). Calidad educativa y titulación en instituciones técnicas y tecnológicas."
 ]),
-"Instituto Superior Tecnológico Quito Metropolitano. (2022). Reglamento del Área de Titulación del ITSQMET.",
-"Asamblea Constituyente del Ecuador. (2008). Constitución de la República del Ecuador.",
-"Asamblea Nacional del Ecuador. (2010). Ley Orgánica de Educación Superior."
+"Secretaría Nacional de Planificación (SENPLADES). (2021). Plan Nacional de Desarrollo 2021-2025.",
+"Consejo de Europa. (2001). Marco Común Europeo de Referencia para las Lenguas.",
+"Asamblea Constituyente del Ecuador. (2008). Constitución de la República del Ecuador. Registro Oficial 449.",
+"Asamblea Nacional del Ecuador. (2010). Ley Orgánica de Educación Superior. Registro Oficial Suplemento 298.",
+"Presidencia de la República del Ecuador. (2022). Reglamento a la Ley Orgánica de Educación Superior (Decreto Ejecutivo No. 494). Suplemento del Registro Oficial No. 110.",
+"Instituto Superior Tecnológico Quito Metropolitano. (2025). Reglamento de la Unidad de Titulación y Eficiencia Terminal (UTET-REG-25, versión 2.0). Resolución N.° ITSQMET-OCS-2025-03-02/27-MAR-2025, 27 de marzo de 2025."
 ];
 const {jsPDF}=window.jspdf;
 
 function clean(v){return String(v??"").replace(/\s+/g," ").trim();}
+function sentenceCaseHeading(text){
+  const source=clean(text);
+  const match=source.match(/^((?:\d+\.)+\s*)(.*)$/);
+  const prefix=match?match[1]:"";
+  let label=match?match[2]:source;
+  if(!label)return source;
+  label=label.toLocaleLowerCase("es-EC");
+  const protectedTerms=[
+    [/\bitsqmet\b/gi,"ITSQMET"],[/\butet\b/gi,"UTET"],[/\bugpa\b/gi,"UGPA"],
+    [/\bocs\b/gi,"OCS"],[/\bloes\b/gi,"LOES"],[/\bsisacad\b/gi,"SISACAD"],
+    [/\bmcer\b/gi,"MCER"],[/\ba2\b/gi,"A2"],[/\bpdf\b/gi,"PDF"],
+    [/instituto superior tecnológico quito metropolitano/gi,"Instituto Superior Tecnológico Quito Metropolitano"],
+    [/unidad de gestión de procesos académicos/gi,"Unidad de Gestión de Procesos Académicos"],
+    [/unidad de titulación y eficiencia terminal/gi,"Unidad de Titulación y Eficiencia Terminal"],
+    [/trabajo de titulación/gi,"Trabajo de Titulación"],
+    [/examen complexivo/gi,"Examen Complexivo"]
+  ];
+  protectedTerms.forEach(([pattern,value])=>{label=label.replace(pattern,value);});
+  label=label.charAt(0).toLocaleUpperCase("es-EC")+label.slice(1);
+  return prefix+label;
+}
 function fmtDate(v){
   if(!v)return "—";
   const d=new Date(v+"T12:00:00");
@@ -69,23 +94,47 @@ async function generateAndDownload(ctx,filename){
 
   doc.setProperties({title:TITLE,subject:"Planificación semestral del proceso de titulación",author:"ITSQMET",creator:"DOC-TIT"});
 
+  function institutional(){
+    const fallback={
+      preparedBy:"Mgs. Jefferson Villarreal",preparedRole:AUTHOR_ROLE,
+      reviewedBy:"Ing. Martha Tomalá",reviewedRole:"Coordinadora General de Carreras",
+      approvedBy:"Dr. Alex León",approvedRole:"Vicerrector",
+      unit:"Unidad de Gestión de Procesos Académicos"
+    };
+    try{return {...fallback,...(window.DOC_TIT_INSTITUTIONAL?.resolve?.("trabajo-titulacion")||{})};}
+    catch(_){return fallback;}
+  }
+  function fitImage(data,x,y,maxW,maxH){
+    if(!data)return;
+    try{
+      const props=doc.getImageProperties(data);const ratio=props.width/props.height;
+      let w=maxW,h=w/ratio;if(h>maxH){h=maxH;w=h*ratio;}
+      doc.addImage(data,imageFormat(data),x+(maxW-w)/2,y+(maxH-h)/2,w,h,undefined,"FAST");
+    }catch(_){}
+  }
   function header(){
-    const p=doc.getNumberOfPages(); if(headerDone.has(p)) return; headerDone.add(p);
-    const x=36,top=20,totalW=W-72,h=62,logoW=120,codeW=168,centerW=totalW-logoW-codeW;
+    const p=doc.getNumberOfPages();if(headerDone.has(p))return;headerDone.add(p);
+    const inst=institutional();
+    const x=30,top=20,totalW=W-60,h=62,leftW=totalW*.25,centerW=totalW*.50,rightW=totalW*.25;
     doc.setDrawColor(0);doc.setLineWidth(.7);doc.rect(x,top,totalW,h);
-    doc.line(x+logoW,top,x+logoW,top+h);doc.line(x+logoW+centerW,top,x+logoW+centerW,top+h);
-    doc.line(x+logoW,top+h/2,x+logoW+centerW,top+h/2);
-    if(ctx.assets?.logo){try{doc.addImage(ctx.assets.logo,imageFormat(ctx.assets.logo),x+7,top+6,logoW-14,h-12,undefined,"FAST");}catch(_){}}
-    doc.setFont("helvetica","normal");doc.setFontSize(9);
-    doc.text("UNIDAD DE TITULACIÓN Y EFICIENCIA TERMINAL",x+logoW+centerW/2,top+18,{align:"center"});
-    doc.setFont("helvetica","bold");doc.setFontSize(8.7);
-    const titleLines=doc.splitTextToSize(TITLE,centerW-12).slice(0,2);
-    doc.text(titleLines,x+logoW+centerW/2,top+h/2+9,{align:"center"});
-    doc.setFont("helvetica","normal");doc.setFontSize(8.5);
-    doc.text(ctx.period.name,x+logoW+centerW/2,top+h-8,{align:"center"});
-    doc.text("Código:",x+logoW+centerW+codeW/2,top+16,{align:"center"});
-    doc.setFont("helvetica","bold");doc.setFontSize(8.2);
-    doc.text(doc.splitTextToSize(ctx.code,codeW-12),x+logoW+centerW+codeW/2,top+34,{align:"center"});
+    doc.line(x+leftW,top,x+leftW,top+h);doc.line(x+leftW+centerW,top,x+leftW+centerW,top+h);
+    fitImage(ctx.assets?.logo,x+6,top+5,leftW-12,h-10);
+
+    doc.setFont("helvetica","normal");doc.setFontSize(7.6);
+    const unitLines=doc.splitTextToSize(String(inst.unit||"").toUpperCase(),centerW-14).slice(0,2);
+    doc.text(unitLines,x+leftW+centerW/2,top+13,{align:"center"});
+    doc.setFont("helvetica","bold");doc.setFontSize(8.6);
+    const titleLines=doc.splitTextToSize(TITLE,centerW-14).slice(0,2);
+    doc.text(titleLines,x+leftW+centerW/2,top+31,{align:"center"});
+    doc.setFont("helvetica","normal");doc.setFontSize(7.8);
+    const periodLines=doc.splitTextToSize(clean(ctx.period?.name),centerW-14).slice(0,2);
+    doc.text(periodLines,x+leftW+centerW/2,top+54,{align:"center"});
+
+    const rx=x+leftW+centerW;
+    doc.setFont("helvetica","normal");doc.setFontSize(8);doc.text("Código:",rx+rightW/2,top+17,{align:"center"});
+    doc.setFont("helvetica","bold");doc.setFontSize(8.1);
+    const codeLines=doc.splitTextToSize(clean(ctx.code),rightW-12).slice(0,3);
+    doc.text(codeLines,rx+rightW/2,top+34,{align:"center"});
   }
 
   function newPage(){
@@ -209,9 +258,10 @@ async function generateAndDownload(ctx,filename){
     const size=level===1?14:level===2?12.5:12;
     const style=level===3?"bolditalic":"bold";
     doc.setFont("times",style);doc.setFontSize(size);
-    const lines=doc.splitTextToSize(text,bodyW);
+    const displayText=sentenceCaseHeading(text);
+    const lines=doc.splitTextToSize(displayText,bodyW);
     ensure(lines.length*22+BODY.line*3);
-    if(include)toc.push({title:text,level,page:doc.getNumberOfPages()});
+    if(include)toc.push({title:displayText,level,page:doc.getNumberOfPages()});
     doc.text(lines,BODY.left,y);y+=lines.length*22+10;
   }
   function inlineImage(key){
@@ -256,10 +306,11 @@ async function generateAndDownload(ctx,filename){
     doc.text(lines,W/2,236,{align:"center"});
     doc.setFontSize(17);doc.text(ctx.period.name,W/2,236+lines.length*31+30,{align:"center"});
     const top=H-260,x=36,w=W-72,col=w/3,totalH=175;
+    const inst=institutional();
     const cells=[
-      ["ELABORADO POR:","Mgs. Jefferson Villarreal",AUTHOR_ROLE],
-      ["REVISADO POR:","Ing. Martha Tomalá","Coordinadora General de Carreras"],
-      ["APROBADO POR:","Dr. Alex León","Vicerrector"]
+      ["ELABORADO POR:",inst.preparedBy,inst.preparedRole],
+      ["REVISADO POR:",inst.reviewedBy,inst.reviewedRole],
+      ["APROBADO POR:",inst.approvedBy,inst.approvedRole]
     ];
     doc.setDrawColor(0);doc.setLineWidth(.7);
     cells.forEach((c,i)=>{
@@ -429,7 +480,7 @@ async function generateAndDownload(ctx,filename){
     const documentation=block.documentation||{};
     heading("4.2. Requisitos de Documentación",2,true);
     paragraph(documentation.intro||"");
-    heading(documentation.modalityTitle||"4.3. Modalidades Híbrida, Presencial y Online",2,true);
+    heading("4.2.1. Modalidades Híbrida, Presencial y Online",3,true);
     paragraph(documentation.modalityIntro||"");
     renderRequirementGroups(documentation.groups||[]);
     // El documento fuente contiene un segundo bloque documental sin encabezado de categoría.
@@ -437,56 +488,56 @@ async function generateAndDownload(ctx,filename){
     renderRequirementGroups(documentation.unidentifiedContinuation||[]);
 
     const financial=block.financial||{};
-    heading("4.4. Requisitos Financieros",2,true);
+    heading("4.3. Requisitos Financieros",2,true);
     paragraph(financial.intro||"");
-    heading("4.4.1. Requisitos Financieros Generales",3,true);
+    heading("4.3.1. Requisitos Financieros Generales",3,true);
     paragraph(financial.generalIntro||"");
     renderRequirementItems(financial.items||[]);
 
     const engagement=block.communityEngagement||{};
-    heading("4.5. Vinculación con la Sociedad",2,true);
+    heading("4.4. Vinculación con la Sociedad",2,true);
     paragraph(engagement.intro||"");
-    heading("4.5.1. Importancia de la Vinculación con la Sociedad",3,true);
+    heading("4.4.1. Importancia de la Vinculación con la Sociedad",3,true);
     paragraph(engagement.importance||"");
-    heading("4.5.2. Requisitos para la Vinculación con la Sociedad",3,true);
+    heading("4.4.2. Requisitos para la Vinculación con la Sociedad",3,true);
     paragraph(engagement.requirementsIntro||"");
     renderRequirementItems(engagement.requirements||[]);
-    heading("4.5.3. Ejemplos de Proyectos de Vinculación por Carrera",3,true);
+    heading("4.4.3. Ejemplos de Proyectos de Vinculación por Carrera",3,true);
     paragraph(engagement.examplesIntro||"");
     (engagement.examples||[]).forEach(item=>methodologyBullet(item.career,item.text||""));
 
     const internships=block.internships||{};
-    heading("4.6. Prácticas Preprofesionales",2,true);
+    heading("4.5. Prácticas Preprofesionales",2,true);
     paragraph(internships.intro||"");
-    heading("4.6.1. Objetivo e Importancia de las Prácticas Preprofesionales",3,true);
+    heading("4.5.1. Objetivo e Importancia de las Prácticas Preprofesionales",3,true);
     paragraph(internships.importance||"");
-    heading("4.6.2. Requisitos para la Realización de las Prácticas Preprofesionales",3,true);
+    heading("4.5.2. Requisitos para la Realización de las Prácticas Preprofesionales",3,true);
     paragraph(internships.requirementsIntro||"");
     renderRequirementItems(internships.requirements||[]);
-    heading("4.6.3. Documentación de Culminación de Prácticas Preprofesionales",3,true);
+    heading("4.5.3. Documentación de Culminación de Prácticas Preprofesionales",3,true);
     paragraph(internships.completionIntro||"");
     renderRequirementItems(internships.completionDocuments||[]);
 
     const language=block.foreignLanguage||{};
-    heading("4.7. Requisito de Lengua Extranjera",2,true);
+    heading("4.6. Requisito de Lengua Extranjera",2,true);
     (language.intro||[]).forEach(item=>paragraph(item));
-    heading("4.7.1. Objetivo del Requisito de Lengua Extranjera",3,true);
+    heading("4.6.1. Objetivo del Requisito de Lengua Extranjera",3,true);
     paragraph(language.objective||"");
-    heading("4.7.2. Cumplimiento del Nivel A2 en Lengua Extranjera",3,true);
+    heading("4.6.2. Cumplimiento del Nivel A2 en Lengua Extranjera",3,true);
     paragraph(language.complianceIntro||"");
     renderRequirementGroups(language.compliance||[]);
-    heading("4.7.3. Procedimiento para la Entrega del Certificado de Nivel A2",3,true);
+    heading("4.6.3. Procedimiento para la Entrega del Certificado de Nivel A2",3,true);
     renderRequirementGroups(language.certificateProcedure||[]);
 
     const dataUpdate=block.dataUpdate||{};
-    heading("4.8. Actualización de Datos",2,true);
+    heading("4.7. Actualización de Datos",2,true);
     paragraph(dataUpdate.intro||"");
-    heading("4.8.1. Objetivo de la Actualización de Datos",3,true);
+    heading("4.7.1. Objetivo de la Actualización de Datos",3,true);
     paragraph(dataUpdate.objective||"");
-    heading("4.8.2. Procedimiento para la Actualización de Datos",3,true);
+    heading("4.7.2. Procedimiento para la Actualización de Datos",3,true);
     paragraph(dataUpdate.procedureIntro||"");
     renderRequirementGroups(dataUpdate.procedure||[]);
-    heading("4.8.3. Importancia de la Actualización de Datos",3,true);
+    heading("4.7.3. Importancia de la Actualización de Datos",3,true);
     paragraph(dataUpdate.importanceIntro||"");
     renderRequirementItems(dataUpdate.importance||[]);
   }
@@ -679,6 +730,41 @@ async function generateAndDownload(ctx,filename){
     });
     if(clean(communication.closing))paragraph(communication.closing);
   }
+  function resolveAuthorizations(){
+    const snapshot=ctx.payload?.contentSnapshots?.authorizations;
+    if(snapshot&&snapshot.report&&snapshot.financialPermissions)return snapshot;
+    const current=AUTHORIZATIONS_CONFIG;
+    if(current&&current.report&&current.financialPermissions)return current;
+    return null;
+  }
+  function renderAuthorizations(){
+    const block=resolveAuthorizations();
+    if(!block)throw new Error("No existe una configuración institucional validada de Informe y Autorizaciones.");
+    paragraph(block.intro||"");
+
+    const report=block.report||{};
+    heading("8.1. Desarrollo del Informe de Titulación",2,true);
+    paragraph(report.intro||"");
+    heading("8.1.1. Seguimiento y Evaluación de Gestiones",3,true);
+    (report.tracking||[]).forEach(item=>{
+      processNumberedTitle(item.number,item.title);
+      processText(item.text||"",1,"o");
+    });
+
+    const financial=block.financialPermissions||{};
+    heading("8.2. Permisos y Autorizaciones Financieras",2,true);
+    paragraph(financial.intro||"");
+    heading("8.2.1. Gestión de Permisos para Estudiantes con Pagos Pendientes",3,true);
+    (financial.temporaryPermission||[]).forEach(item=>{
+      processNumberedTitle(item.number,item.title);
+      processText(item.text||"",1,"o");
+    });
+    heading("8.2.2. Aprobación por el Departamento de Facturación",3,true);
+    (financial.billingApproval||[]).forEach(item=>{
+      processNumberedTitle(item.number,item.title);
+      processText(item.text||"",1,"o");
+    });
+  }
   function resolveInduction(){
     const snapshot=ctx.payload?.contentSnapshots?.induction;
     if(snapshot&&Array.isArray(snapshot.modalities)&&snapshot.modalities.length&&Array.isArray(snapshot.orientation)&&Array.isArray(snapshot.communication))return snapshot;
@@ -740,6 +826,21 @@ async function generateAndDownload(ctx,filename){
     }
     if(clean(block.improvementText))paragraph(block.improvementText);
   }
+  function numberedParagraph(number,text){
+    const raw=clean(text);if(!raw)return;
+    const lead=`${number}. `,x=BODY.left,maxW=bodyW,lineH=BODY.line;
+    doc.setFont("times","bold");doc.setFontSize(12);const leadW=doc.getTextWidth(lead);
+    const words=raw.split(/\s+/).filter(Boolean);let first=[],rest=[];
+    for(const word of words){
+      const candidate=[...first,word].join(" ");doc.setFont("times","normal");
+      if(!rest.length&&doc.getTextWidth(candidate)<=Math.max(60,maxW-leadW))first.push(word);else rest.push(word);
+    }
+    ensure(lineH*2);doc.setFont("times","bold");doc.text(lead,x,y);doc.setFont("times","normal");
+    if(first.length)doc.text(first.join(" "),x+leadW,y);y+=lineH;
+    const remaining=rest.join(" ");
+    if(remaining){const lines=doc.splitTextToSize(remaining,maxW);lines.forEach((line,i)=>{ensure(lineH);if(i===lines.length-1)doc.text(line,x,y);else doc.text(line,x,y,{align:"justify",maxWidth:maxW});y+=lineH;});}
+    y+=7;
+  }
   function resolveConclusions(){
     const snapshot=ctx.payload?.contentSnapshots?.conclusions;
     if(snapshot&&Array.isArray(snapshot.conclusions)&&snapshot.conclusions.length)return snapshot;
@@ -780,8 +881,7 @@ async function generateAndDownload(ctx,filename){
       const lower=raw.toLowerCase();
       const bad=forbidden.find(phrase=>lower.includes(phrase));
       if(bad)throw new Error(`La conclusión ${item?.id||index+1} contiene lenguaje de resultados no permitido: “${bad}”.`);
-      listHeading(`${index+1}.`);
-      paragraph(raw,{indent:false});
+      numberedParagraph(index+1,raw);
     });
   }
   function resolveRecommendations(){
@@ -824,8 +924,7 @@ async function generateAndDownload(ctx,filename){
       const lower=raw.toLowerCase();
       const bad=forbidden.find(phrase=>lower.includes(phrase));
       if(bad)throw new Error(`La recomendación ${item?.id||index+1} contiene lenguaje de resultados no permitido: “${bad}”.`);
-      listHeading(`${index+1}.`);
-      paragraph(raw,{indent:false});
+      numberedParagraph(index+1,raw);
     });
   }
   function renderReferenceDocuments(){
@@ -867,6 +966,7 @@ async function generateAndDownload(ctx,filename){
       else if(item.type==="processDescription")renderProcessDescription();
       else if(item.type==="administrativeLogistics")renderAdministrativeLogistics();
       else if(item.type==="induction")renderInduction();
+      else if(item.type==="authorizations")renderAuthorizations();
       else if(item.type==="image")inlineImage(item.key);
       else if(item.type==="scheduleSection")renderScheduleSection();
       else if(item.type==="resultsAnalysis")renderResultsAnalysis();
@@ -901,7 +1001,7 @@ async function generateAndDownload(ctx,filename){
   drawToc(3,unique.slice(half),"");
 
   const total=doc.getNumberOfPages();
-  for(let p=1;p<=total;p++){
+  for(let p=2;p<=total;p++){
     doc.setPage(p);doc.setFont("helvetica","normal");doc.setFontSize(9);
     doc.text("Página "+p+" de "+total,W-36,H-22,{align:"right"});
   }
