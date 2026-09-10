@@ -70,6 +70,11 @@ function currentConclusionsSnapshot(){
   if(!block||!Array.isArray(block.conclusions)||!block.conclusions.length)return null;
   return JSON.parse(JSON.stringify(block));
 }
+function currentRecommendationsSnapshot(){
+  const block=window.DOC_TIT_TRABAJO_RECOMMENDATIONS;
+  if(!block||!Array.isArray(block.recommendations)||!block.recommendations.length)return null;
+  return JSON.parse(JSON.stringify(block));
+}
 function blankPayload(){
   const tables={};
   Object.entries(CONFIG.tables).forEach(([key,t])=>{tables[key]=(t.initialRows||[]).map(r=>({...r}));});
@@ -79,7 +84,7 @@ function blankPayload(){
     const def=typeof a==="string"?{activity:a}:a;
     return {id:def.id||`actividad_${String(i+1).padStart(2,"0")}`,order:Number(def.order)||i+1,phaseId:def.phaseId||"",activity:def.activity||"",responsible:def.responsible||"",description:def.description||"",route:def.route||"",start:"",end:"",deadline:"",observation:"",active:def.active!==false};
   });
-  return {schedule,scheduleMeta:{version:1,status:"Borrador"},tables,notes:"",contentSnapshots:{legalBase:currentLegalBaseSnapshot(),methodology:currentMethodologySnapshot(),requirements:currentRequirementsSnapshot(),processDescription:currentProcessSnapshot(),administrativeLogistics:currentLogisticsSnapshot(),induction:currentInductionSnapshot(),scheduleStructure:structure,resultsAnalysis:currentResultsAnalysisSnapshot(),conclusions:currentConclusionsSnapshot()}};
+  return {schedule,scheduleMeta:{version:1,status:"Borrador"},tables,notes:"",contentSnapshots:{legalBase:currentLegalBaseSnapshot(),methodology:currentMethodologySnapshot(),requirements:currentRequirementsSnapshot(),processDescription:currentProcessSnapshot(),administrativeLogistics:currentLogisticsSnapshot(),induction:currentInductionSnapshot(),scheduleStructure:structure,resultsAnalysis:currentResultsAnalysisSnapshot(),conclusions:currentConclusionsSnapshot(),recommendations:currentRecommendationsSnapshot()}};
 }
 function normalizePayloadData(data){
   const base=blankPayload();
@@ -132,6 +137,7 @@ function normalizePayloadData(data){
   if(!contentSnapshots.scheduleStructure)contentSnapshots.scheduleStructure=structure||currentScheduleStructureSnapshot();
   if(!contentSnapshots.resultsAnalysis)contentSnapshots.resultsAnalysis=currentResultsAnalysisSnapshot();
   if(!contentSnapshots.conclusions)contentSnapshots.conclusions=currentConclusionsSnapshot();
+  if(!contentSnapshots.recommendations)contentSnapshots.recommendations=currentRecommendationsSnapshot();
   const scheduleMeta={...(base.scheduleMeta||{}),...(data.scheduleMeta||{})};
   return {...base,...data,schedule:base.schedule,scheduleMeta,tables,notes:data.notes||"",contentSnapshots};
 }
