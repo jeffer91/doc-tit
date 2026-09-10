@@ -1,0 +1,9 @@
+/home/runner/work/doc-tit/doc-tit/shared/module-ui.js:150
+      const activeRows=rows.filter(tr=>{const check=$("input[type="checkbox"][data-f="active"]",tr);return !check||check.checked;});
+                                                      ^^^^^^^^^^^^^
+
+SyntaxError: missing ) after argument list
+    at wrapSafe (node:internal/modules/cjs/loader:1464:18)
+    at checkSyntax (node:internal/main/check_syntax:78:3)
+
+Node.js v20.20.2
