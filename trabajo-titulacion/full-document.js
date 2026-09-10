@@ -7,6 +7,7 @@ const CONTENT_CONFIG=window.DOC_TIT_TRABAJO_CONTENT||{};
 const PROCESS_CONFIG=window.DOC_TIT_TRABAJO_PROCESS||{};
 const LOGISTICS_CONFIG=window.DOC_TIT_TRABAJO_LOGISTICS||{};
 const INDUCTION_CONFIG=window.DOC_TIT_TRABAJO_INDUCTION||{};
+const SCHEDULE_CONFIG=window.DOC_TIT_TRABAJO_SCHEDULE||{};
 const CONTENT=[
 {"type":"h","text":"1. Introducción","level":1},
 {"type":"h","text":"1.1. Contexto General","level":2},
@@ -28,7 +29,7 @@ const CONTENT=[
 {"type":"h","text":"1.4. Documentos de referencia","level":2},
 {"type":"p","text":"Esta planificación se articula con los siguientes documentos institucionales:","opts":{"indent":false}},
 {"type":"referenceDocs"},
-{"type":"h","text":"2. Base Legal","level":1},{"type":"legalBase"},{"type":"h","text":"3. Metodología","level":1},{"type":"methodology"},{"type":"h","text":"4. Requisitos Para La Aprobación De La Titulación","level":1},{"type":"requirements"},{"type":"h","text":"5. Descripción De Los Procesos De Titulación","level":1},{"type":"processDescription"},{"type":"h","text":"6. Gestión Administrativa Y Logística","level":1},{"type":"administrativeLogistics"},{"type":"h","text":"7. Inducción De Titulación","level":1},{"type":"induction"},{"type":"h","text":"8. Informe Y Autorizaciones","level":1},{"type":"h","text":"8.1. Desarrollo Del Informe De Titulación","level":2},{"type":"p","text":"El informe de titulación documenta avances, gestiones y resultados del proceso y sirve como respaldo para la trazabilidad institucional."},{"type":"h","text":"8.1.1. Seguimiento Y Evaluación De Gestiones","level":3},{"type":"p","text":"El informe registra asignaciones, revisiones, resultados y principales incidencias del período, permitiendo identificar fortalezas y oportunidades de mejora."},{"type":"h","text":"8.2. Permisos Y Autorizaciones Financieras","level":2},{"type":"p","text":"Las autorizaciones financieras excepcionales, cuando existan, deben ser gestionadas y aprobadas únicamente por la unidad competente y conservar respaldo documental. Esta planificación no crea beneficios ni permisos automáticos."},{"type":"h","text":"8.2.1. Gestión De Permisos Para Estudiantes Con Pagos Pendientes","level":3},{"type":"p","text":"Cualquier solicitud excepcional debe tramitarse conforme a las políticas institucionales vigentes y no supone habilitación mientras no exista autorización formal."},{"type":"h","text":"8.2.2. Aprobación Por El Departamento De Facturación","level":3},{"type":"p","text":"La unidad financiera competente revisa y resuelve las solicitudes según las reglas vigentes y mantiene el seguimiento del cumplimiento de las obligaciones."},{"type":"h","text":"9. Cronograma De Actividades","level":1},{"type":"h","text":"9.1. Calendario De Actividades Por Proceso","level":2},{"type":"schedule"},{"type":"h","text":"9.2. Fases Del Trabajo De Titulación","level":2},{"type":"b","text":"Asignación de tutor y lector académico."},{"type":"b","text":"Entrega del primer borrador al tutor."},{"type":"b","text":"Entrega del segundo borrador al tutor."},{"type":"b","text":"Entrega del tercer borrador al tutor."},{"type":"b","text":"Aprobación final del tutor."},{"type":"b","text":"Revisión por parte del lector académico."},{"type":"b","text":"Confirmación de fecha y modalidad de defensa."},{"type":"b","text":"Defensa del trabajo de titulación."},{"type":"b","text":"Registro de calificaciones finales."},{"type":"optional"},{"type":"h","text":"10. Análisis De Resultados Y Mejora Continua","level":1},{"type":"p","text":"Al finalizar el período, la Coordinación de Titulación consolida información del proceso para evaluar desempeño, cumplimiento de plazos, resultados de defensa y oportunidades de mejora."},{"type":"b","text":"Eficiencia terminal: estudiantes que culminan en tiempo y forma / total de estudiantes del proceso × 100."},{"type":"b","text":"Tasa de aprobación en la defensa: estudiantes que aprueban la defensa / total de estudiantes del proceso × 100."},{"type":"b","text":"Índice de revisión de borradores a tiempo: borradores revisados dentro del plazo / total de borradores × 100."},{"type":"b","text":"Tiempo promedio de culminación: suma de tiempos individuales desde asignación de tutor hasta defensa / número total de estudiantes."},{"type":"b","text":"Índice de satisfacción: resultado consolidado de encuestas institucionales aplicadas al cierre."},{"type":"notes"},{"type":"image","key":"closingImage"},{"type":"h","text":"11. Bibliografía","level":1},{"type":"refs"}];
+{"type":"h","text":"2. Base Legal","level":1},{"type":"legalBase"},{"type":"h","text":"3. Metodología","level":1},{"type":"methodology"},{"type":"h","text":"4. Requisitos Para La Aprobación De La Titulación","level":1},{"type":"requirements"},{"type":"h","text":"5. Descripción De Los Procesos De Titulación","level":1},{"type":"processDescription"},{"type":"h","text":"6. Gestión Administrativa Y Logística","level":1},{"type":"administrativeLogistics"},{"type":"h","text":"7. Inducción De Titulación","level":1},{"type":"induction"},{"type":"h","text":"8. Informe Y Autorizaciones","level":1},{"type":"h","text":"8.1. Desarrollo Del Informe De Titulación","level":2},{"type":"p","text":"El informe de titulación documenta avances, gestiones y resultados del proceso y sirve como respaldo para la trazabilidad institucional."},{"type":"h","text":"8.1.1. Seguimiento Y Evaluación De Gestiones","level":3},{"type":"p","text":"El informe registra asignaciones, revisiones, resultados y principales incidencias del período, permitiendo identificar fortalezas y oportunidades de mejora."},{"type":"h","text":"8.2. Permisos Y Autorizaciones Financieras","level":2},{"type":"p","text":"Las autorizaciones financieras excepcionales, cuando existan, deben ser gestionadas y aprobadas únicamente por la unidad competente y conservar respaldo documental. Esta planificación no crea beneficios ni permisos automáticos."},{"type":"h","text":"8.2.1. Gestión De Permisos Para Estudiantes Con Pagos Pendientes","level":3},{"type":"p","text":"Cualquier solicitud excepcional debe tramitarse conforme a las políticas institucionales vigentes y no supone habilitación mientras no exista autorización formal."},{"type":"h","text":"8.2.2. Aprobación Por El Departamento De Facturación","level":3},{"type":"p","text":"La unidad financiera competente revisa y resuelve las solicitudes según las reglas vigentes y mantiene el seguimiento del cumplimiento de las obligaciones."},{"type":"h","text":"9. Cronograma De Actividades","level":1},{"type":"scheduleSection"},{"type":"h","text":"10. Análisis De Resultados Y Mejora Continua","level":1},{"type":"p","text":"Al finalizar el período, la Coordinación de Titulación consolida información del proceso para evaluar desempeño, cumplimiento de plazos, resultados de defensa y oportunidades de mejora."},{"type":"b","text":"Eficiencia terminal: estudiantes que culminan en tiempo y forma / total de estudiantes del proceso × 100."},{"type":"b","text":"Tasa de aprobación en la defensa: estudiantes que aprueban la defensa / total de estudiantes del proceso × 100."},{"type":"b","text":"Índice de revisión de borradores a tiempo: borradores revisados dentro del plazo / total de borradores × 100."},{"type":"b","text":"Tiempo promedio de culminación: suma de tiempos individuales desde asignación de tutor hasta defensa / número total de estudiantes."},{"type":"b","text":"Índice de satisfacción: resultado consolidado de encuestas institucionales aplicadas al cierre."},{"type":"notes"},{"type":"image","key":"closingImage"},{"type":"h","text":"11. Bibliografía","level":1},{"type":"refs"}];
 const REFERENCES=[
 ...(CONTENT_CONFIG.introduction?.bibliography||[
 "Montes, P. (2019). Fundamentos de la educación superior: Teoría y práctica en el siglo XXI.",
@@ -231,6 +232,7 @@ async function generateAndDownload(ctx,filename){
       startY:y,margin:{left:BODY.left,right:BODY.right,top:BODY.top,bottom:BODY.bottom},theme:"plain",
       head:[head],body:rows,
       styles:{font:"times",fontSize:8.8,cellPadding:4,textColor:0,overflow:"linebreak",valign:"top"},
+      showHead:"everyPage",rowPageBreak:"avoid",
       headStyles:{font:"times",fontStyle:"bold",fillColor:[255,255,255],textColor:0},
       columnStyles:widths||{},
       didDrawPage:()=>header(),
@@ -274,9 +276,57 @@ async function generateAndDownload(ctx,filename){
     bullet("El cronograma importado desde la plantilla constituye la fuente operativa de fechas para el período.");
     if(clean(ctx.payload?.notes))bullet("La planificación incorpora observaciones específicas registradas por el usuario para este período.");
   }
-  function renderSchedule(){
-    const rows=(ctx.payload.schedule||[]).map(r=>[r.activity,r.description||"",r.responsible||"",fmtDate(r.start),fmtDate(r.end)]);
-    apaTable("Cronograma de actividades del período",["Actividad","Descripción","Responsable","Inicio","Fin"],rows,{0:{cellWidth:bodyW*.24},1:{cellWidth:bodyW*.26},2:{cellWidth:bodyW*.24},3:{cellWidth:bodyW*.13},4:{cellWidth:bodyW*.13}});
+  function resolveScheduleStructure(){
+    const snapshot=ctx.payload?.contentSnapshots?.scheduleStructure;
+    if(snapshot&&Array.isArray(snapshot.activities)&&snapshot.activities.length&&Array.isArray(snapshot.phases)&&snapshot.phases.length)return snapshot;
+    const current=SCHEDULE_CONFIG;
+    if(current&&Array.isArray(current.activities)&&current.activities.length&&Array.isArray(current.phases)&&current.phases.length)return current;
+    return null;
+  }
+  function scheduleDateText(r){
+    if(r.start&&r.end)return `${fmtDate(r.start)} – ${fmtDate(r.end)}`;
+    if(r.deadline)return `Hasta ${fmtDate(r.deadline)}`;
+    if(r.start)return fmtDate(r.start);
+    if(r.end)return fmtDate(r.end);
+    return "";
+  }
+  function schedulePdfErrors(rows){
+    const errors=[];
+    (rows||[]).filter(r=>r.active!==false).forEach((r,i)=>{
+      const name=clean(r.activity)||`Actividad ${i+1}`;
+      if(!r.start&&!r.end&&!r.deadline)errors.push(`${name}: falta fecha o plazo.`);
+      if(r.start&&r.end&&r.end<r.start)errors.push(`${name}: la fecha final no puede ser anterior a la inicial.`);
+      const combined=[r.activity,r.description,r.responsible,r.observation].map(clean).join(" ");
+      if(/\b(por definir|n\/?a|pendiente|sin fecha)\b/i.test(combined))errors.push(`${name}: contiene un texto no permitido.`);
+    });
+    return errors;
+  }
+  function sectionNote(text){
+    const raw=clean(text);if(!raw)return;
+    ensure(BODY.line*2);
+    doc.setFont("times","italic");doc.setFontSize(9.5);
+    const lines=doc.splitTextToSize("Nota: "+raw,bodyW);
+    doc.text(lines,BODY.left,y);y+=lines.length*14+18;
+    doc.setFont("times","normal");doc.setFontSize(12);
+  }
+  function renderScheduleSection(){
+    const structure=resolveScheduleStructure();
+    if(!structure)throw new Error("No existe una configuración institucional validada del cronograma de Trabajo de Titulación.");
+    paragraph(structure.intro||"");
+    heading("9.1. Calendario de Actividades por Proceso",2,true);
+    const activeRows=(ctx.payload.schedule||[]).filter(r=>r.active!==false).slice().sort((a,b)=>(Number(a.order)||9999)-(Number(b.order)||9999));
+    const errors=schedulePdfErrors(activeRows);
+    if(errors.length)throw new Error("El cronograma no está listo para generar: "+errors.join(" "));
+    const table=structure.table||{};
+    const rows=activeRows.map(r=>[r.activity||"",scheduleDateText(r),r.description||"",r.responsible||""]);
+    apaTable(table.title||"Calendario de actividades por proceso",table.columns||["Actividad","Fecha / Plazo","Descripción","Responsable"],rows,{0:{cellWidth:bodyW*.24},1:{cellWidth:bodyW*.17},2:{cellWidth:bodyW*.35},3:{cellWidth:bodyW*.24}},table.note||"");
+    heading("9.2. Fases Del Trabajo De Titulación",2,true);
+    paragraph(structure.phasesIntro||"");
+    (structure.phases||[]).slice().sort((a,b)=>(Number(a.order)||9999)-(Number(b.order)||9999)).forEach((phase,i)=>{
+      processNumberedTitle(phase.order||i+1,phase.title||"");
+      processText(phase.text||"",1,"o");
+    });
+    sectionNote(structure.phasesNote||"");
   }
   function renderOptionalData(){
     const tables=ctx.payload.tables||{};
@@ -691,7 +741,7 @@ async function generateAndDownload(ctx,filename){
       else if(item.type==="administrativeLogistics")renderAdministrativeLogistics();
       else if(item.type==="induction")renderInduction();
       else if(item.type==="image")inlineImage(item.key);
-      else if(item.type==="schedule")renderSchedule();
+      else if(item.type==="scheduleSection")renderScheduleSection();
       else if(item.type==="optional")renderOptionalData();
       else if(item.type==="notes")renderNotes();
       else if(item.type==="refs")renderReferences();

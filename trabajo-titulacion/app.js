@@ -1,6 +1,7 @@
 (() => {
 "use strict";
 const CONFIG={"documentKey":"plan-trabajo-titulacion","title":"Planificación De Trabajo De Titulación","shortName":"Trabajo_Titulacion","codePrefix":"UGPA-RGI2-01-PRO-56-","requiredTable":null,"schedule":[{"activity":"Asignación de Tutor y Lector","responsible":"Coordinador de Titulación / Coordinación General de Carreras","description":"Designación del tutor y lector para acompañamiento y revisión académica."},{"activity":"Reunión Inicial con Tutor","responsible":"Estudiante / Tutor","description":"Primer encuentro para acordar plan de trabajo y objetivos."},{"activity":"Entrega del Primer Borrador","responsible":"Estudiante","description":"Presentación del primer borrador para revisión del tutor."},{"activity":"Retroalimentación del Primer Borrador","responsible":"Tutor","description":"Revisión y comentarios sobre el primer borrador."},{"activity":"Entrega del Segundo Borrador","responsible":"Estudiante","description":"Segundo borrador con incorporación de observaciones."},{"activity":"Retroalimentación del Segundo Borrador","responsible":"Tutor","description":"Revisión y comentarios sobre el segundo borrador."},{"activity":"Entrega del Tercer Borrador","responsible":"Estudiante","description":"Versión avanzada ajustada según revisiones previas."},{"activity":"Aprobación Final del Tercer Borrador por Tutor","responsible":"Tutor","description":"Aprobación del tutor para habilitar revisión del lector."},{"activity":"Revisión del Proyecto por el Lector","responsible":"Lector","description":"Revisión técnica y formal del trabajo aprobado por tutor."},{"activity":"Aprobación Final del Proyecto","responsible":"Lector","description":"Validación final previa a defensa."},{"activity":"Confirmación de Fecha de Defensa","responsible":"Coordinador de Titulación / Coordinación General de Carreras","description":"Confirmación y comunicación de fecha y modalidad de defensa."},{"activity":"Preparación para la Defensa","responsible":"Estudiante","description":"Ajustes finales y preparación de la defensa."},{"activity":"Defensa de Tesis","responsible":"Estudiante / Tribunal Evaluador / Coordinación General de Carreras","description":"Presentación y defensa del trabajo ante tribunal."},{"activity":"Registro Final de Calificaciones","responsible":"Coordinador de Titulación / Coordinación General de Carreras","description":"Registro de calificaciones finales en el sistema institucional."}],"activityAliases":{"Asignación de Tutor y Lector":["asignacion tutor lector","tutor y lector"],"Reunión Inicial con Tutor":["reunion tutor","reunion inicial"],"Entrega del Primer Borrador":["borrador 1","primer borrador","primer avance"],"Retroalimentación del Primer Borrador":["retroalimentacion borrador 1","revision primer borrador"],"Entrega del Segundo Borrador":["borrador 2","segundo borrador","segundo avance"],"Retroalimentación del Segundo Borrador":["retroalimentacion borrador 2","revision segundo borrador"],"Entrega del Tercer Borrador":["borrador 3","tercer borrador","tercer avance"],"Aprobación Final del Tercer Borrador por Tutor":["aprobacion tutor","aprobacion tercer borrador"],"Revisión del Proyecto por el Lector":["revision lector","revision proyecto lector"],"Aprobación Final del Proyecto":["aprobacion final","aprobacion lector"],"Confirmación de Fecha de Defensa":["confirmacion defensa","fecha defensa"],"Preparación para la Defensa":["preparacion defensa"],"Defensa de Tesis":["defensa","defensa tesis","defensa trabajo"],"Registro Final de Calificaciones":["registro notas","calificaciones finales"]},"tables":{"carreras":{"label":"Carreras y estudiantes","title":"Carreras participantes","help":"Registra carrera, modalidad, lugar y cantidad.","sheet":"CARRERAS","sheetAliases":["distribucion"],"requiredFields":["career","count"],"columns":[{"field":"career","label":"Carrera","aliases":["programa"],"width":38},{"field":"modality","label":"Modalidad","aliases":["tipo"],"width":18},{"field":"place","label":"Lugar","aliases":["sede"],"width":16},{"field":"count","label":"Cantidad","aliases":["cant","estudiantes","numero estudiantes"],"type":"number","width":12}]},"tutores":{"label":"Tutor y lector","title":"Asignación académica","help":"Completa únicamente cuando las asignaciones ya estén definidas.","sheet":"TUTORES_LECTORES","sheetAliases":["tutores","lectores"],"requiredFields":["career"],"columns":[{"field":"career","label":"Carrera","width":34},{"field":"tutor","label":"Tutor","aliases":["docente tutor"],"width":26},{"field":"reader","label":"Lector","aliases":["lector revisor"],"width":26},{"field":"observations","label":"Observaciones","aliases":["obs"],"width":34}]},"defensas":{"label":"Defensas","title":"Organización de defensas","help":"Registra rangos por carrera cuando ya estén definidos.","sheet":"DEFENSAS","requiredFields":["career"],"columns":[{"field":"career","label":"Carrera","width":32},{"field":"start","label":"Fecha inicio","aliases":["inicio","desde"],"type":"date","width":15},{"field":"end","label":"Fecha fin","aliases":["fin","hasta"],"type":"date","width":15},{"field":"mode","label":"Modalidad","aliases":["tipo"],"width":16},{"field":"observations","label":"Observaciones","width":30}]}}}
+const SCHEDULE_CONFIG=window.DOC_TIT_TRABAJO_SCHEDULE||{};
 const MONTHS=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const FALLBACK_PERIODS=[
 {id:"2026-04_2026-09",name:"Abril 2026 – Septiembre 2026",start:"2026-04-01",end:"2026-09-30",status:"Activo"},
@@ -54,24 +55,57 @@ function currentInductionSnapshot(){
   if(!block||!Array.isArray(block.modalities)||!block.modalities.length||!Array.isArray(block.orientation)||!Array.isArray(block.communication))return null;
   return JSON.parse(JSON.stringify(block));
 }
+function currentScheduleStructureSnapshot(){
+  const block=window.DOC_TIT_TRABAJO_SCHEDULE;
+  if(!block||!Array.isArray(block.activities)||!block.activities.length||!Array.isArray(block.phases)||!block.phases.length)return null;
+  return JSON.parse(JSON.stringify(block));
+}
 function blankPayload(){
   const tables={};
   Object.entries(CONFIG.tables).forEach(([key,t])=>{tables[key]=(t.initialRows||[]).map(r=>({...r}));});
-  return {schedule:CONFIG.schedule.map(a=>{
+  const structure=currentScheduleStructureSnapshot();
+  const source=(structure?.activities?.length?structure.activities:CONFIG.schedule);
+  const schedule=source.map((a,i)=>{
     const def=typeof a==="string"?{activity:a}:a;
-    return {activity:def.activity,responsible:def.responsible||"",description:def.description||"",route:def.route||"",start:"",end:""};
-  }),tables,notes:"",contentSnapshots:{legalBase:currentLegalBaseSnapshot(),methodology:currentMethodologySnapshot(),requirements:currentRequirementsSnapshot(),processDescription:currentProcessSnapshot(),administrativeLogistics:currentLogisticsSnapshot(),induction:currentInductionSnapshot()}};
+    return {id:def.id||`actividad_${String(i+1).padStart(2,"0")}`,order:Number(def.order)||i+1,phaseId:def.phaseId||"",activity:def.activity||"",responsible:def.responsible||"",description:def.description||"",route:def.route||"",start:"",end:"",deadline:"",observation:"",active:def.active!==false};
+  });
+  return {schedule,scheduleMeta:{version:1,status:"Borrador"},tables,notes:"",contentSnapshots:{legalBase:currentLegalBaseSnapshot(),methodology:currentMethodologySnapshot(),requirements:currentRequirementsSnapshot(),processDescription:currentProcessSnapshot(),administrativeLogistics:currentLogisticsSnapshot(),induction:currentInductionSnapshot(),scheduleStructure:structure}};
 }
 function normalizePayloadData(data){
   const base=blankPayload();
   if(!data||typeof data!=="object") return base;
 
   const existingSchedule=Array.isArray(data.schedule)?data.schedule:[];
-  const byActivity=new Map(existingSchedule.map(r=>[norm(r.activity),r]));
-  base.schedule=base.schedule.map(def=>{
-    const old=byActivity.get(norm(def.activity))||{};
-    return {...def,...old,activity:def.activity,responsible:old.responsible||def.responsible||"",description:def.description||old.description||"",route:def.route||old.route||""};
+  const storedStructure=data.contentSnapshots?.scheduleStructure;
+  const structure=(storedStructure&&Array.isArray(storedStructure.activities)&&storedStructure.activities.length)?storedStructure:currentScheduleStructureSnapshot();
+  const source=(structure?.activities?.length?structure.activities:base.schedule);
+  const byId=new Map(existingSchedule.filter(r=>r?.id).map(r=>[String(r.id),r]));
+  const byActivity=new Map(existingSchedule.filter(r=>r?.activity).map(r=>[norm(r.activity),r]));
+  const consumed=new Set();
+  const configured=source.map((a,i)=>{
+    const def=typeof a==="string"?{activity:a}:a;
+    const old=byId.get(String(def.id||""))||byActivity.get(norm(def.activity))||{};
+    if(old.id)consumed.add(String(old.id));
+    if(old.activity)consumed.add("activity:"+norm(old.activity));
+    return {
+      id:old.id||def.id||`actividad_${String(i+1).padStart(2,"0")}`,
+      order:Number(old.order)||Number(def.order)||i+1,
+      phaseId:old.phaseId||def.phaseId||"",
+      activity:old.activity||def.activity||"",
+      responsible:old.responsible||def.responsible||"",
+      description:old.description||def.description||"",
+      route:old.route||def.route||"",
+      start:old.start||"",end:old.end||"",deadline:old.deadline||"",observation:old.observation||"",
+      active:old.active===false?false:(old.active===true?true:def.active!==false)
+    };
   });
+  const extras=existingSchedule.filter(r=>{
+    if(r?.id&&consumed.has(String(r.id)))return false;
+    if(r?.activity&&consumed.has("activity:"+norm(r.activity)))return false;
+    return !!cleanScheduleText(r?.activity);
+  }).map((r,i)=>({...r,id:r.id||`custom_${Date.now()}_${i}`,order:Number(r.order)||configured.length+i+1,active:r.active!==false,start:r.start||"",end:r.end||"",deadline:r.deadline||"",observation:r.observation||""}));
+  base.schedule=[...configured,...extras].sort((a,b)=>(Number(a.order)||9999)-(Number(b.order)||9999));
+  base.schedule.forEach((r,i)=>r.order=i+1);
 
   const tables={...base.tables};
   Object.entries(data.tables||{}).forEach(([key,rows])=>{
@@ -85,7 +119,9 @@ function normalizePayloadData(data){
   if(!contentSnapshots.processDescription)contentSnapshots.processDescription=currentProcessSnapshot();
   if(!contentSnapshots.administrativeLogistics)contentSnapshots.administrativeLogistics=currentLogisticsSnapshot();
   if(!contentSnapshots.induction)contentSnapshots.induction=currentInductionSnapshot();
-  return {...base,...data,schedule:base.schedule,tables,notes:data.notes||"",contentSnapshots};
+  if(!contentSnapshots.scheduleStructure)contentSnapshots.scheduleStructure=structure||currentScheduleStructureSnapshot();
+  const scheduleMeta={...(base.scheduleMeta||{}),...(data.scheduleMeta||{})};
+  return {...base,...data,schedule:base.schedule,scheduleMeta,tables,notes:data.notes||"",contentSnapshots};
 }
 
 function code(){
@@ -143,14 +179,15 @@ function renderPeriods(){
   $("#periodText").textContent=activePeriod().name;
   $("#docCode").textContent=code();
 }
+function cleanScheduleText(v){return String(v??"").replace(/\s+/g," ").trim();}
 function formatCell(v,type){
   if(type==="number") return v===""?"":Number(v);
   return v??"";
 }
 function renderSections(){
   const host=$("#dynamicSections");
-  let html=`<section class="panel"><div class="panel-head"><div><span class="eyebrow">1. Cronograma</span><h3>Fechas del proceso</h3><p class="help">Las actividades y responsables base ya están definidos. Completa o importa las fechas y ajusta el responsable solo si cambia en el período.</p></div></div>
-  <div class="table-scroll"><table class="data-table"><thead><tr><th>Actividad</th><th>Responsable</th><th>Fecha inicio</th><th>Fecha fin</th></tr></thead><tbody id="scheduleBody"></tbody></table></div></section>`;
+  let html=`<section class="panel"><div class="panel-head"><div><span class="eyebrow">1. Cronograma</span><h3>Cronograma de Trabajo de Titulación</h3><p class="help">Las actividades institucionales están precargadas. Cada actividad activa debe tener al menos una fecha o plazo. Puedes editar, agregar, desactivar y reordenar actividades para este período.</p></div><button class="secondary" type="button" id="addScheduleBtn">+ Agregar actividad</button></div>
+  <div class="table-scroll"><table class="data-table"><thead><tr><th>Orden</th><th>Actividad</th><th>Fecha inicio</th><th>Fecha fin</th><th>Fecha límite</th><th>Descripción</th><th>Responsable</th><th>Observación</th><th>Activo</th><th></th></tr></thead><tbody id="scheduleBody"></tbody></table></div></section>`;
   let n=2;
   Object.entries(CONFIG.tables).forEach(([key,t])=>{
     html+=`<section class="panel"><div class="panel-head"><div><span class="eyebrow">${n++}. ${esc(t.label)} · opcional</span><h3>${esc(t.title)}</h3><p class="help">${esc(t.help||"")} Esta sección no bloquea la generación del documento.</p></div><button class="secondary" type="button" data-add="${key}">+ Agregar fila</button></div>
@@ -159,12 +196,60 @@ function renderSections(){
   host.innerHTML=html;
   renderSchedule();
   Object.keys(CONFIG.tables).forEach(renderTable);
+  const addSchedule=$("#addScheduleBtn");
+  if(addSchedule)addSchedule.onclick=()=>{
+    payload.schedule.push({id:`custom_${Date.now()}`,order:payload.schedule.length+1,phaseId:"",activity:"Nueva actividad",description:"",responsible:"",start:"",end:"",deadline:"",observation:"",active:true});
+    if(payload.scheduleMeta)payload.scheduleMeta.status="Borrador";
+    renderSchedule();progress();localSave();
+  };
   host.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{payload.tables[b.dataset.add].push({});renderTable(b.dataset.add);progress();localSave();});
 }
 function renderSchedule(){
-  $("#scheduleBody").innerHTML=payload.schedule.map((r,i)=>`<tr><td><strong>${esc(r.activity)}</strong>${r.route?`<div class="help">${esc(r.route)}</div>`:""}</td><td><input type="text" data-sch="${i}" data-f="responsible" value="${esc(r.responsible||"")}" placeholder="Responsable"></td><td><input type="date" data-sch="${i}" data-f="start" value="${esc(r.start||"")}"></td><td><input type="date" data-sch="${i}" data-f="end" value="${esc(r.end||"")}"></td></tr>`).join("");
-  $("#scheduleBody").querySelectorAll("input").forEach(el=>el.onchange=()=>{payload.schedule[+el.dataset.sch][el.dataset.f]=el.value;progress();localSave();});
+  const body=$("#scheduleBody");if(!body)return;
+  payload.schedule.sort((a,b)=>(Number(a.order)||9999)-(Number(b.order)||9999));
+  payload.schedule.forEach((r,i)=>r.order=i+1);
+  body.innerHTML=payload.schedule.map((r,i)=>`<tr class="${r.active===false?'schedule-inactive':''}">
+    <td><strong>${i+1}</strong></td>
+    <td><input type="text" data-sch="${i}" data-f="activity" value="${esc(r.activity||'')}" placeholder="Actividad"></td>
+    <td><input type="date" data-sch="${i}" data-f="start" value="${esc(r.start||'')}"></td>
+    <td><input type="date" data-sch="${i}" data-f="end" value="${esc(r.end||'')}"></td>
+    <td><input type="date" data-sch="${i}" data-f="deadline" value="${esc(r.deadline||'')}"></td>
+    <td><input type="text" data-sch="${i}" data-f="description" value="${esc(r.description||'')}" placeholder="Descripción"></td>
+    <td><input type="text" data-sch="${i}" data-f="responsible" value="${esc(r.responsible||'')}" placeholder="Rol responsable"></td>
+    <td><input type="text" data-sch="${i}" data-f="observation" value="${esc(r.observation||'')}" placeholder="Opcional"></td>
+    <td><input type="checkbox" data-sch="${i}" data-f="active" ${r.active===false?'':'checked'} aria-label="Actividad activa"></td>
+    <td><div style="display:flex;gap:4px"><button class="row-remove" type="button" data-move="up" data-index="${i}" title="Subir">↑</button><button class="row-remove" type="button" data-move="down" data-index="${i}" title="Bajar">↓</button></div></td>
+  </tr>`).join("");
+  body.querySelectorAll("input").forEach(el=>el.onchange=()=>{
+    const row=payload.schedule[+el.dataset.sch];
+    row[el.dataset.f]=el.type==="checkbox"?el.checked:el.value;
+    if(payload.scheduleMeta)payload.scheduleMeta.status="Borrador";
+    progress();localSave();
+  });
+  body.querySelectorAll("[data-move]").forEach(btn=>btn.onclick=()=>{
+    const i=+btn.dataset.index;const j=btn.dataset.move==="up"?i-1:i+1;
+    if(j<0||j>=payload.schedule.length)return;
+    [payload.schedule[i],payload.schedule[j]]=[payload.schedule[j],payload.schedule[i]];
+    payload.schedule.forEach((r,k)=>r.order=k+1);
+    if(payload.scheduleMeta)payload.scheduleMeta.status="Borrador";
+    renderSchedule();progress();localSave();
+  });
 }
+function scheduleValidation(){
+  const errors=[];
+  const active=(payload.schedule||[]).filter(r=>r.active!==false);
+  if(!active.length)errors.push("Debe existir al menos una actividad activa en el cronograma.");
+  active.forEach((r,i)=>{
+    const name=cleanScheduleText(r.activity)||`Actividad ${i+1}`;
+    if(!r.start&&!r.end&&!r.deadline)errors.push(`${name}: falta fecha o plazo.`);
+    if(r.start&&r.end&&r.end<r.start)errors.push(`${name}: la fecha final no puede ser anterior a la fecha inicial.`);
+    const combined=[r.activity,r.description,r.responsible,r.observation].map(cleanScheduleText).join(" ");
+    if(/\b(por definir|n\/?a|pendiente|sin fecha)\b/i.test(combined))errors.push(`${name}: contiene un texto no permitido para el cronograma final.`);
+  });
+  return errors;
+}
+function scheduleComplete(){return scheduleValidation().length===0;}
+
 function renderTable(key){
   const t=CONFIG.tables[key],rows=payload.tables[key]||[];
   const body=$("#tbody-"+key);
@@ -181,7 +266,6 @@ function renderAssets(){
     if(k==="logo"&&!assets[k])el.textContent="Sin imagen";
   });
 }
-function scheduleComplete(){return payload.schedule.length===CONFIG.schedule.length&&payload.schedule.every(r=>r.start&&r.end);}
 function firstTableComplete(){
   if(!CONFIG.requiredTable) return true;
   const t=CONFIG.tables[CONFIG.requiredTable],rows=payload.tables[CONFIG.requiredTable]||[];
@@ -301,29 +385,44 @@ function parseImport(wb){
   if(sname){
     const rows=XLSX.utils.sheet_to_json(wb.Sheets[sname],{defval:""});
     const map=rows.length?mapHeaders(rows[0],[
+      {field:"order",label:"Orden",aliases:["secuencia"]},
       {field:"activity",label:"Actividad",aliases:["evento","fase"]},
-      {field:"responsible",label:"Responsable",aliases:["docente","encargado"]},
       {field:"start",label:"Fecha inicio",aliases:["inicio","desde","fecha inicial"]},
-      {field:"end",label:"Fecha fin",aliases:["fin","hasta","fecha final"]}
+      {field:"end",label:"Fecha fin",aliases:["fin","hasta","fecha final"]},
+      {field:"deadline",label:"Fecha límite",aliases:["fecha limite","limite","plazo"]},
+      {field:"description",label:"Descripción",aliases:["descripcion","detalle"]},
+      {field:"responsible",label:"Responsable",aliases:["docente","encargado"]},
+      {field:"observation",label:"Observación",aliases:["observacion","obs"]},
+      {field:"active",label:"Activo",aliases:["activa","habilitado"]}
     ]):{};
-    rows.forEach(r=>{
-      const a=bestActivity(r[map.activity]);
-      if(!a){
-        if(r[map.activity])report.warnings.push("Actividad no reconocida: "+r[map.activity]);
-        return;
+    rows.forEach((r,rowIndex)=>{
+      const rawActivity=String(r[map.activity]??"").trim();
+      if(!rawActivity)return;
+      const canonical=bestActivity(rawActivity);
+      let target=canonical?out.schedule.find(x=>norm(x.activity)===norm(canonical)):null;
+      if(!target){
+        target={id:`custom_import_${Date.now()}_${rowIndex}`,order:out.schedule.length+1,phaseId:"",activity:rawActivity,description:"",responsible:"",start:"",end:"",deadline:"",observation:"",active:true};
+        out.schedule.push(target);
       }
-      const target=out.schedule.find(x=>x.activity===a);
-      if(!target) return;
-      if(map.responsible && String(r[map.responsible]??"").trim()) target.responsible=String(r[map.responsible]).trim();
-      const start=isoDate(r[map.start]);
-      const end=isoDate(r[map.end]);
-      if(start) target.start=start;
-      if(end) target.end=end;
+      if(map.order&&Number(r[map.order]))target.order=Number(r[map.order]);
+      if(map.description&&String(r[map.description]??"").trim())target.description=String(r[map.description]).trim();
+      if(map.responsible&&String(r[map.responsible]??"").trim())target.responsible=String(r[map.responsible]).trim();
+      if(map.observation)target.observation=String(r[map.observation]??"").trim();
+      const start=isoDate(r[map.start]),end=isoDate(r[map.end]),deadline=isoDate(r[map.deadline]);
+      if(start)target.start=start;
+      if(end)target.end=end;
+      if(deadline)target.deadline=deadline;
+      if(map.active){
+        const av=norm(r[map.active]);
+        if(["no","false","0","inactivo","desactivado"].includes(av))target.active=false;
+        else if(["si","sí","true","1","activo","activado"].includes(av))target.active=true;
+      }
       report.recognized++;
     });
-    report.details.push("Cronograma: "+out.schedule.filter(r=>r.start||r.end).length+" actividades con fecha");
+    out.schedule.sort((a,b)=>(Number(a.order)||9999)-(Number(b.order)||9999)).forEach((r,i)=>r.order=i+1);
+    report.details.push("Cronograma: "+out.schedule.filter(r=>r.active!==false&&(r.start||r.end||r.deadline)).length+" actividades activas con programación");
   }else{
-    report.warnings.push("No se encontró la hoja CRONOGRAMA. Se conservarán las fechas ya registradas.");
+    report.warnings.push("No se encontró la hoja CRONOGRAMA. Se conservará la programación ya registrada.");
   }
 
   Object.entries(CONFIG.tables).forEach(([key,t])=>{
@@ -375,7 +474,7 @@ function parseImport(wb){
     }
   }
 
-  report.missing=out.schedule.filter(r=>!r.start||!r.end).map(r=>r.activity);
+  report.missing=out.schedule.filter(r=>r.active!==false&&!r.start&&!r.end&&!r.deadline).map(r=>r.activity);
   return {out,report};
 }
 function showImport(parsed){
@@ -413,7 +512,7 @@ function showImport(parsed){
 }
 function downloadTemplate(){
   const wb=XLSX.utils.book_new();const p=activePeriod();
-  const info=[["PLANTILLA DE DATOS · "+CONFIG.title],["Instrucciones"],["1. Completa únicamente las celdas necesarias."],["2. No cambies el nombre de las hojas si no es necesario."],["3. La app reconoce alias como Inicio/Fecha inicio/Desde y Fin/Fecha fin/Hasta."],["4. Puedes dejar datos pendientes y volver a importar después."],["5. Solo el CRONOGRAMA y el logo son obligatorios para generar. Las demás hojas complementan el documento cuando contienen datos."]];
+  const info=[["PLANTILLA DE DATOS · "+CONFIG.title],["Instrucciones"],["1. Completa únicamente las celdas necesarias."],["2. No cambies el nombre de las hojas si no es necesario."],["3. La app reconoce alias como Inicio/Fecha inicio/Desde y Fin/Fecha fin/Hasta."],["4. Puedes dejar datos pendientes y volver a importar después."],["5. Cada actividad activa del CRONOGRAMA debe tener al menos una fecha o plazo. El logo también es obligatorio. Las demás hojas complementan el documento cuando contienen datos."]];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(info),"INSTRUCCIONES");
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([
     ["Campo","Valor"],
@@ -424,14 +523,14 @@ function downloadTemplate(){
     ["Documento",CONFIG.title],
     ["Clave documento",CONFIG.documentKey]
   ]),"PERIODO");
-  const sch=[["Actividad","Responsable","Fecha inicio","Fecha fin"],...payload.schedule.map(r=>[r.activity,r.responsible||"",r.start||"",r.end||""])];const sws=XLSX.utils.aoa_to_sheet(sch);sws["!cols"]=[{wch:45},{wch:40},{wch:16},{wch:16}];XLSX.utils.book_append_sheet(wb,sws,"CRONOGRAMA");
+  const sch=[["Orden","Actividad","Fecha inicio","Fecha fin","Fecha límite","Descripción","Responsable","Observación","Activo"],...payload.schedule.map((r,i)=>[r.order||i+1,r.activity||"",r.start||"",r.end||"",r.deadline||"",r.description||"",r.responsible||"",r.observation||"",r.active===false?"No":"Sí"])];const sws=XLSX.utils.aoa_to_sheet(sch);sws["!cols"]=[{wch:9},{wch:45},{wch:16},{wch:16},{wch:16},{wch:55},{wch:42},{wch:35},{wch:10}];XLSX.utils.book_append_sheet(wb,sws,"CRONOGRAMA");
   Object.entries(CONFIG.tables).forEach(([key,t])=>{const rows=(payload.tables[key]||[]).filter(r=>Object.values(r).some(v=>String(v??"").trim()!==""));const data=[t.columns.map(c=>c.label),...(rows.length?rows.map(r=>t.columns.map(c=>r[c.field]??"")):[t.columns.map(()=> "")])];const ws=XLSX.utils.aoa_to_sheet(data);ws["!cols"]=t.columns.map(c=>({wch:c.width||20}));XLSX.utils.book_append_sheet(wb,ws,t.sheet);});
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Observaciones"],[payload.notes||""]]),"OBSERVACIONES");
   XLSX.writeFile(wb,"Plantilla_"+CONFIG.shortName+"_"+p.name.replace(/[^A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ]+/g,"-")+".xlsx");
 }
 async function generate(){
   payload.notes=$("#notesInput").value.trim();
-  if(!scheduleComplete()){alert("Completa las fechas del cronograma.");return;}
+  const scheduleErrors=scheduleValidation();if(scheduleErrors.length){alert("Corrige el cronograma antes de generar el PDF:\n\n"+scheduleErrors.join("\n"));return;}
   if(CONFIG.requiredTable && !firstTableComplete()){alert("Completa al menos una fila de "+CONFIG.tables[CONFIG.requiredTable].label+".");return;}
   if(!assets.logo){alert("Sube el logo institucional.");return;}
   const btn=$("#generateBtn");btn.disabled=true;setStatus("Generando documento…");
