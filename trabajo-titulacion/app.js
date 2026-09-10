@@ -49,13 +49,18 @@ function currentLogisticsSnapshot(){
   if(!block||!block.assignmentsTable||!block.digitalResourcesTable||!block.communication)return null;
   return JSON.parse(JSON.stringify(block));
 }
+function currentInductionSnapshot(){
+  const block=window.DOC_TIT_TRABAJO_INDUCTION;
+  if(!block||!Array.isArray(block.modalities)||!block.modalities.length||!Array.isArray(block.orientation)||!Array.isArray(block.communication))return null;
+  return JSON.parse(JSON.stringify(block));
+}
 function blankPayload(){
   const tables={};
   Object.entries(CONFIG.tables).forEach(([key,t])=>{tables[key]=(t.initialRows||[]).map(r=>({...r}));});
   return {schedule:CONFIG.schedule.map(a=>{
     const def=typeof a==="string"?{activity:a}:a;
     return {activity:def.activity,responsible:def.responsible||"",description:def.description||"",route:def.route||"",start:"",end:""};
-  }),tables,notes:"",contentSnapshots:{legalBase:currentLegalBaseSnapshot(),methodology:currentMethodologySnapshot(),requirements:currentRequirementsSnapshot(),processDescription:currentProcessSnapshot(),administrativeLogistics:currentLogisticsSnapshot()}};
+  }),tables,notes:"",contentSnapshots:{legalBase:currentLegalBaseSnapshot(),methodology:currentMethodologySnapshot(),requirements:currentRequirementsSnapshot(),processDescription:currentProcessSnapshot(),administrativeLogistics:currentLogisticsSnapshot(),induction:currentInductionSnapshot()}};
 }
 function normalizePayloadData(data){
   const base=blankPayload();
@@ -79,6 +84,7 @@ function normalizePayloadData(data){
   if(!contentSnapshots.requirements)contentSnapshots.requirements=currentRequirementsSnapshot();
   if(!contentSnapshots.processDescription)contentSnapshots.processDescription=currentProcessSnapshot();
   if(!contentSnapshots.administrativeLogistics)contentSnapshots.administrativeLogistics=currentLogisticsSnapshot();
+  if(!contentSnapshots.induction)contentSnapshots.induction=currentInductionSnapshot();
   return {...base,...data,schedule:base.schedule,tables,notes:data.notes||"",contentSnapshots};
 }
 
