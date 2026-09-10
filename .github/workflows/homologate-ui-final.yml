@@ -18,11 +18,12 @@ jobs:
           node-version: '20'
       - name: Apply UI homologation
         run: python .github/scripts/homologate_ui_final.py
-      - name: Validate JavaScript
-        run: |
-          node --check complexivo/app.js
-          node --check complexivo/data-workspace.js
-          node --check shared/module-ui.js
+      - name: Check Complexivo app
+        run: node --check complexivo/app.js
+      - name: Check Complexivo workspace
+        run: node --check complexivo/data-workspace.js
+      - name: Check shared module UI
+        run: node --check shared/module-ui.js
       - name: Validate homologated structure
         run: |
           grep -q 'Completa únicamente las tablas necesarias del período' complexivo/app.js
@@ -47,4 +48,4 @@ jobs:
             git commit -m 'Align DOC-TIT workspaces and completion states'
             git push
           fi
-# retry-2
+# retry-3
