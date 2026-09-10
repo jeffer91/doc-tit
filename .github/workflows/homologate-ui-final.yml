@@ -18,15 +18,44 @@ jobs:
           node-version: '20'
       - name: Apply UI homologation
         run: python .github/scripts/homologate_ui_final.py
-      - name: Capture generated UI and syntax output
+      - name: Normalize selector quoting
+        shell: python
         run: |
-          cp shared/module-ui.js .github/debug-module-ui.js
-          node --check shared/module-ui.js > .github/debug-module-ui.log 2>&1 || true
-      - name: Commit diagnostics
+          from pathlib import Path
+          p=Path('shared/module-ui.js')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('const check=$("input[type="checkbox"][data-f="active"]",tr);', 'const check=$(\'input[type="checkbox"][data-f="active"]\',tr);')
+          s=s.replace('$("[data-card-action="open"]",card)', '$(\'[data-card-action="open"]\',card)')
+          s=s.replace('$("[data-card-action="download"]",card)', '$(\'[data-card-action="download"]\',card)')
+          s=s.replace('$("[data-card-action="upload"]",card)', '$(\'[data-card-action="upload"]\',card)')
+          p.write_text(s,encoding='utf-8')
+      - name: Validate JavaScript
+        run: |
+          node --check complexivo/app.js
+          node --check complexivo/data-workspace.js
+          node --check shared/module-ui.js
+      - name: Validate homologated structure
+        run: |
+          grep -q 'Completa únicamente las tablas necesarias del período' complexivo/app.js
+          grep -q 'id="dataWorkspacePercent"' complexivo/data-workspace.js
+          grep -q 'Recursos del documento' complexivo/data-workspace.js
+          grep -q 'Cronograma general' shared/module-ui.js
+          grep -q 'Fechas y responsables de las actividades del proceso' shared/module-ui.js
+          grep -q 'data-card-action="download"' shared/module-ui.js
+          grep -q 'const tablePercent=requiredTables' shared/module-ui.js
+          grep -q 'ready=pending===0' shared/module-ui.js
+          grep -q 'doc-standard-workspace-state' shared/module-ui.css
+          grep -q 'module-ui.js?v=20260910-audit-4' trabajo-titulacion/index.html
+          grep -q 'data-workspace.js?v=20260910-audit-4' complexivo/index.html
+      - name: Commit homologated UI
         run: |
           git config user.name 'jeffer91'
           git config user.email 'jeffersonvillarreal91@gmail.com'
-          git add .github/debug-module-ui.js .github/debug-module-ui.log
-          git commit -m 'Capture temporary DOC-TIT UI diagnostics'
-          git push
-# diagnostic-run
+          git add complexivo/app.js complexivo/data-workspace.js complexivo/index.html shared/module-ui.js shared/module-ui.css trabajo-titulacion/index.html articulo-academico/index.html
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+          else
+            git commit -m 'Align DOC-TIT workspaces and completion states'
+            git push
+          fi
+# final-run
