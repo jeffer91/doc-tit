@@ -1,0 +1,45 @@
+name: Harmonize DOC-TIT Finish
+
+on:
+  push:
+    paths:
+      - '.github/workflows/harmonize-doc-tit-finish.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  finish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Apply finishing corrections
+        run: python .github/scripts/harmonize_doc_tit_finish.py
+      - name: Validate JavaScript
+        run: |
+          node --check complexivo/data-workspace.js
+          node --check trabajo-titulacion/full-document.js
+          node --check articulo-academico/full-document.js
+          node --check articulo-academico/app.js
+      - name: Validate standardization
+        run: |
+          grep -q '3. Identidad institucional' complexivo/index.html
+          grep -q 'centralTitlePt' trabajo-titulacion/full-document.js
+          grep -q 'centralTitlePt' articulo-academico/full-document.js
+          grep -q 'const maxW=lineIndex===0?bodyW:bodyW-hanging' trabajo-titulacion/full-document.js
+          grep -q 'const maxW=lineIndex===0?bodyW:bodyW-hanging' articulo-academico/full-document.js
+          ! grep -q 'La planificación incorpora observaciones específicas registradas para el período' articulo-academico/full-document.js
+      - name: Commit finishing corrections
+        run: |
+          git config user.name 'jeffer91'
+          git config user.email 'jeffersonvillarreal91@gmail.com'
+          git add complexivo/index.html trabajo-titulacion/full-document.js articulo-academico/full-document.js articulo-academico/app.js
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+          else
+            git commit -m 'Finish DOC-TIT format harmonization'
+            git push
+          fi
