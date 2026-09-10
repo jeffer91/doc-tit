@@ -50,7 +50,7 @@ def standardized_cover(s, document_id):
   }}
   function executive(){{'''
     if not pat.search(s): raise SystemExit(f'cover not found {document_id}')
-    return pat.sub(replacement,s,count=1)
+    return pat.sub(lambda _: replacement,s,count=1)
 
 
 def better_refs(s):
@@ -66,7 +66,7 @@ def better_refs(s):
   }
   function renderReferences(){'''
     if not pat.search(s): raise SystemExit('referenceParagraph not found')
-    return pat.sub(replacement,s,count=1)
+    return pat.sub(lambda _: replacement,s,count=1)
 
 for p,docid in [('trabajo-titulacion/full-document.js','trabajo-titulacion'),('articulo-academico/full-document.js','articulo-academico')]:
     s=read(p);s=standardized_cover(s,docid);s=better_refs(s)
