@@ -37,9 +37,7 @@
   ];
 
   const RESOURCE_BLOCKS = [
-    {id:"smart",title:"Información adicional",description:"Texto libre que la app analiza y distribuye en el PDF.",target:"#smartTextInput",required:false},
-    {id:"logo",title:"Logo institucional",description:"Recurso obligatorio para la cabecera del documento.",target:"#logoUpload",required:true},
-    {id:"images",title:"Imágenes opcionales",description:"Recursos gráficos que pueden acompañar determinadas secciones.",target:"#introImageUpload",required:false}
+    {id:"logo",title:"Logo institucional",description:"Recurso obligatorio para la cabecera del documento.",target:"#logoUpload",required:true}
   ];
 
   const $ = (selector, root=document) => root.querySelector(selector);
@@ -125,8 +123,8 @@
     if(legacy) legacy.classList.add("legacy-requirements-panel");
 
     const selectors=[
-      "#scheduleBody","#distributionBody","#operationalPlanBody","#smartTextInput",
-      "#logoUpload","#introImageUpload"
+      "#scheduleBody","#distributionBody","#operationalPlanBody",
+      "#logoUpload"
     ];
     selectors.forEach(selector=>{
       const panel=editorPanelForTarget(selector);

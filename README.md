@@ -18,8 +18,9 @@ La raíz del sitio funciona únicamente como menú general. El panel lateral de 
 
 - `documents.js` — manifiesto maestro de documentos y rutas.
 - `sidebar.js` / `sidebar.css` — navegación lateral común.
+- `module-ui.js` / `module-ui.css` — carcasa visual común, estado y acción principal de las planificaciones.
 - `institutional-config.js` — responsables institucionales comunes.
-- `pdf/standards.js` — constantes maestras RGI, portada, tablas y paginación para nuevos generadores.
+- `pdf/standards.js` — constantes maestras RGI y APA institucional para encabezado, portada, cuerpo, tablas, referencias y paginación.
 - `favicon.svg` — identidad visual común.
 
 El contenido, cronograma, diccionario de actividades, validaciones y generador de cada planificación permanecen dentro de su propia carpeta.
