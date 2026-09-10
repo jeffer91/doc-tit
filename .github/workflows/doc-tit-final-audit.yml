@@ -1,0 +1,88 @@
+name: DOC-TIT Final Audit
+
+on:
+  push:
+    paths:
+      - '.github/workflows/doc-tit-final-audit.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Apply final audit corrections
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          p=Path('trabajo-titulacion/full-document.js')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('    if(clean(ctx.payload?.notes))bullet("La planificación incorpora observaciones específicas registradas por el usuario para este período.");\n','')
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('shared/module-ui.js')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('state.required?"pending":"optional"','state.required?"required":"optional"')
+          s=s.replace('doc-standard-card-chip pending">Obligatorio','doc-standard-card-chip required">Obligatorio')
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('shared/module-ui.css')
+          s=p.read_text(encoding='utf-8')
+          needle='.doc-standard-card-chip.optional{background:#edf2fb;color:#315b89}'
+          s=s.replace(needle,needle+'.doc-standard-card-chip.required{background:#eef2f6;color:#5e6978}')
+          p.write_text(s,encoding='utf-8')
+
+          for name in ['trabajo-titulacion/index.html','articulo-academico/index.html']:
+              p=Path(name);s=p.read_text(encoding='utf-8')
+              s=re.sub(r'module-ui\.css\?v=[^"<]+','module-ui.css?v=20260910-audit-3',s)
+              s=re.sub(r'module-ui\.js\?v=[^"<]+','module-ui.js?v=20260910-audit-3',s)
+              s=re.sub(r'\.\./shared/pdf/standards\.js\?v=[^"<]+','../shared/pdf/standards.js?v=20260910-audit-3',s)
+              s=re.sub(r'full-document\.js\?v=[^"<]+','full-document.js?v=20260910-audit-3',s)
+              p.write_text(s,encoding='utf-8')
+
+          p=Path('complexivo/index.html');s=p.read_text(encoding='utf-8')
+          s=re.sub(r'\.\./shared/pdf/standards\.js\?v=[^"<]+','../shared/pdf/standards.js?v=20260910-audit-3',s)
+          p.write_text(s,encoding='utf-8')
+      - name: Validate JavaScript
+        run: |
+          node --check shared/module-ui.js
+          node --check shared/pdf/standards.js
+          node --check complexivo/data-workspace.js
+          node --check trabajo-titulacion/app.js
+          node --check trabajo-titulacion/full-document.js
+          node --check articulo-academico/app.js
+          node --check articulo-academico/full-document.js
+      - name: Validate unified application
+        run: |
+          grep -q 'doc-standard-card-list' shared/module-ui.css
+          grep -q 'buildCards' shared/module-ui.js
+          grep -q 'state.required?"required":"optional"' shared/module-ui.js
+          grep -q 'module-ui.js?v=20260910-audit-3' trabajo-titulacion/index.html
+          grep -q 'module-ui.js?v=20260910-audit-3' articulo-academico/index.html
+          grep -q 'smart-panel" hidden aria-hidden="true"' complexivo/index.html
+          grep -q '3. Identidad institucional' complexivo/index.html
+          ! grep -A4 'const RESOURCE_BLOCKS' complexivo/data-workspace.js | grep -q 'Información adicional'
+          ! grep -q 'La planificación incorpora observaciones específicas registradas por el usuario para este período' trabajo-titulacion/full-document.js
+          ! grep -q 'La planificación incorpora observaciones específicas registradas para el período' articulo-academico/full-document.js
+          grep -q 'referenceHangingCm: 1.27' shared/pdf/standards.js
+          grep -q 'headerColumnsCm: Object.freeze(\[4.5, 9, 4.5\])' shared/pdf/standards.js
+          grep -q 'for(let p=2;p<=total;p++)' trabajo-titulacion/full-document.js
+          grep -q 'for(let p=2;p<=total;p++)' articulo-academico/full-document.js
+      - name: Commit final audited state
+        run: |
+          git config user.name 'jeffer91'
+          git config user.email 'jeffersonvillarreal91@gmail.com'
+          git add shared/module-ui.js shared/module-ui.css complexivo/index.html trabajo-titulacion/index.html articulo-academico/index.html trabajo-titulacion/full-document.js
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+          else
+            git commit -m 'Complete DOC-TIT UI and format audit corrections'
+            git push
+          fi
