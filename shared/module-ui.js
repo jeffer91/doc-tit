@@ -158,7 +158,7 @@
     const desc=$(".help",panel)?.textContent?.trim()||"Información estructurada del documento.";
     const state=panelState(panel);
     const card=document.createElement("article");card.className="doc-standard-card";
-    card.innerHTML=`<div class="doc-standard-card-main"><div class="doc-standard-card-title-row"><span class="doc-standard-card-title">${esc(title)}</span><span class="doc-standard-card-chip ${state.kind}">${esc(state.status)}</span><span class="doc-standard-card-chip ${state.required?"pending":"optional"}">${state.required?"Obligatoria":"Complementaria"}</span></div><p class="doc-standard-card-desc">${esc(desc)}</p><div class="doc-standard-card-meta">${esc(state.meta)}</div></div><div class="doc-standard-card-actions"><button type="button">Abrir tabla</button></div>`;
+    card.innerHTML=`<div class="doc-standard-card-main"><div class="doc-standard-card-title-row"><span class="doc-standard-card-title">${esc(title)}</span><span class="doc-standard-card-chip ${state.kind}">${esc(state.status)}</span><span class="doc-standard-card-chip ${state.required?"required":"optional"}">${state.required?"Obligatoria":"Complementaria"}</span></div><p class="doc-standard-card-desc">${esc(desc)}</p><div class="doc-standard-card-meta">${esc(state.meta)}</div></div><div class="doc-standard-card-actions"><button type="button">Abrir tabla</button></div>`;
     card.querySelector("button").addEventListener("click",()=>openEditor(panel));
     return {card,state};
   }
@@ -175,7 +175,7 @@
     if(logo){
       const ok=logoComplete();
       const card=document.createElement("article");card.className="doc-standard-card";
-      card.innerHTML=`<div class="doc-standard-card-main"><div class="doc-standard-card-title-row"><span class="doc-standard-card-title">Logo institucional</span><span class="doc-standard-card-chip ${ok?"complete":"pending"}">${ok?"Completo":"Pendiente"}</span><span class="doc-standard-card-chip pending">Obligatorio</span></div><p class="doc-standard-card-desc">Recurso institucional utilizado en la cabecera del documento.</p><div class="doc-standard-card-meta">${ok?"Logo institucional cargado":"Necesario para generar el PDF"}</div></div><div class="doc-standard-card-actions"><button type="button">Abrir recurso</button></div>`;
+      card.innerHTML=`<div class="doc-standard-card-main"><div class="doc-standard-card-title-row"><span class="doc-standard-card-title">Logo institucional</span><span class="doc-standard-card-chip ${ok?"complete":"pending"}">${ok?"Completo":"Pendiente"}</span><span class="doc-standard-card-chip required">Obligatorio</span></div><p class="doc-standard-card-desc">Recurso institucional utilizado en la cabecera del documento.</p><div class="doc-standard-card-meta">${ok?"Logo institucional cargado":"Necesario para generar el PDF"}</div></div><div class="doc-standard-card-actions"><button type="button">Abrir recurso</button></div>`;
       card.querySelector("button").addEventListener("click",()=>openEditor(logo));resourceHost.appendChild(card);
       states.push({required:true,complete:ok});
     }

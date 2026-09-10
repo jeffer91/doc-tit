@@ -345,7 +345,6 @@ async function generateAndDownload(ctx,filename){
     bullet("Período académico: "+ctx.period.name+".");
     bullet("Código documental: "+ctx.code+".");
     bullet("El cronograma importado desde la plantilla constituye la fuente operativa de fechas para el período.");
-    if(clean(ctx.payload?.notes))bullet("La planificación incorpora observaciones específicas registradas por el usuario para este período.");
   }
   function resolveScheduleStructure(){
     const snapshot=ctx.payload?.contentSnapshots?.scheduleStructure;
