@@ -1,0 +1,56 @@
+name: Patch Trabajo Section 7
+
+on:
+  push:
+    paths:
+      - ".github/workflows/patch-trabajo-section7.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply Section 7 patch
+        run: python .github/scripts/patch_trabajo_section7.py
+      - name: Validate JavaScript and wiring
+        run: |
+          node --check trabajo-titulacion/logistics-config.js
+          node --check trabajo-titulacion/induction-config.js
+          node --check trabajo-titulacion/full-document.js
+          node --check trabajo-titulacion/app.js
+          grep -q 'type":"administrativeLogistics"' trabajo-titulacion/full-document.js
+          grep -q 'function renderAdministrativeLogistics' trabajo-titulacion/full-document.js
+          grep -q 'contentSnapshots?.administrativeLogistics' trabajo-titulacion/full-document.js
+          grep -q 'type":"induction"' trabajo-titulacion/full-document.js
+          grep -q 'function renderInduction' trabajo-titulacion/full-document.js
+          grep -q 'contentSnapshots?.induction' trabajo-titulacion/full-document.js
+          grep -q 'currentLogisticsSnapshot' trabajo-titulacion/app.js
+          grep -q 'currentInductionSnapshot' trabajo-titulacion/app.js
+          grep -q 'logistics-config.js?v=20260910-section7-1' trabajo-titulacion/index.html
+          grep -q 'induction-config.js?v=20260910-section7-1' trabajo-titulacion/index.html
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          text=Path('trabajo-titulacion/app.js').read_text(encoding='utf-8')
+          start=text.index('const CONFIG=')+len('const CONFIG=')
+          end=text.index('\nconst MONTHS=',start)
+          cfg=json.loads(text[start:end])
+          assert 'recursos' not in cfg.get('tables',{}), 'Recursos no debe ser tabla por período en Sección 6'
+          full=Path('trabajo-titulacion/full-document.js').read_text(encoding='utf-8')
+          assert 'La inducción proporciona una comprensión clara de las modalidades' not in full, 'Quedó texto simplificado antiguo de Sección 7'
+          assert '7.1. Orientación sobre Modalidades de Titulación (Complexivo y Tesis)' in full
+          print('Secciones 6 y 7 validadas')
+          PY
+      - name: Commit Section 7 implementation
+        run: |
+          git config user.name "jeffer91"
+          git config user.email "jeffersonvillarreal91@gmail.com"
+          git add trabajo-titulacion/full-document.js trabajo-titulacion/app.js trabajo-titulacion/index.html
+          git commit -m "Implement controlled Trabajo induction section"
+          git push
