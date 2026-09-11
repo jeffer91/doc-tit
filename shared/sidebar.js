@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  // Shared DOC-TIT sidebar navigation · v5
+  // Shared DOC-TIT sidebar navigation · v6
 
   const LAST_DOCUMENT_KEY = "doc-tit-last-document";
 
@@ -130,6 +130,21 @@
     document.body.appendChild(script);
   }
 
+  function loadDocumentCore() {
+    if (!document.querySelector('link[data-doc-tit-document-core]')) {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.dataset.docTitDocumentCore = "1";
+      link.href = resolveBasePath() + "shared/document-core.css?v=20260911-1";
+      document.head.appendChild(link);
+    }
+    if (window.DOC_TIT_CORE || document.querySelector('script[data-doc-tit-document-core]')) return;
+    const script = document.createElement("script");
+    script.dataset.docTitDocumentCore = "1";
+    script.src = resolveBasePath() + "shared/document-core.js?v=20260911-1";
+    document.body.appendChild(script);
+  }
+
   function init() {
     document.querySelectorAll("[data-doc-tit-navigation]").forEach(renderNavigation);
     cleanLegacySidebar();
@@ -137,6 +152,7 @@
     keepComplexivoDirect();
     persistTemplateImport();
     loadPlanningTemplates();
+    loadDocumentCore();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
