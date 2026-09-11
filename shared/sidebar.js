@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  // Shared DOC-TIT sidebar navigation · v7
+  // Shared DOC-TIT sidebar navigation · v8
 
   const LAST_DOCUMENT_KEY = "doc-tit-last-document";
 
@@ -68,14 +68,14 @@
     });
   }
 
-  function cleanLegacySidebar() {
+  function normalizeLegacyShell() {
+    // Compatibilidad de presentación solamente: elimina enlaces de menú antiguos que aún existan en HTML histórico.
     document.querySelectorAll(".nav-back, .sidebar > a[href='../']").forEach(el => el.remove());
     document.querySelectorAll(".sidebar").forEach(sidebar => {
       Array.from(sidebar.childNodes).forEach(node => {
         if (node.nodeType === Node.TEXT_NODE && String(node.textContent || "").includes("\\n")) node.remove();
       });
     });
-    document.querySelectorAll(".brand span").forEach(el => { el.textContent = "Gestión documental"; });
   }
 
   function fixSummaryGrammar() {
@@ -153,15 +153,24 @@
     document.body.appendChild(script);
   }
 
+  function loadPresentationUI() {
+    if (document.querySelector('script[data-doc-tit-presentation-ui]')) return;
+    const script = document.createElement("script");
+    script.dataset.docTitPresentationUi = "1";
+    script.src = resolveBasePath() + "shared/presentation-ui.js?v=20260911-1";
+    document.body.appendChild(script);
+  }
+
   function init() {
     document.querySelectorAll("[data-doc-tit-navigation]").forEach(renderNavigation);
-    cleanLegacySidebar();
+    normalizeLegacyShell();
     fixSummaryGrammar();
     keepComplexivoDirect();
     persistTemplateImport();
     loadPlanningTemplates();
     loadDocumentCore();
     loadRuntimeFixes();
+    loadPresentationUI();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
