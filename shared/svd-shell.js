@@ -238,7 +238,7 @@
     const periodBox=$(".svd-period-slot .period-box",root);
     if(periodBox){
       const label=$("label",periodBox);
-      if(label)label.textContent="Período activo";
+      if(label&&label.textContent!=="Período activo")label.textContent="Período activo";
     }
   }
 
