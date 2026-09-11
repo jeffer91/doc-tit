@@ -73,6 +73,25 @@ const presentation=readFileSync(join(root,"shared/presentation-ui.js"),"utf8");
 if(!presentation.includes('data-presentation="cover"')||!presentation.includes('data-presentation="header"'))failures.push("presentation-ui.js: Portada y Cabecera deben existir como apartados independientes.");
 if(!presentation.includes("DOC_TIT_INSTITUTIONAL"))failures.push("presentation-ui.js: Portada y Cabecera deben reutilizar la fuente institucional única.");
 
+if(!sidebar.includes("svd-shell.js"))failures.push("sidebar.js: debe cargar el shell visual SVD 2.0.");
+for(const rel of ["shared/svd-shell.js","shared/svd-shell.css"]){
+  if(!existsSync(join(root,rel)))failures.push(`Falta ${rel}.`);
+}
+if(existsSync(join(root,"shared/svd-shell.js"))){
+  const svd=readFileSync(join(root,"shared/svd-shell.js"),"utf8");
+  for(const label of ["Información","Cronograma","Recursos","Portada","Cabecera"]){
+    if(!svd.includes(label))failures.push(`svd-shell.js: falta la sección ${label}.`);
+  }
+  if(!svd.includes("svd-period-slot")||!svd.includes("svd-documents-slot")||!svd.includes("svd-section-tabs"))failures.push("svd-shell.js: debe mantener Período → Documentos → Secciones como estructura principal.");
+}
+if(existsSync(join(root,"shared/svd-shell.css"))){
+  const css=readFileSync(join(root,"shared/svd-shell.css"),"utf8");
+  if(!css.includes(".svd2 .sidebar{display:none!important}"))failures.push("svd-shell.css: SVD 2.0 no debe depender del menú lateral permanente.");
+  if(!css.includes("flex-direction:row!important"))failures.push("svd-shell.css: los documentos deben navegarse horizontalmente.");
+  if(!css.includes("--svd-pending-soft:#fff6dd"))failures.push("svd-shell.css: Pendiente debe usar amarillo suave.");
+  if(!css.includes(".doc-standard-generate.pending{background:#e7ebef"))failures.push("svd-shell.css: Generar PDF bloqueado debe verse neutro, no rojo.");
+}
+
 if(failures.length){
   console.error("QA estática falló:\n- "+failures.join("\n- "));
   process.exit(1);
