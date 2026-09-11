@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  // Shared DOC-TIT sidebar navigation · v6
+  // Shared DOC-TIT sidebar navigation · v7
 
   const LAST_DOCUMENT_KEY = "doc-tit-last-document";
 
@@ -126,7 +126,7 @@
     if (document.querySelector("script[data-doc-tit-planning-templates]")) return;
     const script = document.createElement("script");
     script.dataset.docTitPlanningTemplates = "1";
-    script.src = resolveBasePath() + "shared/planning-templates.js?v=20260908-1";
+    script.src = resolveBasePath() + "shared/planning-templates.js?v=20260911-3";
     document.body.appendChild(script);
   }
 
@@ -145,6 +145,14 @@
     document.body.appendChild(script);
   }
 
+  function loadRuntimeFixes() {
+    if (document.querySelector('script[data-doc-tit-runtime-fixes]')) return;
+    const script = document.createElement("script");
+    script.dataset.docTitRuntimeFixes = "1";
+    script.src = resolveBasePath() + "shared/runtime-fixes.js?v=20260911-1";
+    document.body.appendChild(script);
+  }
+
   function init() {
     document.querySelectorAll("[data-doc-tit-navigation]").forEach(renderNavigation);
     cleanLegacySidebar();
@@ -153,6 +161,7 @@
     persistTemplateImport();
     loadPlanningTemplates();
     loadDocumentCore();
+    loadRuntimeFixes();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });

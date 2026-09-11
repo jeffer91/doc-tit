@@ -39,15 +39,9 @@ for(const rel of ["complexivo/index.html","trabajo-titulacion/index.html","artic
 
 const planning=readFileSync(join(root,"shared/planning-templates.js"),"utf8");
 const workSegment=planning.split('"trabajo-titulacion":')[1]?.split('"articulo-academico":')[0]||"";
-if(/#tbody-(carreras|tutores|defensas|recursos)/.test(workSegment)){
-  failures.push("planning-templates.js: Trabajo de Titulación referencia tablas que su app actual no crea.");
-}
-if(!/deadline/.test(workSegment)){
-  failures.push("planning-templates.js: la plantilla del cronograma de Trabajo debe conservar Fecha límite.");
-}
-if(/setInterval\s*\(/.test(planning)){
-  failures.push("planning-templates.js: no debe usar refresco periódico; usa eventos/MutationObserver.");
-}
+if(/#tbody-(carreras|tutores|defensas|recursos)/.test(workSegment))failures.push("planning-templates.js: Trabajo de Titulación referencia tablas que su app actual no crea.");
+if(!/deadline/.test(workSegment))failures.push("planning-templates.js: la plantilla del cronograma de Trabajo debe conservar Fecha límite.");
+if(/setInterval\s*\(/.test(planning))failures.push("planning-templates.js: no debe usar refresco periódico; usa eventos/MutationObserver.");
 
 const core=readFileSync(join(root,"shared/document-core.js"),"utf8");
 if(!core.includes("doc-tit:template-applied"))failures.push("document-core.js: falta seguimiento de cambios importados.");
@@ -56,9 +50,19 @@ if(/#generateBtn[^;\n]*dirty=false/.test(core))failures.push("document-core.js: 
 
 for(const rel of ["trabajo-titulacion/cloud.js","articulo-academico/cloud.js"]){
   const src=readFileSync(join(root,rel),"utf8");
-  if(!src.includes("doc-tit-cloud-cache-v2"))failures.push(`${rel}: falta caché de períodos/documentos para modo offline.`);
-  if(!src.includes("isOnline"))failures.push(`${rel}: falta indicador de conectividad para el Core.`);
+  if(!src.includes("doc-tit-cloud-cache-v3"))failures.push(`${rel}: falta caché v3 para modo offline.`);
+  if(!src.includes("pendingAssets"))failures.push(`${rel}: falta cola offline de imágenes.`);
+  if(!src.includes("ensureAdminSession"))failures.push(`${rel}: falta autenticación administrativa.`);
+  if(!src.includes("persistSession:true"))failures.push(`${rel}: la sesión administrativa debe persistir.`);
+  if(!src.includes('window.addEventListener("online"'))failures.push(`${rel}: falta resincronización al reconectar.`);
 }
+
+const complexCloud=readFileSync(join(root,"complexivo/cloud.js"),"utf8");
+if(!complexCloud.includes("ensureAdminSession")||!complexCloud.includes("persistSession:true"))failures.push("complexivo/cloud.js: falta autenticación administrativa persistente.");
+
+const sidebar=readFileSync(join(root,"shared/sidebar.js"),"utf8");
+if(!sidebar.includes("runtime-fixes.js"))failures.push("sidebar.js: debe cargar runtime-fixes.js.");
+if(!existsSync(join(root,"shared/runtime-fixes.js")))failures.push("Falta shared/runtime-fixes.js.");
 
 if(failures.length){
   console.error("QA estática falló:\n- "+failures.join("\n- "));
