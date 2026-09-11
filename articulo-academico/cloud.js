@@ -12,7 +12,7 @@
   });
 
   let online = navigator.onLine !== false;
-  let authPromise = null;
+  let cloudAvailable = false;
 
   const clean=v=>String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
     .replace(/[^a-zA-Z0-9._-]+/g,"-").replace(/^-+|-+$/g,"").slice(0,140)||"item";
@@ -52,44 +52,37 @@
   }
 
   function emitStatus(value,error){
-    online=!!value;
-    window.dispatchEvent(new CustomEvent("doc-tit:cloud-status",{detail:{online,error:error?String(error?.message||error):null}}));
+    cloudAvailable=!!value;
+    window.dispatchEvent(new CustomEvent("doc-tit:cloud-status",{detail:{
+      online:cloudAvailable,
+      localMode:!cloudAvailable,
+      error:error?String(error?.message||error):null
+    }}));
   }
 
   async function ensureAdminSession(){
-    const existing=(await client.auth.getSession()).data.session;
-    if(existing)return existing;
-    if(authPromise)return authPromise;
-    authPromise=(async()=>{
-      const cedula=window.prompt("DOC-TIT requiere acceso administrativo.\nIngresa tu cédula:");
-      if(!cedula)throw new Error("Autenticación cancelada.");
-      const pin=window.prompt("Ingresa tu PIN administrativo:");
-      if(!pin)throw new Error("Autenticación cancelada.");
-      const response=await fetch(`${SUPABASE_URL}/functions/v1/doc-tit-auth`,{
-        method:"POST",
-        headers:{"Content-Type":"application/json","apikey":SUPABASE_PUBLISHABLE_KEY},
-        body:JSON.stringify({cedula,pin})
-      });
-      const body=await response.json().catch(()=>({}));
-      if(!response.ok||!body.token_hash)throw new Error(body.error||"No se pudo iniciar sesión.");
-      const {data,error}=await client.auth.verifyOtp({token_hash:body.token_hash,type:body.type||"email"});
-      if(error||!data.session)throw error||new Error("No se pudo iniciar sesión.");
-      return data.session;
-    })();
-    try{return await authPromise;}finally{authPromise=null;}
+    const session=(await client.auth.getSession()).data.session||null;
+    return session;
+  }
+
+  async function hasCloudSession(){
+    if(navigator.onLine===false){online=false;return false;}
+    online=true;
+    return !!(await ensureAdminSession());
   }
 
   async function directUpsertPeriod(row){
-    await ensureAdminSession();
+    if(!(await hasCloudSession()))return false;
     const {error}=await client.from("doc_tit_periods").upsert({
       period_key:row.period_key,name:row.name,start_date:row.start_date,end_date:row.end_date,
       status:row.status||"Activo",updated_at:new Date().toISOString()
     },{onConflict:"period_key"});
     if(error)throw error;
+    return true;
   }
 
   async function directUpsertDocument(doc){
-    await ensureAdminSession();
+    if(!(await hasCloudSession()))return false;
     const {error}=await client.from("doc_tit_documents").upsert({
       period_key:doc.period_key,document_key:doc.document_key,process_code:doc.process_code,title:doc.title,
       document_code:doc.document_code,
@@ -100,10 +93,11 @@
       generated_pages:doc.generated_pages||null,updated_at:new Date().toISOString()
     },{onConflict:"period_key,document_key"});
     if(error)throw error;
+    return true;
   }
 
   async function directUploadAsset({periodKey,documentKey,assetKey,dataUrl,fileName}){
-    await ensureAdminSession();
+    if(!(await hasCloudSession()))return null;
     const blob=await fetch(dataUrl).then(r=>r.blob());
     const ext=blob.type==="image/png"?"png":blob.type==="image/webp"?"webp":"jpg";
     const stamp=new Date().toISOString().replace(/[-:.TZ]/g,"");
@@ -123,29 +117,38 @@
   }
 
   async function flushPending(){
-    await ensureAdminSession();
+    if(!(await hasCloudSession()))return false;
     const cache=readCache();
-    for(const row of Object.values(cache.pendingPeriods||{})){await directUpsertPeriod(row);delete cache.pendingPeriods[row.period_key];writeCache(cache);}
-    for(const [key,doc] of Object.entries(cache.pendingDocuments||{})){await directUpsertDocument(doc);delete cache.pendingDocuments[key];writeCache(cache);}
-    for(const [key,asset] of Object.entries(cache.pendingAssets||{})){await directUploadAsset(asset);delete cache.pendingAssets[key];writeCache(cache);}
-    writeCache(cache);
+    for(const row of Object.values(cache.pendingPeriods||{})){
+      await directUpsertPeriod(row);delete cache.pendingPeriods[row.period_key];writeCache(cache);
+    }
+    for(const [key,doc] of Object.entries(cache.pendingDocuments||{})){
+      await directUpsertDocument(doc);delete cache.pendingDocuments[key];writeCache(cache);
+    }
+    for(const [key,asset] of Object.entries(cache.pendingAssets||{})){
+      const path=await directUploadAsset(asset);
+      if(path){delete cache.pendingAssets[key];writeCache(cache);}
+    }
+    writeCache(cache);return true;
   }
 
   async function healthCheck(){
     try{
-      await ensureAdminSession();
+      if(!(await hasCloudSession())){
+        emitStatus(false,new Error("Modo local · sin inicio de sesión"));
+        return false;
+      }
       const {error}=await client.from("doc_tit_periods").select("period_key",{head:true,count:"exact"});
       if(error)throw error;
       emitStatus(true);
-      try{await flushPending();}catch(e){console.warn("DOC-TIT: no se pudo vaciar la cola offline.",e);}
+      try{await flushPending();}catch(e){console.warn("DOC-TIT: no se pudo vaciar la cola local.",e);}
       return true;
     }catch(error){emitStatus(false,error);return false;}
   }
 
   async function loadPeriods(){
-    if(!online)return readCache().periods||[];
+    if(!(await hasCloudSession()))return readCache().periods||[];
     try{
-      await ensureAdminSession();
       const {data,error}=await client.from("doc_tit_periods").select("period_key,name,start_date,end_date,status").order("start_date",{ascending:false});
       if(error)throw error;
       const rows=data||[],cache=readCache(),byId=new Map((cache.periods||[]).map(x=>[x.period_key,x]));
@@ -157,15 +160,16 @@
 
   async function upsertPeriod(period){
     const row=rememberPeriod(period,true);
-    try{await directUpsertPeriod(row);rememberPeriod(row,false);emitStatus(true);}
-    catch(error){rememberPeriod(row,true);emitStatus(false,error);throw error;}
+    try{
+      if(await directUpsertPeriod(row)){rememberPeriod(row,false);emitStatus(true);return {synced:true};}
+      emitStatus(false,new Error("Modo local"));return {synced:false,local:true};
+    }catch(error){rememberPeriod(row,true);emitStatus(false,error);return {synced:false,local:true,error};}
   }
 
   async function loadDocument(periodKey,documentKey){
     const key=documentCacheKey(periodKey,documentKey);
-    if(!online)return readCache().documents[key]||null;
+    if(!(await hasCloudSession()))return readCache().documents[key]||null;
     try{
-      await ensureAdminSession();
       const {data,error}=await client.from("doc_tit_documents")
         .select("period_key,document_key,process_code,title,document_code,payload,complete,generated_at,generated_file_name,generated_pages")
         .eq("period_key",periodKey).eq("document_key",documentKey).maybeSingle();
@@ -178,23 +182,27 @@
   async function upsertDocument({periodKey,documentKey,processCode,title,documentCode,payload,complete,generatedAt,generatedFileName,generatedPages}){
     const doc={period_key:periodKey,document_key:documentKey,process_code:processCode,title,document_code:documentCode,payload:payload||{},complete:!!complete,generated_at:generatedAt||null,generated_file_name:generatedFileName||null,generated_pages:generatedPages||null};
     rememberDocument(doc,true);
-    try{await directUpsertDocument(doc);rememberDocument(doc,false);emitStatus(true);}
-    catch(error){rememberDocument(doc,true);emitStatus(false,error);throw error;}
+    try{
+      if(await directUpsertDocument(doc)){rememberDocument(doc,false);emitStatus(true);return {synced:true};}
+      emitStatus(false,new Error("Modo local"));return {synced:false,local:true};
+    }catch(error){rememberDocument(doc,true);emitStatus(false,error);return {synced:false,local:true,error};}
   }
 
   async function uploadAsset(asset){
     rememberAsset(asset,true);
-    try{const path=await directUploadAsset(asset);rememberAsset(asset,false);emitStatus(true);return path;}
-    catch(error){rememberAsset(asset,true);emitStatus(false,error);throw error;}
+    try{
+      const path=await directUploadAsset(asset);
+      if(path){rememberAsset(asset,false);emitStatus(true);return path;}
+      emitStatus(false,new Error("Modo local"));return null;
+    }catch(error){rememberAsset(asset,true);emitStatus(false,error);return null;}
   }
 
   async function loadAssets(periodKey,documentKey){
     const cache=readCache();
     const pending=Object.values(cache.pendingAssets||{}).filter(a=>a.periodKey===periodKey&&a.documentKey===documentKey);
     const localPending=Object.fromEntries(pending.map(a=>[a.assetKey,a.dataUrl]));
-    if(!online)return localPending;
+    if(!(await hasCloudSession()))return localPending;
     try{
-      await ensureAdminSession();
       const {data,error}=await client.from("doc_tit_assets").select("asset_key,storage_path").eq("period_key",periodKey).eq("document_key",documentKey);
       if(error)throw error;
       const out={};
@@ -209,7 +217,7 @@
   }
 
   async function uploadGeneratedPdf({periodKey,documentKey,fileName,blob}){
-    await ensureAdminSession();
+    if(!(await hasCloudSession()))return null;
     const path=["generated",clean(periodKey),clean(documentKey),Date.now()+"-"+clean(fileName||"documento.pdf")].join("/");
     const {data:prev,error:prevErr}=await client.from("doc_tit_assets").select("storage_path")
       .eq("period_key",periodKey).eq("document_key",documentKey).eq("asset_key","generated_pdf").maybeSingle();
@@ -226,7 +234,10 @@
   }
 
   window.addEventListener("online",()=>{online=true;healthCheck().catch(()=>{});});
-  window.addEventListener("offline",()=>emitStatus(false,new Error("Sin conexión de red.")));
+  window.addEventListener("offline",()=>{online=false;emitStatus(false,new Error("Sin conexión de red."));});
 
-  window.DocTitCloud={client,healthCheck,loadPeriods,upsertPeriod,loadDocument,upsertDocument,uploadAsset,loadAssets,uploadGeneratedPdf,isOnline:()=>online,flushPending,ensureAdminSession,signOut:()=>client.auth.signOut()};
+  window.DocTitCloud={
+    client,healthCheck,loadPeriods,upsertPeriod,loadDocument,upsertDocument,uploadAsset,loadAssets,uploadGeneratedPdf,
+    isOnline:()=>online&&cloudAvailable,flushPending,ensureAdminSession,signOut:()=>client.auth.signOut()
+  };
 })();
