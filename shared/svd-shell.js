@@ -9,6 +9,8 @@
   const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
   const main=()=>$("main.main");
   const activeKey=`doc-tit-svd-section-${documentId}`;
+  const GLOBAL_PERIOD_KEY="doc-tit-global-active-period";
+  const FINAL_PREFIX="doc-tit-svd-final";
   const sectionDefs=documentId==="complexivo"?
     [
       ["information","Información"],
@@ -28,6 +30,8 @@
 
   let activeSection=sectionDefs.some(([id])=>id===localStorage.getItem(activeKey))?localStorage.getItem(activeKey):"information";
   let refreshTimer=null;
+  let globalPeriodBound=false;
+  let generationWatchBound=false;
 
   function ensureStyles(){
     if(document.querySelector('link[data-doc-tit-svd-shell]'))return;
@@ -38,12 +42,58 @@
     const marker="/doc-tit/";
     const idx=path.indexOf(marker);
     const base=idx>=0?path.slice(0,idx)+marker:"/doc-tit/";
-    link.href=base+"shared/svd-shell.css?v=20260911-1";
+    link.href=base+"shared/svd-shell.css?v=20260911-2";
     document.head.appendChild(link);
   }
 
   function documentTitle(){
     return $("#docTitle")?.textContent?.trim()||$("#screenTitle")?.textContent?.trim()||"Documento";
+  }
+
+  function currentPeriodId(){return $("#periodSelect")?.value||"";}
+
+  function finalKey(docId=documentId,periodId=currentPeriodId()){
+    return `${FINAL_PREFIX}::${periodId}::${docId}`;
+  }
+
+  function readManualFinalized(docId,periodId){
+    try{
+      const raw=localStorage.getItem(finalKey(docId,periodId));
+      if(raw===null)return null;
+      const parsed=JSON.parse(raw);
+      return typeof parsed?.finalized==="boolean"?parsed.finalized:null;
+    }catch(_){return null;}
+  }
+
+  function writeFinalized(value){
+    const periodId=currentPeriodId();
+    if(!periodId)return;
+    try{localStorage.setItem(finalKey(documentId,periodId),JSON.stringify({finalized:!!value,updatedAt:new Date().toISOString()}));}catch(_){}
+  }
+
+  function fallbackFinalized(docId,periodId){
+    try{
+      if(docId==="complexivo"){
+        const state=JSON.parse(localStorage.getItem("doc-tit-complexivo-v1")||"null");
+        const row=state?.documents?.[`${periodId}::plan-examen-complexivo`];
+        return !!(row?.generatedAt||row?.generatedFileName);
+      }
+      const cache=JSON.parse(localStorage.getItem("doc-tit-cloud-cache-v3")||"null");
+      const key=docId==="trabajo-titulacion"?"plan-trabajo-titulacion":"plan-articulo-academico";
+      const row=cache?.documents?.[`${periodId}::${key}`];
+      return !!(row?.generated_at||row?.generated_file_name);
+    }catch(_){return false;}
+  }
+
+  function isFinalized(docId,periodId){
+    const manual=readManualFinalized(docId,periodId);
+    return manual===null?fallbackFinalized(docId,periodId):manual;
+  }
+
+  function markCurrentStale(target){
+    if(!(target instanceof Element)||target.id==="periodSelect"||target.closest("dialog"))return;
+    if(!target.closest("main"))return;
+    writeFinalized(false);
   }
 
   function shell(){
@@ -87,7 +137,39 @@
       tabs?.appendChild(button);
     });
     document.documentElement.classList.add("svd2");
+    bindDocumentLinks();
     return root;
+  }
+
+  function bindDocumentLinks(){
+    $$(".svd-documents-slot .doc-tit-nav-link").forEach(link=>{
+      if(link.dataset.svdPeriodBound==="1")return;
+      link.dataset.svdPeriodBound="1";
+      link.addEventListener("click",()=>{
+        const periodId=currentPeriodId();
+        if(periodId)try{localStorage.setItem(GLOBAL_PERIOD_KEY,periodId);}catch(_){}
+      });
+    });
+  }
+
+  function syncGlobalPeriod(){
+    const select=$("#periodSelect");
+    if(!select||!select.options.length)return;
+    let global="";
+    try{global=localStorage.getItem(GLOBAL_PERIOD_KEY)||"";}catch(_){}
+    if(global&&select.value!==global&&Array.from(select.options).some(o=>o.value===global)){
+      select.value=global;
+      select.dispatchEvent(new Event("change",{bubbles:true}));
+      return;
+    }
+    if(select.value)try{localStorage.setItem(GLOBAL_PERIOD_KEY,select.value);}catch(_){}
+    if(!globalPeriodBound){
+      globalPeriodBound=true;
+      select.addEventListener("change",()=>{
+        if(select.value)try{localStorage.setItem(GLOBAL_PERIOD_KEY,select.value);}catch(_){}
+        setTimeout(()=>{refreshDocumentCards();refreshStatus();},0);
+      });
+    }
   }
 
   function panelByText(regex){
@@ -130,8 +212,24 @@
     });
   }
 
+  function markInformationDuplicates(){
+    const cards=$$("#docStandardTableCards .doc-standard-card");
+    cards.forEach(card=>{
+      const title=$(".doc-standard-card-title",card)?.textContent||"";
+      card.classList.toggle("svd-duplicate-card",/cronograma/i.test(title));
+    });
+    const title=$("#docStandardTableTitle");
+    const visibleCards=cards.filter(card=>!card.classList.contains("svd-duplicate-card"));
+    if(title){
+      title.classList.toggle("svd-empty-group",visibleCards.length===0);
+      if(visibleCards.length)title.textContent="Información complementaria";
+    }
+  }
+
   function applyWorkArticle(section,t){
     const presentationOnly=section==="cover"||section==="header";
+    document.documentElement.classList.toggle("svd-information-active",section==="information");
+    markInformationDuplicates();
     hide(t.workspace,section!=="information");
     hide(t.side,section!=="information");
     hide(t.presentation,!presentationOnly);
@@ -158,6 +256,7 @@
   }
 
   function applyComplexivo(section,t){
+    document.documentElement.classList.remove("svd-information-active");
     const info=t.workspace;
     const sections=t.form?$$(':scope > section.panel',t.form):[];
     sections.forEach(panel=>hide(panel,true));
@@ -186,6 +285,7 @@
     const t=targets();
     if(documentId==="complexivo")applyComplexivo(section,t);else applyWorkArticle(section,t);
     refreshStatus();
+    refreshDocumentCards();
   }
 
   function hasValue(input){
@@ -194,27 +294,87 @@
     return String(input.value??"").trim()!=="";
   }
 
-  function sectionComplete(section,t){
-    if(section==="information")return true;
-    if(section==="resources")return !!$("#logoPreview img");
-    if(section==="cover"||section==="header")return !!$("#logoPreview img")&&!!documentTitle();
-    const panel=section==="schedule"?t.schedule:t.distribution;
-    if(!panel)return false;
-    if(section==="schedule"){
-      const rows=$$("tbody tr",panel).filter(row=>row.offsetParent!==null||!row.hidden);
-      if(!rows.length)return false;
-      return rows.every(row=>{
-        const active=$('input[type="checkbox"][data-f="active"]',row);
-        if(active&&!active.checked)return true;
-        const dates=$$('input[type="date"]',row);
-        return dates.length>0&&dates.some(input=>!!input.value);
-      });
-    }
+  function coreSectionComplete(section){
+    try{
+      const diag=window.DOC_TIT_CORE?.diagnostics?.();
+      if(!diag?.sections)return null;
+      const matcher=section==="schedule"?/cronograma|fechas del proceso/i:
+        section==="distribution"?/distribuci[oó]n|carreras.*lugar|carreras.*cantidad/i:
+        section==="resources"?/logo institucional/i:null;
+      if(!matcher)return null;
+      const found=diag.sections.find(item=>matcher.test(String(item?.title||"")));
+      return found?!!found.complete:null;
+    }catch(_){return null;}
+  }
+
+  function fallbackScheduleComplete(panel){
     const rows=$$("tbody tr",panel);
-    return rows.length>0&&rows.every(row=>{
+    if(!rows.length)return false;
+    if(documentId==="trabajo-titulacion"){
+      const activeRows=rows.filter(row=>{
+        const check=$('input[type="checkbox"][data-f="active"]',row);
+        return !check||check.checked;
+      });
+      if(!activeRows.length)return false;
+      const valid=activeRows.every(row=>{
+        const start=$('[data-f="start"]',row)?.value||"";
+        const end=$('[data-f="end"]',row)?.value||"";
+        const deadline=$('[data-f="deadline"]',row)?.value||"";
+        if(!start&&!end&&!deadline)return false;
+        if(start&&end&&end<start)return false;
+        const text=[
+          $('[data-f="activity"]',row)?.value||$("strong",row)?.textContent||"",
+          $('[data-f="description"]',row)?.value||"",
+          $('[data-f="responsible"]',row)?.value||"",
+          $('[data-f="observation"]',row)?.value||""
+        ].join(" ");
+        return !/\b(por definir|n\/?a|pendiente|sin fecha)\b/i.test(text);
+      });
+      const approval=$("#scheduleApprovalState",panel)?.textContent?.replace(/^Estado:\s*/i,"").trim()||"";
+      return valid&&(!approval||/^Aprobado$/i.test(approval));
+    }
+    return rows.every(row=>{
+      const dates=$$('input[type="date"]',row);
+      if(dates.length<2)return false;
+      const start=dates[0]?.value||"",end=dates[1]?.value||"";
+      return !!start&&!!end&&end>=start;
+    });
+  }
+
+  function fallbackDistributionComplete(panel){
+    const rows=$$("tbody tr",panel).filter(row=>{
+      const fields=$$("input,select,textarea",row).filter(el=>el.type!=="button");
+      return fields.some(hasValue);
+    });
+    if(!rows.length)return false;
+    return rows.every(row=>{
+      const career=$(".dist-career",row)?.value?.trim();
+      const place=$(".dist-place",row)?.value?.trim();
+      const count=$(".dist-count",row)?.value;
+      if(career!==undefined||place!==undefined||count!==undefined)return !!career&&!!place&&count!==""&&Number(count)>=0;
       const fields=$$("input,select,textarea",row).filter(el=>el.type!=="button");
       return fields.length>0&&fields.every(hasValue);
     });
+  }
+
+  function sectionComplete(section,t){
+    if(section==="information")return true;
+    if(section==="resources"){
+      const fromCore=coreSectionComplete(section);
+      return fromCore===null?!!$("#logoPreview img"):fromCore;
+    }
+    if(section==="cover"||section==="header"){
+      const resources=sectionComplete("resources",t);
+      const period=currentPeriodId();
+      const code=$("#docCode")?.textContent?.trim()||$("#docCodeBadge")?.textContent?.trim()||"";
+      return resources&&!!documentTitle()&&!!period&&!!code;
+    }
+    const panel=section==="schedule"?t.schedule:t.distribution;
+    if(!panel)return false;
+    const fromCore=coreSectionComplete(section);
+    if(fromCore!==null)return fromCore;
+    if(section==="schedule")return fallbackScheduleComplete(panel);
+    return fallbackDistributionComplete(panel);
   }
 
   function refreshStatus(){
@@ -232,6 +392,37 @@
     });
   }
 
+  function refreshDocumentCards(){
+    const root=$("#svdShell");
+    const periodId=currentPeriodId();
+    if(!root||!periodId)return;
+    $$(".doc-tit-nav-link",root).forEach(link=>{
+      const docId=link.dataset.documentId||"";
+      const finalized=isFinalized(docId,periodId);
+      link.classList.toggle("finalized",finalized);
+      link.dataset.svdStateLabel=finalized?"Finalizado":docId===documentId?"Seleccionado":"Disponible";
+    });
+  }
+
+  function watchGenerationStatus(){
+    if(generationWatchBound)return;
+    generationWatchBound=true;
+    const bind=status=>{
+      if(!status)return;
+      const check=()=>{
+        const text=String(status.textContent||"").trim();
+        if(/PDF generado/i.test(text)){
+          writeFinalized(true);
+          refreshDocumentCards();
+        }
+      };
+      new MutationObserver(check).observe(status,{childList:true,subtree:true,characterData:true});
+      check();
+    };
+    bind($("#status"));
+    bind($("#generationStatus"));
+  }
+
   function syncHeader(){
     const root=shell();
     if(!root)return;
@@ -240,6 +431,8 @@
       const label=$("label",periodBox);
       if(label&&label.textContent!=="Período activo")label.textContent="Período activo";
     }
+    bindDocumentLinks();
+    syncGlobalPeriod();
   }
 
   function refresh(){
@@ -247,6 +440,7 @@
     if(!shell())return;
     syncHeader();
     activate(activeSection,false);
+    watchGenerationStatus();
   }
 
   function scheduleRefresh(){
@@ -267,10 +461,11 @@
     };
     boot();
 
-    document.addEventListener("input",scheduleRefresh,true);
-    document.addEventListener("change",scheduleRefresh,true);
+    document.addEventListener("input",event=>{markCurrentStale(event.target);scheduleRefresh();},true);
+    document.addEventListener("change",event=>{markCurrentStale(event.target);scheduleRefresh();},true);
     document.addEventListener("click",event=>{
-      if(event.target?.closest(".doc-standard-card-actions, .doc-presentation-card, #newPeriodBtn"))setTimeout(scheduleRefresh,100);
+      if(event.target?.closest("#ptapply,#applyImportBtn,#approveScheduleBtn,#addScheduleBtn,[data-add],[data-del],[data-move],.row-remove"))markCurrentStale(event.target);
+      if(event.target?.closest(".doc-standard-card-actions, .doc-presentation-card, #newPeriodBtn,#ptapply,#applyImportBtn,#approveScheduleBtn,#addScheduleBtn,[data-add],[data-del],[data-move],.row-remove"))setTimeout(scheduleRefresh,100);
     },true);
     const observer=new MutationObserver(scheduleRefresh);
     observer.observe(document.body,{childList:true,subtree:true});

@@ -62,6 +62,21 @@ const complexCloud=readFileSync(join(root,"complexivo/cloud.js"),"utf8");
 if(!complexCloud.includes("ensureAdminSession")||!complexCloud.includes("persistSession:true"))failures.push("complexivo/cloud.js: falta gestión persistente de una sesión existente.");
 if(/window\.prompt\s*\(/.test(complexCloud))failures.push("complexivo/cloud.js: DOC-TIT no debe solicitar cédula o PIN mediante ventanas emergentes.");
 
+const cloudGuardPath=join(root,"shared/cloud-guard.js");
+if(!existsSync(cloudGuardPath))failures.push("Falta shared/cloud-guard.js para distinguir guardado local de sincronización real.");
+else{
+  const guard=readFileSync(cloudGuardPath,"utf8");
+  if(!guard.includes("DOC_TIT_LOCAL_ONLY")||!guard.includes("result?.synced===false"))failures.push("cloud-guard.js: debe detectar operaciones que quedaron solo en caché local.");
+  if(!guard.includes("repeatLocalStatus")||!guard.includes("doc-tit:cloud-status"))failures.push("cloud-guard.js: el modo local debe quedar visible aunque el adaptador siga activo para la cola offline.");
+}
+for(const rel of ["trabajo-titulacion/index.html","articulo-academico/index.html"]){
+  const html=readFileSync(join(root,rel),"utf8");
+  const cloudAt=html.indexOf('src="cloud.js');
+  const guardAt=html.indexOf('src="../shared/cloud-guard.js');
+  const appAt=html.indexOf('src="app.js');
+  if(!(cloudAt>=0&&guardAt>cloudAt&&appAt>guardAt))failures.push(`${rel}: cloud-guard.js debe cargar después de cloud.js y antes de app.js.`);
+}
+
 const sidebar=readFileSync(join(root,"shared/sidebar.js"),"utf8");
 if(!sidebar.includes("runtime-fixes.js"))failures.push("sidebar.js: debe cargar runtime-fixes.js.");
 if(!existsSync(join(root,"shared/runtime-fixes.js")))failures.push("Falta shared/runtime-fixes.js.");
@@ -83,6 +98,10 @@ if(existsSync(join(root,"shared/svd-shell.js"))){
     if(!svd.includes(label))failures.push(`svd-shell.js: falta la sección ${label}.`);
   }
   if(!svd.includes("svd-period-slot")||!svd.includes("svd-documents-slot")||!svd.includes("svd-section-tabs"))failures.push("svd-shell.js: debe mantener Período → Documentos → Secciones como estructura principal.");
+  if(!svd.includes("DOC_TIT_CORE?.diagnostics"))failures.push("svd-shell.js: los estados de pestañas deben reutilizar el diagnóstico real del Core.");
+  if(!svd.includes("doc-tit-global-active-period"))failures.push("svd-shell.js: el período activo debe conservarse al cambiar de documento.");
+  if(!svd.includes("generated_at")||!svd.includes("generatedAt"))failures.push("svd-shell.js: las tarjetas superiores deben reconocer documentos finalizados.");
+  if(!svd.includes("svd-duplicate-card"))failures.push("svd-shell.js: Información no debe repetir el acceso al Cronograma.");
 }
 if(existsSync(join(root,"shared/svd-shell.css"))){
   const css=readFileSync(join(root,"shared/svd-shell.css"),"utf8");
@@ -90,6 +109,8 @@ if(existsSync(join(root,"shared/svd-shell.css"))){
   if(!css.includes("flex-direction:row!important"))failures.push("svd-shell.css: los documentos deben navegarse horizontalmente.");
   if(!css.includes("--svd-pending-soft:#fff6dd"))failures.push("svd-shell.css: Pendiente debe usar amarillo suave.");
   if(!css.includes(".doc-standard-generate.pending{background:#e7ebef"))failures.push("svd-shell.css: Generar PDF bloqueado debe verse neutro, no rojo.");
+  if(!css.includes("attr(data-svd-state-label)"))failures.push("svd-shell.css: el estado Disponible/Seleccionado/Finalizado debe venir del estado real del documento.");
+  if(!css.includes(".svd-information-active .svd-duplicate-card"))failures.push("svd-shell.css: Información debe ocultar controles duplicados del Cronograma.");
 }
 
 if(failures.length){
