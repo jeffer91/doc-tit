@@ -12,11 +12,23 @@
     return error;
   };
 
+  const repeatLocalStatus=()=>{
+    const emit=()=>window.dispatchEvent(new CustomEvent("doc-tit:cloud-status",{detail:{
+      online:false,
+      localMode:true,
+      error:"Modo local · sin sesión de Supabase"
+    }}));
+    setTimeout(emit,0);
+    setTimeout(emit,800);
+  };
+
   if(typeof cloud.healthCheck==="function"){
     const original=cloud.healthCheck.bind(cloud);
     cloud.healthCheck=async(...args)=>{
       const ok=await original(...args);
-      if(ok!==true)throw localOnlyError("La sesión");
+      if(ok!==true)repeatLocalStatus();
+      // La app mantiene activo el adaptador local para que documentos, períodos
+      // e imágenes sigan entrando a la cola pendiente mientras no haya nube.
       return true;
     };
   }
