@@ -35,11 +35,13 @@
 .svd-documents-slot .doc-tit-nav-group-title,.svd-documents-slot .doc-tit-global-heading{display:none!important}
 .svd-documents-slot .doc-tit-nav-links{display:flex!important;flex-direction:row!important;gap:9px!important;margin:0!important;padding:0!important}
 .svd-documents-slot .doc-tit-nav-link{position:relative;min-width:190px;display:flex!important;align-items:center!important;padding:11px 13px 15px!important;border:1px solid var(--svd-line)!important;border-radius:11px!important;background:#fff!important;color:#26384a!important;text-decoration:none!important;font-size:12px!important;font-weight:800!important;line-height:1.2!important;box-shadow:none!important}
-.svd-documents-slot .doc-tit-nav-link::after{content:"Disponible";display:block;position:absolute;left:13px;bottom:5px;font-size:9px;font-weight:600;color:#8a96a3}
+.svd-documents-slot .doc-tit-nav-link::after{content:attr(data-svd-state-label);display:block;position:absolute;left:13px;bottom:5px;font-size:9px;font-weight:600;color:#8a96a3}
 .svd-documents-slot .doc-tit-nav-link.active{border-color:#b9c9d8!important;background:#fbfcfd!important;color:var(--svd-navy)!important;box-shadow:none!important}
 .svd-documents-slot .doc-tit-nav-link.active::before{content:"";position:absolute;left:12px;right:12px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--svd-gold)}
-.svd-documents-slot .doc-tit-nav-link.active::after{content:"Seleccionado";color:#607183}
+.svd-documents-slot .doc-tit-nav-link.active::after{content:attr(data-svd-state-label);color:#607183}
 .svd-documents-slot .doc-tit-nav-dot{display:none!important}
+.svd-documents-slot .doc-tit-nav-link.finalized .doc-tit-nav-dot{display:block!important;width:7px;height:7px;min-width:7px;border-radius:50%;background:#2e8b62}
+.svd-documents-slot .doc-tit-nav-link.finalized::after{color:var(--svd-ready)!important}
 
 .svd-section-tabs{display:flex;align-items:center;gap:22px;overflow-x:auto;background:#f0f3f7;border-radius:9px;padding:0 10px;min-height:39px;scrollbar-width:none}
 .svd-section-tabs::-webkit-scrollbar{display:none}
@@ -85,6 +87,12 @@
 .svd2 #docPresentationSections.svd-show-header .doc-presentation-head{display:none!important}
 .svd2 #docPresentationSections.svd-show-cover,
 .svd2 #docPresentationSections.svd-show-header{margin-top:0!important}
+
+/* Información no repite Cronograma ni Recursos; las tablas complementarias siguen accesibles. */
+.svd-information-active #docStandardResourceTitle,
+.svd-information-active #docStandardResourceCards,
+.svd-information-active .svd-duplicate-card,
+.svd-information-active .svd-empty-group{display:none!important}
 
 .svd2 .doc-standard-workspace-note{max-width:680px!important}
 .svd2 .doc-standard-card{box-shadow:none!important}
