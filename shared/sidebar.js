@@ -131,17 +131,17 @@
   }
 
   function loadDocumentCore() {
-    if (!document.querySelector('link[data-doc-tit-document-core]')) {
+    if (!document.querySelector('link[data-doc-tit-document-core], link[href*="document-core.css"]')) {
       const link = document.createElement("link");
       link.rel = "stylesheet";
       link.dataset.docTitDocumentCore = "1";
-      link.href = resolveBasePath() + "shared/document-core.css?v=20260911-1";
+      link.href = resolveBasePath() + "shared/document-core.css?v=20260911-2";
       document.head.appendChild(link);
     }
-    if (window.DOC_TIT_CORE || document.querySelector('script[data-doc-tit-document-core]')) return;
+    if (window.DOC_TIT_CORE || document.querySelector('script[data-doc-tit-document-core], script[src*="document-core.js"]')) return;
     const script = document.createElement("script");
     script.dataset.docTitDocumentCore = "1";
-    script.src = resolveBasePath() + "shared/document-core.js?v=20260911-1";
+    script.src = resolveBasePath() + "shared/document-core.js?v=20260911-2";
     document.body.appendChild(script);
   }
 
