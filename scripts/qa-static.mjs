@@ -63,6 +63,13 @@ if(!complexCloud.includes("ensureAdminSession")||!complexCloud.includes("persist
 const sidebar=readFileSync(join(root,"shared/sidebar.js"),"utf8");
 if(!sidebar.includes("runtime-fixes.js"))failures.push("sidebar.js: debe cargar runtime-fixes.js.");
 if(!existsSync(join(root,"shared/runtime-fixes.js")))failures.push("Falta shared/runtime-fixes.js.");
+if(!sidebar.includes("presentation-ui.js"))failures.push("sidebar.js: debe cargar presentation-ui.js para Portada y Cabecera.");
+if(!existsSync(join(root,"shared/presentation-ui.js")))failures.push("Falta shared/presentation-ui.js.");
+if(!existsSync(join(root,"shared/presentation-ui.css")))failures.push("Falta shared/presentation-ui.css.");
+
+const presentation=readFileSync(join(root,"shared/presentation-ui.js"),"utf8");
+if(!presentation.includes('data-presentation="cover"')||!presentation.includes('data-presentation="header"'))failures.push("presentation-ui.js: Portada y Cabecera deben existir como apartados independientes.");
+if(!presentation.includes("DOC_TIT_INSTITUTIONAL"))failures.push("presentation-ui.js: Portada y Cabecera deben reutilizar la fuente institucional única.");
 
 if(failures.length){
   console.error("QA estática falló:\n- "+failures.join("\n- "));
