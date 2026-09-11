@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Validate DOC-TIT
+        run: node scripts/qa-static.mjs
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
