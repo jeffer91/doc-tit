@@ -11,34 +11,25 @@
   });
 
   let online=navigator.onLine!==false;
-  let authPromise=null;
 
   function emitStatus(value,error){
-    online=!!value;
-    window.dispatchEvent(new CustomEvent("doc-tit:cloud-status",{detail:{online,error:error?String(error?.message||error):null}}));
+    window.dispatchEvent(new CustomEvent("doc-tit:cloud-status",{detail:{
+      online:!!value,
+      localMode:!value,
+      error:error?String(error?.message||error):null
+    }}));
   }
 
   async function ensureAdminSession(){
-    const existing=(await client.auth.getSession()).data.session;
-    if(existing)return existing;
-    if(authPromise)return authPromise;
-    authPromise=(async()=>{
-      const cedula=window.prompt("DOC-TIT requiere acceso administrativo.\nIngresa tu cédula:");
-      if(!cedula)throw new Error("Autenticación cancelada.");
-      const pin=window.prompt("Ingresa tu PIN administrativo:");
-      if(!pin)throw new Error("Autenticación cancelada.");
-      const response=await fetch(`${SUPABASE_URL}/functions/v1/doc-tit-auth`,{
-        method:"POST",
-        headers:{"Content-Type":"application/json","apikey":SUPABASE_PUBLISHABLE_KEY},
-        body:JSON.stringify({cedula,pin})
-      });
-      const body=await response.json().catch(()=>({}));
-      if(!response.ok||!body.token_hash)throw new Error(body.error||"No se pudo iniciar sesión.");
-      const {data,error}=await client.auth.verifyOtp({token_hash:body.token_hash,type:body.type||"email"});
-      if(error||!data.session)throw error||new Error("No se pudo iniciar sesión.");
-      return data.session;
-    })();
-    try{return await authPromise;}finally{authPromise=null;}
+    return (await client.auth.getSession()).data.session||null;
+  }
+
+  async function requireCloudSession(){
+    if(navigator.onLine===false){online=false;throw new Error("Sin conexión de red.");}
+    online=true;
+    const session=await ensureAdminSession();
+    if(!session)throw new Error("Modo local · sin inicio de sesión");
+    return session;
   }
 
   function sanitizeSegment(value) {
@@ -50,7 +41,7 @@
 
   async function healthCheck() {
     try{
-      await ensureAdminSession();
+      await requireCloudSession();
       const { error } = await client.from("doc_tit_periods").select("period_key", { count: "exact", head: true });
       if (error) throw error;
       emitStatus(true);
@@ -59,7 +50,7 @@
   }
 
   async function loadWorkspace() {
-    await ensureAdminSession();
+    await requireCloudSession();
     const [periodsRes, docsRes, settingsRes] = await Promise.all([
       client.from("doc_tit_periods").select("period_key,name,start_date,end_date,status,updated_at").order("start_date", { ascending: false }),
       client.from("doc_tit_documents").select("period_key,document_key,process_code,title,document_code,schedule,distribution,smart_text,analysis,complete,generated_at,generated_file_name,generated_pages,updated_at"),
@@ -73,20 +64,20 @@
   }
 
   async function upsertPeriod(period) {
-    await ensureAdminSession();
+    await requireCloudSession();
     const payload={period_key:period.id,name:period.name,start_date:period.start,end_date:period.end,status:period.status||"Activo",updated_at:new Date().toISOString()};
     const { error } = await client.from("doc_tit_periods").upsert(payload, { onConflict: "period_key" });
     if (error) throw error;emitStatus(true);
   }
 
   async function upsertSetting(key, value) {
-    await ensureAdminSession();
+    await requireCloudSession();
     const { error } = await client.from("doc_tit_settings").upsert({key,value,updated_at:new Date().toISOString()}, { onConflict: "key" });
     if (error) throw error;emitStatus(true);
   }
 
   async function upsertDocument({ period, document, data, code }) {
-    await ensureAdminSession();
+    await requireCloudSession();
     const payload={
       period_key:period.id,document_key:document.id,process_code:document.process||document.procCode||"",
       title:document.fileTitle||document.name||"",document_code:code,
@@ -100,7 +91,7 @@
   }
 
   async function uploadAsset({ periodKey, documentKey, assetKey, dataUrl, fileName }) {
-    await ensureAdminSession();
+    await requireCloudSession();
     const blob=await dataUrlToBlob(dataUrl);
     const ext=blob.type==="image/png"?"png":blob.type==="image/webp"?"webp":blob.type==="application/pdf"?"pdf":"jpg";
     const stamp=new Date().toISOString().replace(/[-:.TZ]/g,"");
@@ -119,7 +110,7 @@
   }
 
   async function loadAssets(periodKey, documentKey) {
-    await ensureAdminSession();
+    await requireCloudSession();
     const {data:rows,error}=await client.from("doc_tit_assets").select("asset_key,storage_path,mime_type").eq("period_key",periodKey).eq("document_key",documentKey);
     if(error)throw error;
     const assets={};
@@ -133,7 +124,7 @@
   }
 
   async function uploadGeneratedPdf({ periodKey, documentKey, fileName, blob }) {
-    await ensureAdminSession();
+    await requireCloudSession();
     if (!(blob instanceof Blob)) throw new Error("El PDF generado no es válido.");
     const stamp=new Date().toISOString().replace(/[-:.TZ]/g,"");
     const path=["generated",sanitizeSegment(periodKey),sanitizeSegment(documentKey),`${stamp}-${sanitizeSegment(fileName)}`].join("/");
@@ -151,7 +142,10 @@
   }
 
   window.addEventListener("online",()=>{online=true;healthCheck().catch(()=>{});});
-  window.addEventListener("offline",()=>emitStatus(false,new Error("Sin conexión de red.")));
+  window.addEventListener("offline",()=>{online=false;emitStatus(false,new Error("Sin conexión de red."));});
 
-  window.DocTitCloud={client,healthCheck,loadWorkspace,upsertPeriod,upsertSetting,upsertDocument,uploadAsset,loadAssets,uploadGeneratedPdf,isOnline:()=>online,ensureAdminSession,signOut:()=>client.auth.signOut()};
+  window.DocTitCloud={
+    client,healthCheck,loadWorkspace,upsertPeriod,upsertSetting,upsertDocument,uploadAsset,loadAssets,uploadGeneratedPdf,
+    isOnline:()=>online,ensureAdminSession,signOut:()=>client.auth.signOut()
+  };
 })();

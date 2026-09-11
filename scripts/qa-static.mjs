@@ -52,13 +52,15 @@ for(const rel of ["trabajo-titulacion/cloud.js","articulo-academico/cloud.js"]){
   const src=readFileSync(join(root,rel),"utf8");
   if(!src.includes("doc-tit-cloud-cache-v3"))failures.push(`${rel}: falta caché v3 para modo offline.`);
   if(!src.includes("pendingAssets"))failures.push(`${rel}: falta cola offline de imágenes.`);
-  if(!src.includes("ensureAdminSession"))failures.push(`${rel}: falta autenticación administrativa.`);
-  if(!src.includes("persistSession:true"))failures.push(`${rel}: la sesión administrativa debe persistir.`);
+  if(!src.includes("ensureAdminSession"))failures.push(`${rel}: falta gestión de sesión existente.`);
+  if(!src.includes("persistSession:true"))failures.push(`${rel}: una sesión existente debe poder persistir.`);
   if(!src.includes('window.addEventListener("online"'))failures.push(`${rel}: falta resincronización al reconectar.`);
+  if(/window\.prompt\s*\(/.test(src))failures.push(`${rel}: DOC-TIT no debe solicitar cédula o PIN mediante ventanas emergentes.`);
 }
 
 const complexCloud=readFileSync(join(root,"complexivo/cloud.js"),"utf8");
-if(!complexCloud.includes("ensureAdminSession")||!complexCloud.includes("persistSession:true"))failures.push("complexivo/cloud.js: falta autenticación administrativa persistente.");
+if(!complexCloud.includes("ensureAdminSession")||!complexCloud.includes("persistSession:true"))failures.push("complexivo/cloud.js: falta gestión persistente de una sesión existente.");
+if(/window\.prompt\s*\(/.test(complexCloud))failures.push("complexivo/cloud.js: DOC-TIT no debe solicitar cédula o PIN mediante ventanas emergentes.");
 
 const sidebar=readFileSync(join(root,"shared/sidebar.js"),"utf8");
 if(!sidebar.includes("runtime-fixes.js"))failures.push("sidebar.js: debe cargar runtime-fixes.js.");
