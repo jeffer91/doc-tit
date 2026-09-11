@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  // Shared DOC-TIT sidebar navigation · v8
+  // Shared DOC-TIT navigation · v9
 
   const LAST_DOCUMENT_KEY = "doc-tit-last-document";
 
@@ -69,7 +69,6 @@
   }
 
   function normalizeLegacyShell() {
-    // Compatibilidad de presentación solamente: elimina enlaces de menú antiguos que aún existan en HTML histórico.
     document.querySelectorAll(".nav-back, .sidebar > a[href='../']").forEach(el => el.remove());
     document.querySelectorAll(".sidebar").forEach(sidebar => {
       Array.from(sidebar.childNodes).forEach(node => {
@@ -122,12 +121,16 @@
     });
   }
 
-  function loadPlanningTemplates() {
-    if (document.querySelector("script[data-doc-tit-planning-templates]")) return;
+  function loadScriptOnce(datasetKey,src) {
+    if (document.querySelector(`script[${datasetKey}]`)) return;
     const script = document.createElement("script");
-    script.dataset.docTitPlanningTemplates = "1";
-    script.src = resolveBasePath() + "shared/planning-templates.js?v=20260911-3";
+    script.setAttribute(datasetKey, "1");
+    script.src = resolveBasePath() + src;
     document.body.appendChild(script);
+  }
+
+  function loadPlanningTemplates() {
+    loadScriptOnce("data-doc-tit-planning-templates", "shared/planning-templates.js?v=20260911-3");
   }
 
   function loadDocumentCore() {
@@ -146,19 +149,15 @@
   }
 
   function loadRuntimeFixes() {
-    if (document.querySelector('script[data-doc-tit-runtime-fixes]')) return;
-    const script = document.createElement("script");
-    script.dataset.docTitRuntimeFixes = "1";
-    script.src = resolveBasePath() + "shared/runtime-fixes.js?v=20260911-1";
-    document.body.appendChild(script);
+    loadScriptOnce("data-doc-tit-runtime-fixes", "shared/runtime-fixes.js?v=20260911-1");
   }
 
   function loadPresentationUI() {
-    if (document.querySelector('script[data-doc-tit-presentation-ui]')) return;
-    const script = document.createElement("script");
-    script.dataset.docTitPresentationUi = "1";
-    script.src = resolveBasePath() + "shared/presentation-ui.js?v=20260911-1";
-    document.body.appendChild(script);
+    loadScriptOnce("data-doc-tit-presentation-ui", "shared/presentation-ui.js?v=20260911-1");
+  }
+
+  function loadSvdShell() {
+    loadScriptOnce("data-doc-tit-svd-shell", "shared/svd-shell.js?v=20260911-1");
   }
 
   function init() {
@@ -171,6 +170,7 @@
     loadDocumentCore();
     loadRuntimeFixes();
     loadPresentationUI();
+    loadSvdShell();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
