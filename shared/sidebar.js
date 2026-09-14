@@ -118,7 +118,7 @@
   function loadSvdStyles(){loadStyleOnce("data-doc-tit-svd-shell","shared/svd-shell.css?v=20260914-minimal-1");}
   function loadReferenceStyles(){loadStyleOnce("data-doc-tit-reference-ui","shared/reference-ui.css?v=20260914-sections-1");}
   function loadSectionManifest(){loadScriptOnce("data-doc-tit-section-manifest","shared/document-sections.js?v=20260914-1");}
-  function loadSvdShell(){loadScriptOnce("data-doc-tit-svd-shell","shared/svd-shell.js?v=20260914-sections-1");}
+  function loadSvdShell(){loadScriptOnce("data-doc-tit-svd-shell","shared/svd-shell.js?v=20260914-sections-2");}
   function loadReferenceUI(){loadScriptOnce("data-doc-tit-reference-ui","shared/reference-ui.js?v=20260914-sections-1");}
 
   function init(){
