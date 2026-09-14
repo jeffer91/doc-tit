@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  // Shared DOC-TIT navigation · v11
+  // Shared DOC-TIT navigation · v12
 
   const LAST_DOCUMENT_KEY = "doc-tit-last-document";
 
@@ -173,6 +173,10 @@
     loadStyleOnce("data-doc-tit-minimal-ui", "shared/minimal-ui.css?v=20260914-final-1");
   }
 
+  function loadOrderedStyles() {
+    loadStyleOnce("data-doc-tit-ordered-ui", "shared/ordered-ui.css?v=20260914-order-1");
+  }
+
   function loadSvdShell() {
     loadScriptOnce("data-doc-tit-svd-shell", "shared/svd-shell.js?v=20260911-1");
   }
@@ -189,6 +193,7 @@
     loadPresentationUI();
     loadSvdStyles();
     loadMinimalStyles();
+    loadOrderedStyles();
     loadSvdShell();
   }
 
