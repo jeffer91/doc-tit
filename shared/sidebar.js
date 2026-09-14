@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  // Shared DOC-TIT navigation · v10
+  // Shared DOC-TIT navigation · v11
 
   const LAST_DOCUMENT_KEY = "doc-tit-last-document";
 
@@ -129,6 +129,15 @@
     document.body.appendChild(script);
   }
 
+  function loadStyleOnce(datasetKey,href) {
+    if (document.querySelector(`link[${datasetKey}]`)) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.setAttribute(datasetKey, "1");
+    link.href = resolveBasePath() + href;
+    document.head.appendChild(link);
+  }
+
   function loadPlanningTemplates() {
     loadScriptOnce("data-doc-tit-planning-templates", "shared/planning-templates.js?v=20260911-3");
   }
@@ -157,12 +166,11 @@
   }
 
   function loadSvdStyles() {
-    if (document.querySelector('link[data-doc-tit-svd-shell]')) return;
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.dataset.docTitSvdShell = "1";
-    link.href = resolveBasePath() + "shared/svd-shell.css?v=20260914-minimal-1";
-    document.head.appendChild(link);
+    loadStyleOnce("data-doc-tit-svd-shell", "shared/svd-shell.css?v=20260914-minimal-1");
+  }
+
+  function loadMinimalStyles() {
+    loadStyleOnce("data-doc-tit-minimal-ui", "shared/minimal-ui.css?v=20260914-final-1");
   }
 
   function loadSvdShell() {
@@ -180,6 +188,7 @@
     loadRuntimeFixes();
     loadPresentationUI();
     loadSvdStyles();
+    loadMinimalStyles();
     loadSvdShell();
   }
 
