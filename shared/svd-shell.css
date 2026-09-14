@@ -114,3 +114,101 @@
   .svd-section-tabs{gap:18px}
   .svd2 .doc-standard-heading,.svd2 .doc-heading,.svd2 .topbar{align-items:flex-start!important}
 }
+
+/* SVD 2.1 · Minimal UI
+   Menos cajas, menos sombras, menos texto visual y una jerarquía más limpia.
+   No cambia procesos, datos, validaciones ni generación de PDF. */
+.svd2 body{background:#fafbfc!important;color:#1f2937!important}
+.svd2 .main{width:min(1040px,100%);padding:14px 20px 44px!important}
+.svd-shell{background:rgba(250,251,252,.98);backdrop-filter:blur(8px);padding:0 0 8px;margin-bottom:14px;border-bottom:1px solid #e7ebef}
+.svd-topline{grid-template-columns:1fr auto auto;gap:10px;padding:8px 0 7px}
+.svd-brand strong{font-size:14px;font-weight:800;letter-spacing:-.01em}
+.svd-brand span{display:none}
+.svd-period-slot .period-box label{display:none!important}
+.svd-period-slot .period-box select{min-width:205px!important;padding:7px 30px 7px 9px!important;border-color:#e2e7ec!important;border-radius:7px!important;font-size:10.5px!important;font-weight:700!important}
+.svd-period-slot .mini,.svd-period-slot .period-add{width:28px!important;height:28px!important;border-color:#e2e7ec!important;border-radius:7px!important}
+.svd-details summary{padding:6px 8px;border-color:#e2e7ec;border-radius:7px;background:transparent;font-size:10px;font-weight:700}
+.svd-details-body{top:34px;border-color:#e2e7ec;border-radius:9px;box-shadow:0 10px 24px rgba(20,45,70,.08)}
+
+.svd-documents-slot{padding:1px 0 7px}
+.svd-documents-slot .doc-tit-nav,.svd-documents-slot .doc-tit-nav-links{gap:4px!important}
+.svd-documents-slot .doc-tit-nav-link{min-width:0;padding:8px 11px!important;border:0!important;border-radius:7px!important;background:transparent!important;color:#687386!important;font-size:11px!important;font-weight:700!important}
+.svd-documents-slot .doc-tit-nav-link::after{display:none!important}
+.svd-documents-slot .doc-tit-nav-link.active{background:#eef3f7!important;color:#0b2d4f!important}
+.svd-documents-slot .doc-tit-nav-link.active::before{left:10px;right:10px;height:2px;background:var(--svd-blue)}
+.svd-documents-slot .doc-tit-nav-link.finalized .doc-tit-nav-dot{width:6px;height:6px;min-width:6px}
+
+.svd-section-tabs{gap:18px;background:transparent;border-radius:0;padding:0;min-height:34px;border-bottom:1px solid #e7ebef}
+.svd-section-tabs button{font-size:10.5px;font-weight:700;padding:9px 0 8px;color:#778291}
+.svd-section-tabs button.active{color:#0b2d4f}
+.svd-section-tabs button.active::after{height:2px}
+.svd-tab-dot{width:5px;height:5px}
+
+.svd2 header.top,.svd2 .doc-heading,.svd2 header.topbar,.svd2 .doc-standard-heading{margin:0 0 9px!important}
+.svd2 .doc-standard-heading h1,.svd2 .top h1,.svd2 .doc-heading h2,.svd2 .topbar h1{font-size:18px!important;line-height:1.25!important;margin:2px 0!important;font-weight:800!important;letter-spacing:-.015em}
+.svd2 .eyebrow{font-size:9px!important;letter-spacing:.08em!important}
+.svd2 .doc-heading p,.svd2 .doc-standard-heading p{font-size:10.5px!important;line-height:1.4!important;color:#788493!important}
+.svd2 .doc-standard-badges{gap:5px!important;min-width:0!important}
+.svd2 .doc-standard-badge,.svd2 .doc-standard-workspace-state,.svd2 .doc-standard-card-chip{padding:4px 7px!important;font-size:9px!important;border-radius:999px!important;font-weight:700!important}
+.svd2 .doc-standard-card-chip.required,.svd2 .doc-standard-card-chip.optional{display:none!important}
+.svd2 .doc-standard-generate{padding:8px 11px!important;border-radius:7px!important;min-height:31px!important;font-size:10px!important}
+
+.svd2 .doc-standard-layout,.svd2 .document-layout{grid-template-columns:minmax(0,1fr) 260px!important;gap:10px!important}
+.svd2 .panel,.svd2 .doc-standard-workspace,.svd2 .doc-presentation-panel{border:1px solid #e5e9ee!important;border-radius:10px!important;background:#fff!important;box-shadow:none!important}
+.svd2 .panel{padding:14px!important}
+.svd2 .doc-standard-workspace{padding:0!important}
+.svd2 .doc-standard-workspace>.panel-head{padding:14px 15px 11px!important;border-bottom:1px solid #edf0f3!important}
+.svd2 .doc-standard-workspace>.progress{height:4px!important}
+.svd2 .doc-standard-workspace-note{margin-top:4px!important;font-size:10.5px!important;line-height:1.35!important;color:#7a8694!important}
+.svd2 .doc-standard-workspace-summary{padding:10px 14px!important;background:#fbfcfd!important;border-bottom:1px solid #edf0f3!important}
+.svd2 .doc-standard-workspace-summary strong{font-size:11px!important;margin-bottom:1px!important}
+.svd2 .doc-standard-workspace-summary span{font-size:9.5px!important}
+.svd2 .doc-standard-group-title{padding:13px 14px 6px!important;font-size:9px!important;letter-spacing:.07em!important}
+.svd2 .doc-standard-card-list{padding:0 9px 8px!important;gap:5px!important}
+.svd2 .doc-standard-card{grid-template-columns:minmax(0,1fr) auto!important;gap:8px 12px!important;padding:10px 11px!important;border-color:#edf0f3!important;border-radius:8px!important;background:#fff!important}
+.svd2 .doc-standard-card:hover{border-color:#dfe5ea!important;box-shadow:none!important}
+.svd2 .doc-standard-card-title-row{gap:5px!important;margin-bottom:2px!important}
+.svd2 .doc-standard-card-title{font-size:11px!important}
+.svd2 .doc-standard-card-desc{font-size:10px!important;line-height:1.35!important;margin:0 0 3px!important;color:#7a8694!important}
+.svd2 .doc-standard-card-meta{font-size:9.5px!important;font-weight:600!important;color:#607183!important}
+.svd2 .doc-standard-card-actions{gap:4px!important}
+.svd2 .doc-standard-card-actions button,.svd2 .secondary{padding:6px 8px!important;border-radius:6px!important;font-size:9.5px!important;font-weight:700!important;box-shadow:none!important}
+.svd2 .doc-standard-card-actions button{background:#f0f3f6!important;color:#29455f!important}
+.svd2 .doc-standard-card-actions button.primary-action{background:#1a78b5!important;color:#fff!important}
+.svd2 .doc-standard-editor-close{margin:-2px 0 7px!important}
+.svd2 .doc-standard-editor-close button{padding:6px 8px!important;border-radius:6px!important;font-size:9.5px!important;background:#f1f4f7!important}
+
+.svd2 .doc-standard-side .panel{position:static!important;padding:12px!important}
+.svd2 .doc-standard-auto{gap:5px!important;margin-top:8px!important}
+.svd2 .doc-standard-auto-row{padding-bottom:6px!important;border-bottom:1px solid #edf0f3!important}
+.svd2 .doc-standard-auto-row span{font-size:8.5px!important;letter-spacing:.03em!important}
+.svd2 .doc-standard-auto-row strong{margin-top:2px!important;font-size:10.5px!important;font-weight:700!important}
+
+.svd2 .doc-presentation-panel{margin:10px 0!important;padding:12px!important}
+.svd2 .doc-presentation-grid{gap:8px!important}
+.svd2 .doc-presentation-card{border-color:#edf0f3!important;border-radius:8px!important;background:#fff!important}
+.svd2 .doc-presentation-card>button{padding:9px 10px!important}
+.svd2 .doc-presentation-card-title{gap:6px!important;font-size:10.5px!important}
+.svd2 .doc-presentation-card-title .num{width:20px!important;height:20px!important;border-radius:6px!important;font-size:9px!important;background:#eef3f7!important;color:#29455f!important}
+.svd2 .doc-presentation-chip{padding:4px 6px!important;font-size:9px!important}
+.svd2 .doc-presentation-detail{padding:0 10px 10px!important}
+.svd2 .doc-cover-preview{box-shadow:none!important;border-color:#e5e9ee!important}
+.svd2 .doc-presentation-note{font-size:10px!important;color:#7a8694!important}
+
+.svd2 dialog{border-radius:10px!important;box-shadow:0 18px 45px rgba(0,0,0,.16)!important}
+.svd2 dialog .dialog{padding:18px!important}
+.svd2 dialog .dialog>h3{font-size:18px!important;margin-bottom:14px!important}
+.svd2 dialog .period-builder label{border-radius:8px!important;background:#fbfcfd!important;padding:10px!important}
+.svd2 dialog .period-builder select,.svd2 dialog .period-builder input{border-radius:7px!important;padding:8px!important}
+
+@media(max-width:1050px){
+  .svd2 .doc-standard-layout,.svd2 .document-layout{grid-template-columns:1fr!important}
+}
+@media(max-width:760px){
+  .svd2 .main{padding:10px 12px 34px!important}
+  .svd-brand strong{font-size:13px}
+  .svd-documents-slot .doc-tit-nav-link{min-width:max-content;padding:8px 10px!important}
+  .svd-section-tabs{gap:16px}
+  .svd2 .doc-standard-card{grid-template-columns:1fr!important}
+  .svd2 .doc-standard-card-actions{justify-content:flex-start!important}
+}
