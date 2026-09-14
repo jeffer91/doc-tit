@@ -1,0 +1,165 @@
+/* DOC-TIT · UI de referencia
+   Basada en la estructura visual aprobada de DocFormación.
+   Solo presentación: no altera datos, validaciones, sincronización ni PDFs. */
+
+:root{
+  --ref-navy:#0b2d4f;
+  --ref-blue:#153b62;
+  --ref-accent:#d6a91f;
+  --ref-bg:#f6f8fb;
+  --ref-card:#ffffff;
+  --ref-line:#dfe6ee;
+  --ref-muted:#748191;
+  --ref-green:#23704b;
+  --ref-green-bg:#eaf7f0;
+  --ref-yellow:#8b6416;
+  --ref-yellow-bg:#fff4d6;
+}
+
+.svd2 body{background:var(--ref-bg)!important;color:#172033!important}
+.svd2 .main{width:min(1040px,100%)!important;margin:0 auto!important;padding:0 22px 46px!important}
+
+/* Cabecera global: misma lectura limpia que DocFormación. */
+.svd-shell{position:sticky!important;top:0!important;z-index:50!important;background:rgba(255,255,255,.97)!important;backdrop-filter:blur(8px)!important;margin:0 -22px 20px!important;padding:0 22px!important;border-bottom:1px solid #e7ebef!important}
+.svd-topline{min-height:44px!important;padding:6px 0!important;display:grid!important;grid-template-columns:1fr auto auto!important;gap:10px!important;align-items:center!important}
+.svd-brand strong{font-size:14px!important;color:var(--ref-navy)!important;font-weight:850!important}
+.svd-brand span{display:none!important}
+.svd-period-slot .period-box{display:flex!important;align-items:center!important;gap:7px!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important}
+.svd-period-slot .period-box label{display:none!important}
+.svd-period-slot .period-box select{min-width:245px!important;height:34px!important;padding:6px 34px 6px 12px!important;border:1px solid var(--ref-line)!important;border-radius:8px!important;background:#fff!important;color:#18354e!important;font-size:10.5px!important;font-weight:750!important;box-shadow:none!important}
+.svd-period-slot .mini,.svd-period-slot .period-add{width:30px!important;height:30px!important;border:1px solid var(--ref-line)!important;border-radius:8px!important;background:#fff!important;color:var(--ref-navy)!important;box-shadow:none!important}
+.svd-period-slot .doc-core-period-status{padding:4px 8px!important;border-radius:999px!important;background:var(--ref-green-bg)!important;color:var(--ref-green)!important;font-size:9px!important;font-weight:800!important}
+.svd-details summary{width:34px!important;height:30px!important;padding:0!important;display:grid!important;place-items:center!important;border:0!important;background:transparent!important;color:#6c7988!important;font-size:0!important}
+.svd-details summary::before{content:"•••";font-size:12px;letter-spacing:1px}
+.svd-details-body{top:35px!important;border:1px solid var(--ref-line)!important;border-radius:9px!important;box-shadow:0 12px 30px rgba(20,45,70,.12)!important}
+
+/* Documentos: pestañas principales, sin tarjetas ni cajas pesadas. */
+.svd-documents-slot{padding:2px 0 6px!important;overflow-x:auto!important}
+.svd-documents-slot .doc-tit-nav,.svd-documents-slot .doc-tit-nav-links{display:flex!important;flex-direction:row!important;gap:4px!important;margin:0!important;padding:0!important;min-width:max-content!important}
+.svd-documents-slot .doc-tit-nav-group{display:contents!important}
+.svd-documents-slot .doc-tit-nav-group-title,.svd-documents-slot .doc-tit-global-heading{display:none!important}
+.svd-documents-slot .doc-tit-nav-link{min-width:0!important;padding:8px 12px!important;border:0!important;border-radius:9px!important;background:transparent!important;color:#526173!important;text-decoration:none!important;font-size:10.5px!important;font-weight:760!important;box-shadow:none!important;position:relative!important}
+.svd-documents-slot .doc-tit-nav-link::after{display:none!important}
+.svd-documents-slot .doc-tit-nav-link.active{background:#eaf3f7!important;color:var(--ref-navy)!important}
+.svd-documents-slot .doc-tit-nav-link.active::before{display:none!important}
+.svd-documents-slot .doc-tit-nav-dot{display:block!important;width:5px!important;height:5px!important;min-width:5px!important;border-radius:50%!important;background:#d3d9df!important;margin-right:7px!important}
+.svd-documents-slot .doc-tit-nav-link.active .doc-tit-nav-dot,.svd-documents-slot .doc-tit-nav-link.finalized .doc-tit-nav-dot{background:#38a169!important}
+
+/* Secciones: segunda línea simple con subrayado dorado. */
+.svd-section-tabs{display:flex!important;align-items:center!important;gap:20px!important;min-height:37px!important;padding:0 8px!important;margin:0 -8px!important;border-bottom:1px solid #e7ebef!important;background:#fff!important;border-radius:0!important;overflow-x:auto!important;scrollbar-width:none!important}
+.svd-section-tabs::-webkit-scrollbar{display:none!important}
+.svd-section-tabs button{position:relative!important;padding:10px 0 9px!important;border:0!important;background:transparent!important;color:#617084!important;font-size:9.5px!important;font-weight:720!important;white-space:nowrap!important}
+.svd-section-tabs button.active{color:var(--ref-navy)!important}
+.svd-section-tabs button.active::after{content:""!important;position:absolute!important;left:0!important;right:0!important;bottom:-1px!important;height:2px!important;background:var(--ref-accent)!important}
+.svd-tab-dot{width:5px!important;height:5px!important}
+.svd-tab-dot.pending{background:var(--ref-accent)!important}
+.svd-tab-dot.complete{background:#38a169!important}
+
+/* Encabezado del documento: compacto y sin repetir acciones. */
+.svd2 .doc-standard-heading{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important;margin:18px 0 16px!important;padding:0!important;border:0!important}
+.svd2 .doc-standard-heading-main{min-width:0!important}
+.svd2 .doc-standard-heading .eyebrow{font-size:8.5px!important;letter-spacing:.08em!important;color:#718096!important}
+.svd2 .doc-standard-heading h1{font-size:18px!important;line-height:1.25!important;margin:4px 0 0!important;color:#111827!important;font-weight:820!important}
+.svd2 .doc-standard-heading #periodText{display:none!important}
+.svd2 .doc-standard-heading #docCode{display:none!important}
+.svd2 .doc-standard-heading #generateBtn{display:none!important}
+.svd2 .doc-standard-badges{min-width:0!important;gap:6px!important}
+.svd2 .doc-standard-badge{padding:4px 7px!important;border-radius:999px!important;font-size:8.5px!important;font-weight:800!important}
+
+/* Una sola columna real. */
+.svd2 .doc-standard-layout,.svd2 .document-layout{display:flex!important;flex-direction:column!important;gap:14px!important;width:100%!important}
+.svd2 .doc-standard-side{order:-1!important;width:100%!important;margin:0!important}
+.svd2 .doc-standard-content{order:0!important;width:100%!important;min-width:0!important}
+
+/* Información automática: una tarjeta limpia, no una franja rota. */
+.svd2 .doc-standard-side .panel{position:static!important;margin:0!important;padding:15px 16px!important;border:1px solid var(--ref-line)!important;border-radius:10px!important;background:#fff!important;box-shadow:none!important}
+.svd2 .doc-standard-side .panel-head{margin:0 0 10px!important;padding:0!important}
+.svd2 .doc-standard-side .eyebrow{display:none!important}
+.svd2 .doc-standard-side h3{margin:0!important;font-size:11px!important;color:#18354e!important;font-weight:800!important}
+.svd2 .doc-standard-auto{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px 22px!important;margin:0!important;padding:0!important;border:0!important}
+.svd2 .doc-standard-auto-row{min-width:0!important;padding:0!important;border:0!important}
+.svd2 .doc-standard-auto-row span{display:block!important;margin-bottom:3px!important;color:#8491a0!important;font-size:7.5px!important;font-weight:800!important;letter-spacing:.04em!important;text-transform:uppercase!important}
+.svd2 .doc-standard-auto-row strong{display:block!important;margin:0!important;color:#20364d!important;font-size:9.5px!important;line-height:1.35!important;font-weight:720!important}
+
+/* La antigua zona de trabajo no debe dominar la pantalla de Información. */
+html[data-reference-section="information"] .doc-standard-workspace{display:none!important}
+html[data-reference-section="information"] .doc-standard-editor{display:none!important}
+html[data-reference-section="schedule"] .doc-standard-workspace,
+html[data-reference-section="distribution"] .doc-standard-workspace,
+html[data-reference-section="resources"] .doc-standard-workspace,
+html[data-reference-section="cover"] .doc-standard-workspace,
+html[data-reference-section="header"] .doc-standard-workspace{display:none!important}
+
+/* Editor real: solo se abre explícitamente desde Ver. */
+html[data-reference-section="schedule"] .doc-standard-editor:not(.reference-open),
+html[data-reference-section="distribution"] .doc-standard-editor:not(.reference-open){display:none!important}
+html[data-reference-section="schedule"] .doc-standard-editor.reference-open,
+html[data-reference-section="distribution"] .doc-standard-editor.reference-open{display:block!important;margin:12px 0 0!important}
+
+/* Plantillas: aspecto de tarjetas como DocFormación, nunca como popup montado. */
+#ptcenter{display:block;margin:0 0 14px!important;padding:0!important;width:100%!important;max-width:none!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+#ptcenter[hidden]{display:none!important}
+#ptcenter .pth{display:block!important;margin:0 0 10px!important}
+#ptcenter .pth small,#ptcenter .pth p,#ptcenter .ptrule{display:none!important}
+#ptcenter .pth h2{margin:0!important;color:#172033!important;font-size:13px!important;font-weight:820!important}
+#ptcenter .ptgrid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+#ptcenter .ptcard{display:flex!important;flex-direction:column!important;min-width:0!important;padding:14px!important;border:1px solid var(--ref-line)!important;border-radius:10px!important;background:#fff!important;box-shadow:none!important}
+#ptcenter .pttop{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:12px!important}
+#ptcenter .ptcard h3{margin:0 0 5px!important;color:#172033!important;font-size:11.5px!important;font-weight:820!important}
+#ptcenter .ptcard p{margin:0!important;color:#6f7d8d!important;font-size:9.5px!important;line-height:1.4!important}
+#ptcenter .ptmeta{margin:10px 0!important;color:#8a96a3!important;font-size:8.5px!important;line-height:1.35!important}
+#ptcenter .ptstatus{padding:4px 7px!important;border-radius:999px!important;font-size:8px!important;font-weight:800!important;background:#f0f3f6!important;color:#647386!important}
+#ptcenter .ptstatus.ok{background:var(--ref-green-bg)!important;color:var(--ref-green)!important}
+#ptcenter .ptstatus.warn{background:var(--ref-yellow-bg)!important;color:var(--ref-yellow)!important}
+#ptcenter .ptactions{display:flex!important;align-items:center!important;gap:4px!important;flex-wrap:wrap!important;margin-top:auto!important}
+#ptcenter .ptb{padding:6px 8px!important;border:0!important;border-radius:6px!important;background:transparent!important;color:#29455f!important;font-size:8.8px!important;font-weight:720!important;box-shadow:none!important;cursor:pointer!important}
+#ptcenter .ptb.p{order:-1!important;background:var(--ref-blue)!important;color:#fff!important}
+#ptcenter .ptb.s{background:#eef3f7!important;color:#203d59!important}
+#ptcenter .ptb.g{border:0!important;background:transparent!important;color:#315370!important}
+
+/* Evita duplicar la tarjeta Cronograma del antiguo workspace. */
+.doc-standard-card.reference-duplicate-schedule{display:none!important}
+
+/* Estado final del documento: una sola tarjeta, simple y accionable. */
+.reference-document-card{margin:12px 0 0!important;padding:14px!important;border:1px solid var(--ref-line)!important;border-radius:10px!important;background:#fff!important;box-shadow:none!important}
+.reference-document-card[hidden]{display:none!important}
+.reference-document-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.reference-document-head strong{font-size:11px;color:#18354e}
+.reference-document-badge{padding:4px 7px;border-radius:999px;background:var(--ref-yellow-bg);color:var(--ref-yellow);font-size:8px;font-weight:800}
+.reference-document-card.ready .reference-document-badge{background:var(--ref-green-bg);color:var(--ref-green)}
+.reference-document-message{margin:0 0 10px;padding:10px 11px;border-radius:8px;background:#fff8e6;color:#795b16;font-size:9.5px;line-height:1.4}
+.reference-document-card.ready .reference-document-message{background:#eaf7f0;color:#23704b}
+.reference-document-actions{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.reference-action{border:0;border-radius:6px;padding:7px 9px;background:transparent;color:#29455f;font-size:9px;font-weight:750;cursor:pointer}
+.reference-action.secondary{background:#eef3f7}
+.reference-action.primary{background:var(--ref-blue)!important;color:#fff!important}
+.reference-action:disabled{opacity:.45;cursor:not-allowed}
+
+/* Oculta residuos de la composición anterior. */
+.svd2 .doc-standard-workspace-actions{display:none!important}
+.svd2 .doc-standard-layout>.actions{display:none!important}
+.svd2 .svd-information-active #docStandardResourceTitle,
+.svd2 .svd-information-active #docStandardResourceCards{display:none!important}
+
+/* Modal de importación: solo aparece cuando se abre de verdad. */
+#ptmodal:not([open]){display:none!important}
+#ptmodal[open]{border:0!important;border-radius:12px!important;box-shadow:0 24px 60px rgba(0,0,0,.22)!important}
+#ptmodal .ptmi{padding:18px!important}
+#ptmodal .ptmh h2{font-size:17px!important}
+
+@media(max-width:760px){
+  .svd2 .main{padding:0 12px 34px!important}
+  .svd-shell{margin:0 -12px 16px!important;padding:0 12px!important;position:static!important}
+  .svd-topline{grid-template-columns:1fr auto!important;align-items:start!important}
+  .svd-period-slot{grid-column:1/-1!important;justify-self:stretch!important}
+  .svd-period-slot .period-box{width:100%!important}
+  .svd-period-slot .period-box select{min-width:0!important;width:100%!important}
+  .svd-documents-slot .doc-tit-nav-link{padding:8px 10px!important}
+  .svd-section-tabs{gap:16px!important}
+  .svd2 .doc-standard-heading{align-items:flex-start!important;flex-direction:column!important}
+  .svd2 .doc-standard-auto{grid-template-columns:1fr 1fr!important}
+  #ptcenter .ptgrid{grid-template-columns:1fr!important}
+}
+@media(max-width:480px){
+  .svd2 .doc-standard-auto{grid-template-columns:1fr!important}
+}
