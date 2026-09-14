@@ -5,6 +5,15 @@
   const documentId=nav?.dataset.activeDocument||"";
   if(!documentId)return;
 
+  function loadWorkScheduleTemplate(){
+    if(documentId!=="trabajo-titulacion"||document.querySelector("script[data-doc-tit-work-schedule-template]"))return;
+    const path=String(window.location.pathname||"/"),marker="/doc-tit/",idx=path.indexOf(marker);
+    const base=idx>=0?path.slice(0,idx)+marker:"/doc-tit/";
+    const script=document.createElement("script");script.async=false;script.dataset.docTitWorkScheduleTemplate="1";
+    script.src=base+"shared/work-schedule-template.js?v=20260914-1";document.body.appendChild(script);
+  }
+  loadWorkScheduleTemplate();
+
   const $=(s,r=document)=>r.querySelector(s);
   const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
   const manifest=window.DOC_TIT_SECTION_MANIFEST?.[documentId]||{sections:[],templateSections:{}};
