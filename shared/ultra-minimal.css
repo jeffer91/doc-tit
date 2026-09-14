@@ -1,1 +1,38 @@
-/* placeholder */
+/* DOC-TIT · limpieza final de información redundante
+   La navegación superior ya identifica documento y período. Estos bloques no aportan acción ni estado operativo. */
+
+html.doc-reference-ui #referenceDocHeading,
+html.doc-reference-ui #referenceInfoCard{
+  display:none!important;
+}
+
+/* Oculta cabeceras heredadas que repiten el nombre, unidad, código o diagnóstico del documento. */
+html.doc-reference-ui #docTitle,
+html.doc-reference-ui #screenTitle,
+html.doc-reference-ui #docCodeBadge,
+html.doc-reference-ui #documentView > .doc-heading,
+html.doc-reference-ui #documentView > header.top,
+html.doc-reference-ui #documentView > header.topbar,
+html.doc-reference-ui #documentView > .top,
+html.doc-reference-ui #documentView > .topbar,
+html.doc-reference-ui main.main > header.top,
+html.doc-reference-ui main.main > header.topbar,
+html.doc-reference-ui main.main > .doc-standard-heading{
+  display:none!important;
+}
+
+/* Chrome/Edge actuales: elimina el contenedor completo cuando el título heredado está anidado. */
+html.doc-reference-ui #documentView :has(> #screenTitle),
+html.doc-reference-ui #documentView :has(> #docTitle),
+html.doc-reference-ui main.main :has(> #screenTitle),
+html.doc-reference-ui main.main :has(> #docTitle){
+  display:none!important;
+}
+
+/* Información queda centrada en lo útil: estado y acciones del documento. */
+html.doc-reference-ui[data-doc-tit-section="information"] #referenceView{
+  margin-top:14px!important;
+}
+html.doc-reference-ui[data-doc-tit-section="information"] #referenceDocumentCard{
+  margin-top:0!important;
+}
