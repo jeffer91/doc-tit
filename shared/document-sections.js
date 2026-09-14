@@ -32,7 +32,7 @@
       editorSections: {
         schedule:"metodologia",
         distribution:"distribucion-estudiantes",
-        operational:"metodologia",
+        operational:"seminarios",
         nuclei:"seminarios"
       }
     },
