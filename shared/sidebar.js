@@ -1,202 +1,130 @@
 (() => {
   "use strict";
-  // Shared DOC-TIT navigation · v13
+  // Shared DOC-TIT navigation · v14
 
-  const LAST_DOCUMENT_KEY = "doc-tit-last-document";
+  const LAST_DOCUMENT_KEY="doc-tit-last-document";
 
-  function normalizePath(path) {
-    let value = String(path || "/").replace(/\\/g, "/");
-    if (!value.endsWith("/")) value += "/";
+  function normalizePath(path){
+    let value=String(path||"/").replace(/\\/g,"/");
+    if(!value.endsWith("/"))value+="/";
     return value;
   }
-
-  function resolveBasePath() {
-    const path = normalizePath(window.location.pathname);
-    const marker = "/doc-tit/";
-    const idx = path.indexOf(marker);
-    if (idx >= 0) return path.slice(0, idx) + marker;
-    return "/doc-tit/";
+  function resolveBasePath(){
+    const path=normalizePath(window.location.pathname),marker="/doc-tit/",idx=path.indexOf(marker);
+    return idx>=0?path.slice(0,idx)+marker:"/doc-tit/";
   }
-
-  function activeDocumentId() {
-    const explicit = document.querySelector("[data-doc-tit-navigation]")?.dataset.activeDocument;
-    if (explicit) return explicit;
-    const path = normalizePath(window.location.pathname);
-    const match = (window.DOC_TIT_DOCUMENTS || []).find(doc => path.includes(`/${doc.id}/`));
-    return match?.id || "";
+  function activeDocumentId(){
+    const explicit=document.querySelector("[data-doc-tit-navigation]")?.dataset.activeDocument;
+    if(explicit)return explicit;
+    const path=normalizePath(window.location.pathname);
+    return (window.DOC_TIT_DOCUMENTS||[]).find(doc=>path.includes(`/${doc.id}/`))?.id||"";
   }
+  function hrefFor(doc){return resolveBasePath()+String(doc.id||"").replace(/^\/+|\/+$/g,"")+"/";}
+  function rememberDocument(documentId){if(documentId)try{localStorage.setItem(LAST_DOCUMENT_KEY,documentId);}catch(_){}}
 
-  function hrefFor(doc) {
-    const base = resolveBasePath();
-    return base + String(doc.id || "").replace(/^\/+|\/+$/g, "") + "/";
-  }
-
-  function rememberDocument(documentId) {
-    if (!documentId) return;
-    try { localStorage.setItem(LAST_DOCUMENT_KEY, documentId); } catch (_) {}
-  }
-
-  function renderNavigation(container) {
-    const docs = Array.isArray(window.DOC_TIT_DOCUMENTS) ? window.DOC_TIT_DOCUMENTS : [];
-    if (!docs.length) return;
-    const activeId = activeDocumentId();
-    rememberDocument(activeId);
-    const groups = new Map();
-    docs.forEach(doc => {
-      const key = `${doc.process}::${doc.group}`;
-      if (!groups.has(key)) groups.set(key, { process: doc.process, group: doc.group, docs: [] });
+  function renderNavigation(container){
+    const docs=Array.isArray(window.DOC_TIT_DOCUMENTS)?window.DOC_TIT_DOCUMENTS:[];
+    if(!docs.length)return;
+    const activeId=activeDocumentId();rememberDocument(activeId);
+    const groups=new Map();
+    docs.forEach(doc=>{
+      const key=`${doc.process}::${doc.group}`;
+      if(!groups.has(key))groups.set(key,{process:doc.process,group:doc.group,docs:[]});
       groups.get(key).docs.push(doc);
     });
-    container.innerHTML = "";
-    container.classList.add("doc-tit-nav");
-    groups.forEach(group => {
-      const section = document.createElement("section");
-      section.className = "doc-tit-nav-group";
-      section.innerHTML = `<div class="doc-tit-nav-group-title"><span class="doc-tit-nav-code">${group.process}</span><span>${group.group}</span></div><div class="doc-tit-nav-links"></div>`;
-      const links = section.querySelector(".doc-tit-nav-links");
-      group.docs.forEach(doc => {
-        const link = document.createElement("a");
-        link.className = "doc-tit-nav-link" + (doc.id === activeId ? " active" : "");
-        link.href = hrefFor(doc);
-        link.dataset.documentId = doc.id;
-        link.innerHTML = `<span class="doc-tit-nav-dot" aria-hidden="true"></span><span>${doc.shortTitle || doc.title}</span>`;
-        link.addEventListener("click", () => rememberDocument(doc.id));
-        if (doc.id === activeId) link.setAttribute("aria-current", "page");
+    container.innerHTML="";container.classList.add("doc-tit-nav");
+    groups.forEach(group=>{
+      const section=document.createElement("section");section.className="doc-tit-nav-group";
+      section.innerHTML=`<div class="doc-tit-nav-group-title"><span class="doc-tit-nav-code">${group.process}</span><span>${group.group}</span></div><div class="doc-tit-nav-links"></div>`;
+      const links=section.querySelector(".doc-tit-nav-links");
+      group.docs.forEach(doc=>{
+        const link=document.createElement("a");
+        link.className="doc-tit-nav-link"+(doc.id===activeId?" active":"");
+        link.href=hrefFor(doc);link.dataset.documentId=doc.id;
+        link.innerHTML=`<span class="doc-tit-nav-dot" aria-hidden="true"></span><span>${doc.shortTitle||doc.title}</span>`;
+        link.addEventListener("click",()=>rememberDocument(doc.id));
+        if(doc.id===activeId)link.setAttribute("aria-current","page");
         links.appendChild(link);
       });
       container.appendChild(section);
     });
   }
 
-  function normalizeLegacyShell() {
-    document.querySelectorAll(".nav-back, .sidebar > a[href='../']").forEach(el => el.remove());
-    document.querySelectorAll(".sidebar").forEach(sidebar => {
-      Array.from(sidebar.childNodes).forEach(node => {
-        if (node.nodeType === Node.TEXT_NODE && String(node.textContent || "").includes("\\n")) node.remove();
+  function normalizeLegacyShell(){
+    document.querySelectorAll(".nav-back, .sidebar > a[href='../']").forEach(el=>el.remove());
+    document.querySelectorAll(".sidebar").forEach(sidebar=>{
+      Array.from(sidebar.childNodes).forEach(node=>{
+        if(node.nodeType===Node.TEXT_NODE&&String(node.textContent||"").includes("\\n"))node.remove();
       });
     });
   }
-
-  function fixSummaryGrammar() {
-    const el = document.querySelector("#periodDocumentSummary");
-    if (!el) return;
-    const match = String(el.textContent || "").match(/^(\d+) documentos · (\d+) generados$/);
-    if (!match) return;
-    const docs = Number(match[1]), generated = Number(match[2]);
-    el.textContent = `${docs} ${docs === 1 ? "documento" : "documentos"} · ${generated} ${generated === 1 ? "generado" : "generados"}`;
+  function fixSummaryGrammar(){
+    const el=document.querySelector("#periodDocumentSummary");if(!el)return;
+    const match=String(el.textContent||"").match(/^(\d+) documentos · (\d+) generados$/);if(!match)return;
+    const docs=Number(match[1]),generated=Number(match[2]);
+    el.textContent=`${docs} ${docs===1?"documento":"documentos"} · ${generated} ${generated===1?"generado":"generados"}`;
   }
-
-  function openComplexivoDirect() {
-    if (activeDocumentId() !== "complexivo") return;
-    const dashboard = document.querySelector("#dashboardView");
-    const documentView = document.querySelector("#documentView");
-    if (documentView?.classList.contains("active") && !dashboard?.classList.contains("active")) return;
+  function openComplexivoDirect(){
+    if(activeDocumentId()!=="complexivo")return;
+    const dashboard=document.querySelector("#dashboardView"),documentView=document.querySelector("#documentView");
+    if(documentView?.classList.contains("active")&&!dashboard?.classList.contains("active"))return;
     document.querySelector('#processMenu [data-doc="plan-examen-complexivo"]')?.click();
   }
-
-  function keepComplexivoDirect() {
-    if (activeDocumentId() !== "complexivo") return;
-    const dashboard = document.querySelector("#dashboardView");
-    if (dashboard) {
-      const observer = new MutationObserver(() => {
-        fixSummaryGrammar();
-        if (dashboard.classList.contains("active")) window.setTimeout(openComplexivoDirect, 0);
-      });
-      observer.observe(dashboard, { attributes: true, attributeFilter: ["class"], childList: true, subtree: true });
+  function keepComplexivoDirect(){
+    if(activeDocumentId()!=="complexivo")return;
+    const dashboard=document.querySelector("#dashboardView");
+    if(dashboard){
+      const observer=new MutationObserver(()=>{fixSummaryGrammar();if(dashboard.classList.contains("active"))window.setTimeout(openComplexivoDirect,0);});
+      observer.observe(dashboard,{attributes:true,attributeFilter:["class"],childList:true,subtree:true});
     }
-    document.querySelector("#periodSelect")?.addEventListener("change", () => window.setTimeout(openComplexivoDirect, 0));
-    window.setTimeout(openComplexivoDirect, 0);
+    document.querySelector("#periodSelect")?.addEventListener("change",()=>window.setTimeout(openComplexivoDirect,0));
+    window.setTimeout(openComplexivoDirect,0);
   }
-
-  function persistTemplateImport() {
-    if (document.documentElement.dataset.docTitTemplatePersist === "1") return;
-    document.documentElement.dataset.docTitTemplatePersist = "1";
-    document.addEventListener("click", event => {
-      if (event.target?.id !== "ptapply") return;
-      window.setTimeout(() => {
-        const active = activeDocumentId();
-        if (active === "complexivo") document.querySelector("#saveDraftBtn")?.click();
+  function persistTemplateImport(){
+    if(document.documentElement.dataset.docTitTemplatePersist==="1")return;
+    document.documentElement.dataset.docTitTemplatePersist="1";
+    document.addEventListener("click",event=>{
+      if(event.target?.id!=="ptapply")return;
+      window.setTimeout(()=>{
+        const active=activeDocumentId();
+        if(active==="complexivo")document.querySelector("#saveDraftBtn")?.click();
         else document.querySelector("#saveBtn")?.click();
-      }, 120);
+      },120);
     });
   }
 
-  function loadScriptOnce(datasetKey,src) {
-    if (document.querySelector(`script[${datasetKey}]`)) return;
-    const script = document.createElement("script");
-    script.setAttribute(datasetKey, "1");
-    script.src = resolveBasePath() + src;
-    document.body.appendChild(script);
+  function loadScriptOnce(datasetKey,src){
+    if(document.querySelector(`script[${datasetKey}]`))return;
+    const script=document.createElement("script");script.setAttribute(datasetKey,"1");script.src=resolveBasePath()+src;document.body.appendChild(script);
   }
-
-  function loadStyleOnce(datasetKey,href) {
-    if (document.querySelector(`link[${datasetKey}]`)) return;
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.setAttribute(datasetKey, "1");
-    link.href = resolveBasePath() + href;
-    document.head.appendChild(link);
+  function loadStyleOnce(datasetKey,href){
+    if(document.querySelector(`link[${datasetKey}]`))return;
+    const link=document.createElement("link");link.rel="stylesheet";link.setAttribute(datasetKey,"1");link.href=resolveBasePath()+href;document.head.appendChild(link);
   }
-
-  function loadPlanningTemplates() {
-    loadScriptOnce("data-doc-tit-planning-templates", "shared/planning-templates.js?v=20260911-3");
-  }
-
-  function loadDocumentCore() {
-    if (!document.querySelector('link[data-doc-tit-document-core], link[href*="document-core.css"]')) {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.dataset.docTitDocumentCore = "1";
-      link.href = resolveBasePath() + "shared/document-core.css?v=20260911-2";
-      document.head.appendChild(link);
+  function loadPlanningTemplates(){loadScriptOnce("data-doc-tit-planning-templates","shared/planning-templates.js?v=20260911-3");}
+  function loadDocumentCore(){
+    if(!document.querySelector('link[data-doc-tit-document-core], link[href*="document-core.css"]')){
+      const link=document.createElement("link");link.rel="stylesheet";link.dataset.docTitDocumentCore="1";link.href=resolveBasePath()+"shared/document-core.css?v=20260911-2";document.head.appendChild(link);
     }
-    if (window.DOC_TIT_CORE || document.querySelector('script[data-doc-tit-document-core], script[src*="document-core.js"]')) return;
-    const script = document.createElement("script");
-    script.dataset.docTitDocumentCore = "1";
-    script.src = resolveBasePath() + "shared/document-core.js?v=20260911-2";
-    document.body.appendChild(script);
+    if(window.DOC_TIT_CORE||document.querySelector('script[data-doc-tit-document-core], script[src*="document-core.js"]'))return;
+    const script=document.createElement("script");script.dataset.docTitDocumentCore="1";script.src=resolveBasePath()+"shared/document-core.js?v=20260911-2";document.body.appendChild(script);
   }
+  function loadRuntimeFixes(){loadScriptOnce("data-doc-tit-runtime-fixes","shared/runtime-fixes.js?v=20260911-1");}
+  function loadPresentationUI(){loadScriptOnce("data-doc-tit-presentation-ui","shared/presentation-ui.js?v=20260911-1");}
+  function loadSvdStyles(){loadStyleOnce("data-doc-tit-svd-shell","shared/svd-shell.css?v=20260914-minimal-1");}
+  function loadReferenceStyles(){loadStyleOnce("data-doc-tit-reference-ui","shared/reference-ui.css?v=20260914-sections-1");}
+  function loadSectionManifest(){loadScriptOnce("data-doc-tit-section-manifest","shared/document-sections.js?v=20260914-1");}
+  function loadSvdShell(){loadScriptOnce("data-doc-tit-svd-shell","shared/svd-shell.js?v=20260914-sections-1");}
+  function loadReferenceUI(){loadScriptOnce("data-doc-tit-reference-ui","shared/reference-ui.js?v=20260914-sections-1");}
 
-  function loadRuntimeFixes() {
-    loadScriptOnce("data-doc-tit-runtime-fixes", "shared/runtime-fixes.js?v=20260911-1");
-  }
-
-  function loadPresentationUI() {
-    loadScriptOnce("data-doc-tit-presentation-ui", "shared/presentation-ui.js?v=20260911-1");
-  }
-
-  function loadSvdStyles() {
-    loadStyleOnce("data-doc-tit-svd-shell", "shared/svd-shell.css?v=20260914-minimal-1");
-  }
-
-  function loadReferenceStyles() {
-    loadStyleOnce("data-doc-tit-reference-ui", "shared/reference-ui.css?v=20260914-1");
-  }
-
-  function loadSvdShell() {
-    loadScriptOnce("data-doc-tit-svd-shell", "shared/svd-shell.js?v=20260911-1");
-  }
-
-  function loadReferenceUI() {
-    loadScriptOnce("data-doc-tit-reference-ui", "shared/reference-ui.js?v=20260914-1");
-  }
-
-  function init() {
+  function init(){
     document.querySelectorAll("[data-doc-tit-navigation]").forEach(renderNavigation);
-    normalizeLegacyShell();
-    fixSummaryGrammar();
-    keepComplexivoDirect();
-    persistTemplateImport();
-    loadPlanningTemplates();
-    loadDocumentCore();
-    loadRuntimeFixes();
-    loadPresentationUI();
-    loadSvdStyles();
-    loadReferenceStyles();
-    loadSvdShell();
-    loadReferenceUI();
+    normalizeLegacyShell();fixSummaryGrammar();keepComplexivoDirect();persistTemplateImport();
+    loadPlanningTemplates();loadDocumentCore();loadRuntimeFixes();loadPresentationUI();loadSvdStyles();loadReferenceStyles();
+    loadSectionManifest();
+    // El manifiesto debe estar disponible antes de construir las pestañas. Los scripts dinámicos conservan orden de inserción.
+    loadSvdShell();loadReferenceUI();
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
-  else init();
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
