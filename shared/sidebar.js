@@ -95,7 +95,11 @@
 
   function loadScriptOnce(datasetKey,src){
     if(document.querySelector(`script[${datasetKey}]`))return;
-    const script=document.createElement("script");script.setAttribute(datasetKey,"1");script.src=resolveBasePath()+src;document.body.appendChild(script);
+    const script=document.createElement("script");
+    script.async=false;
+    script.setAttribute(datasetKey,"1");
+    script.src=resolveBasePath()+src;
+    document.body.appendChild(script);
   }
   function loadStyleOnce(datasetKey,href){
     if(document.querySelector(`link[${datasetKey}]`))return;
@@ -107,7 +111,7 @@
       const link=document.createElement("link");link.rel="stylesheet";link.dataset.docTitDocumentCore="1";link.href=resolveBasePath()+"shared/document-core.css?v=20260911-2";document.head.appendChild(link);
     }
     if(window.DOC_TIT_CORE||document.querySelector('script[data-doc-tit-document-core], script[src*="document-core.js"]'))return;
-    const script=document.createElement("script");script.dataset.docTitDocumentCore="1";script.src=resolveBasePath()+"shared/document-core.js?v=20260911-2";document.body.appendChild(script);
+    const script=document.createElement("script");script.async=false;script.dataset.docTitDocumentCore="1";script.src=resolveBasePath()+"shared/document-core.js?v=20260911-2";document.body.appendChild(script);
   }
   function loadRuntimeFixes(){loadScriptOnce("data-doc-tit-runtime-fixes","shared/runtime-fixes.js?v=20260911-1");}
   function loadPresentationUI(){loadScriptOnce("data-doc-tit-presentation-ui","shared/presentation-ui.js?v=20260911-1");}
@@ -121,9 +125,7 @@
     document.querySelectorAll("[data-doc-tit-navigation]").forEach(renderNavigation);
     normalizeLegacyShell();fixSummaryGrammar();keepComplexivoDirect();persistTemplateImport();
     loadPlanningTemplates();loadDocumentCore();loadRuntimeFixes();loadPresentationUI();loadSvdStyles();loadReferenceStyles();
-    loadSectionManifest();
-    // El manifiesto debe estar disponible antes de construir las pestañas. Los scripts dinámicos conservan orden de inserción.
-    loadSvdShell();loadReferenceUI();
+    loadSectionManifest();loadSvdShell();loadReferenceUI();
   }
 
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
