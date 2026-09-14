@@ -30,16 +30,38 @@
   let generationWatchBound=false;
 
   function ensureStyles(){
-    if(document.querySelector('link[data-doc-tit-svd-shell]'))return;
-    const link=document.createElement("link");
-    link.rel="stylesheet";
-    link.dataset.docTitSvdShell="1";
-    const path=String(window.location.pathname||"");
-    const marker="/doc-tit/";
-    const idx=path.indexOf(marker);
-    const base=idx>=0?path.slice(0,idx)+marker:"/doc-tit/";
-    link.href=base+"shared/svd-shell.css?v=20260914-sections-1";
-    document.head.appendChild(link);
+    if(!document.querySelector('link[data-doc-tit-svd-shell]')){
+      const link=document.createElement("link");
+      link.rel="stylesheet";
+      link.dataset.docTitSvdShell="1";
+      const path=String(window.location.pathname||"");
+      const marker="/doc-tit/";
+      const idx=path.indexOf(marker);
+      const base=idx>=0?path.slice(0,idx)+marker:"/doc-tit/";
+      link.href=base+"shared/svd-shell.css?v=20260914-sections-1";
+      document.head.appendChild(link);
+    }
+    if(document.querySelector("#svdSectionMoreStyles"))return;
+    const style=document.createElement("style");
+    style.id="svdSectionMoreStyles";
+    style.textContent=`
+      .svd-section-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:stretch;border-bottom:1px solid #e7ebef;background:#fff;position:relative}
+      .svd-section-row>.svd-section-tabs{min-width:0!important;border-bottom:0!important;margin-bottom:0!important}
+      .svd-section-more{position:relative;align-self:stretch;display:flex;align-items:center;margin-left:10px;background:#fff}
+      .svd-section-more[hidden]{display:none!important}
+      .svd-section-more summary{list-style:none;display:flex;align-items:center;gap:5px;height:100%;min-height:36px;padding:0 7px;cursor:pointer;color:#0b2d4f;font-size:9.5px;font-weight:800;white-space:nowrap;border:0;background:#fff}
+      .svd-section-more summary::-webkit-details-marker{display:none}
+      .svd-section-more summary::after{content:"⌄";font-size:10px;color:#8290a0}
+      .svd-section-more[open] summary{color:#153b62}
+      .svd-section-more-menu{position:absolute;right:0;top:calc(100% + 5px);z-index:90;width:min(330px,88vw);max-height:min(520px,70vh);overflow:auto;padding:7px;background:#fff;border:1px solid #dfe6ee;border-radius:10px;box-shadow:0 14px 34px rgba(20,45,70,.16)}
+      .svd-section-more-item{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 9px;border:0;border-radius:7px;background:transparent;color:#42566b;text-align:left;font:inherit;font-size:9.5px;font-weight:720;line-height:1.25;cursor:pointer}
+      .svd-section-more-item:hover{background:#f3f6f8;color:#0b2d4f}
+      .svd-section-more-item.active{background:#eaf3f7;color:#0b2d4f}
+      .svd-more-dot{width:6px;height:6px;min-width:6px;border-radius:50%;background:#d3d9df}
+      .svd-more-dot.complete{background:#38a169}.svd-more-dot.pending{background:#d6a91f}
+      @media(max-width:760px){.svd-section-more{margin-left:6px}.svd-section-more summary{padding:0 5px}.svd-section-more-menu{right:-2px}}
+    `;
+    document.head.appendChild(style);
   }
 
   function documentTitle(){
@@ -103,7 +125,10 @@
         <details class="svd-details"><summary>Más detalles</summary><div class="svd-details-body"></div></details>
       </div>
       <div class="svd-documents-slot" aria-label="Documentos"></div>
-      <nav class="svd-section-tabs" aria-label="Secciones del documento"></nav>`;
+      <div class="svd-section-row">
+        <nav class="svd-section-tabs" aria-label="Secciones del documento"></nav>
+        <details class="svd-section-more"><summary>Más</summary><div class="svd-section-more-menu" role="menu" aria-label="Más secciones"></div></details>
+      </div>`;
     host.prepend(root);
 
     const period=$(".sidebar .period-box")||$(".period-box");
@@ -128,6 +153,25 @@
       button.innerHTML=`<span>${item.label}</span><i class="svd-tab-dot" aria-hidden="true"></i>`;
       button.addEventListener("click",()=>activate(item.id,true));
       tabs?.appendChild(button);
+    });
+
+    const more=$(".svd-section-more",root);
+    const moreMenu=$(".svd-section-more-menu",root);
+    const documentSections=sectionDefs.filter(item=>(item.kind||"document")==="document");
+    if(!documentSections.length)more?.setAttribute("hidden","");
+    documentSections.forEach(item=>{
+      const button=document.createElement("button");
+      button.type="button";
+      button.className="svd-section-more-item";
+      button.dataset.svdMoreSection=item.id;
+      button.setAttribute("role","menuitem");
+      button.title=item.title||item.label;
+      button.innerHTML=`<span>${item.title||item.label}</span><i class="svd-more-dot" aria-hidden="true"></i>`;
+      button.addEventListener("click",()=>{
+        activate(item.id,true);
+        more?.removeAttribute("open");
+      });
+      moreMenu?.appendChild(button);
     });
 
     document.documentElement.classList.add("svd2");
@@ -194,6 +238,15 @@
       btn.classList.toggle("active",selected);
       btn.setAttribute("aria-current",selected?"page":"false");
     });
+    $$("[data-svd-more-section]",root).forEach(btn=>{
+      const selected=btn.dataset.svdMoreSection===section;
+      btn.classList.toggle("active",selected);
+      if(selected)btn.setAttribute("aria-current","page");else btn.removeAttribute("aria-current");
+    });
+    if(persist){
+      const tab=$(`.svd-section-tabs [data-svd-section="${section}"]`,root);
+      tab?.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});
+    }
 
     presentationMode(section==="cover"||section==="header"?section:"");
     refreshStatus();
@@ -299,13 +352,20 @@
     const root=$("#svdShell");
     if(!root)return;
     sectionDefs.forEach(item=>{
-      const btn=$(`[data-svd-section="${item.id}"]`,root);
-      const dot=$(".svd-tab-dot",btn);
-      if(!dot)return;
       const complete=sectionComplete(item);
-      dot.classList.toggle("complete",complete);
-      dot.classList.toggle("pending",!complete&&item.id!=="information");
-      dot.hidden=item.id==="information";
+      const btn=$(`.svd-section-tabs [data-svd-section="${item.id}"]`,root);
+      const dot=$(".svd-tab-dot",btn);
+      if(dot){
+        dot.classList.toggle("complete",complete);
+        dot.classList.toggle("pending",!complete&&item.id!=="information");
+        dot.hidden=item.id==="information";
+      }
+      const moreBtn=$(`[data-svd-more-section="${item.id}"]`,root);
+      const moreDot=$(".svd-more-dot",moreBtn);
+      if(moreDot){
+        moreDot.classList.toggle("complete",complete);
+        moreDot.classList.toggle("pending",!complete);
+      }
     });
   }
 
@@ -380,6 +440,8 @@
     document.addEventListener("input",event=>{markCurrentStale(event.target);scheduleRefresh();},true);
     document.addEventListener("change",event=>{markCurrentStale(event.target);scheduleRefresh();},true);
     document.addEventListener("click",event=>{
+      const more=$("#svdShell .svd-section-more");
+      if(more?.open&&!more.contains(event.target))more.removeAttribute("open");
       if(event.target?.closest("#ptapply,#applyImportBtn,#approveScheduleBtn,#addScheduleBtn,[data-add],[data-del],[data-move],.row-remove"))markCurrentStale(event.target);
       if(event.target?.closest(".doc-presentation-card,#newPeriodBtn,#ptapply,#applyImportBtn,#approveScheduleBtn,#addScheduleBtn,[data-add],[data-del],[data-move],.row-remove"))setTimeout(scheduleRefresh,100);
     },true);
