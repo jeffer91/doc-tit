@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  // Shared DOC-TIT navigation · v12
+  // Shared DOC-TIT navigation · v13
 
   const LAST_DOCUMENT_KEY = "doc-tit-last-document";
 
@@ -169,16 +169,16 @@
     loadStyleOnce("data-doc-tit-svd-shell", "shared/svd-shell.css?v=20260914-minimal-1");
   }
 
-  function loadMinimalStyles() {
-    loadStyleOnce("data-doc-tit-minimal-ui", "shared/minimal-ui.css?v=20260914-final-1");
-  }
-
-  function loadOrderedStyles() {
-    loadStyleOnce("data-doc-tit-ordered-ui", "shared/ordered-ui.css?v=20260914-order-1");
+  function loadReferenceStyles() {
+    loadStyleOnce("data-doc-tit-reference-ui", "shared/reference-ui.css?v=20260914-1");
   }
 
   function loadSvdShell() {
     loadScriptOnce("data-doc-tit-svd-shell", "shared/svd-shell.js?v=20260911-1");
+  }
+
+  function loadReferenceUI() {
+    loadScriptOnce("data-doc-tit-reference-ui", "shared/reference-ui.js?v=20260914-1");
   }
 
   function init() {
@@ -192,9 +192,9 @@
     loadRuntimeFixes();
     loadPresentationUI();
     loadSvdStyles();
-    loadMinimalStyles();
-    loadOrderedStyles();
+    loadReferenceStyles();
     loadSvdShell();
+    loadReferenceUI();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
