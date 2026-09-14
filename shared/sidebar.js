@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  // Shared DOC-TIT navigation · v9
+  // Shared DOC-TIT navigation · v10
 
   const LAST_DOCUMENT_KEY = "doc-tit-last-document";
 
@@ -156,6 +156,15 @@
     loadScriptOnce("data-doc-tit-presentation-ui", "shared/presentation-ui.js?v=20260911-1");
   }
 
+  function loadSvdStyles() {
+    if (document.querySelector('link[data-doc-tit-svd-shell]')) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.dataset.docTitSvdShell = "1";
+    link.href = resolveBasePath() + "shared/svd-shell.css?v=20260914-minimal-1";
+    document.head.appendChild(link);
+  }
+
   function loadSvdShell() {
     loadScriptOnce("data-doc-tit-svd-shell", "shared/svd-shell.js?v=20260911-1");
   }
@@ -170,6 +179,7 @@
     loadDocumentCore();
     loadRuntimeFixes();
     loadPresentationUI();
+    loadSvdStyles();
     loadSvdShell();
   }
 
