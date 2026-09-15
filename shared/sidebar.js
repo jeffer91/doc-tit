@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  // Shared DOC-TIT navigation · v17
+  // Shared DOC-TIT navigation · v18
 
   const LAST_DOCUMENT_KEY="doc-tit-last-document";
 
@@ -121,16 +121,20 @@
   function loadSectionManifest(){loadScriptOnce("data-doc-tit-section-manifest","shared/document-sections.js?v=20260914-1");}
   function loadSvdShell(){loadScriptOnce("data-doc-tit-svd-shell","shared/svd-shell.js?v=20260914-sections-2");}
   function loadReferenceUI(){loadScriptOnce("data-doc-tit-reference-ui","shared/reference-ui.js?v=20260914-sections-1");}
+  function loadMultiSchedules(){
+    loadStyleOnce("data-doc-tit-multi-schedules-style","shared/multi-schedules.css?v=20260915-1");
+    loadScriptOnce("data-doc-tit-multi-schedules","shared/multi-schedules.js?v=20260915-1");
+  }
   function loadPendingSummary(){
     loadStyleOnce("data-doc-tit-pending-summary-style","shared/pending-summary.css?v=20260915-1");
-    loadScriptOnce("data-doc-tit-pending-summary","shared/pending-summary.js?v=20260915-1");
+    loadScriptOnce("data-doc-tit-pending-summary","shared/pending-summary.js?v=20260915-2");
   }
 
   function init(){
     document.querySelectorAll("[data-doc-tit-navigation]").forEach(renderNavigation);
     normalizeLegacyShell();fixSummaryGrammar();keepComplexivoDirect();persistTemplateImport();
     loadPlanningTemplates();loadDocumentCore();loadRuntimeFixes();loadPresentationUI();loadSvdStyles();loadReferenceStyles();loadUltraMinimalStyles();
-    loadSectionManifest();loadSvdShell();loadReferenceUI();loadPendingSummary();
+    loadSectionManifest();loadSvdShell();loadReferenceUI();loadMultiSchedules();loadPendingSummary();
   }
 
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
