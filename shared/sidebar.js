@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  // Shared DOC-TIT navigation · v18
+  // Shared DOC-TIT navigation · v19
 
   const LAST_DOCUMENT_KEY="doc-tit-last-document";
 
@@ -124,6 +124,7 @@
   function loadMultiSchedules(){
     loadStyleOnce("data-doc-tit-multi-schedules-style","shared/multi-schedules.css?v=20260915-1");
     loadScriptOnce("data-doc-tit-multi-schedules","shared/multi-schedules.js?v=20260915-1");
+    loadScriptOnce("data-doc-tit-schedule-template-download","shared/schedule-template-download.js?v=20260917-1");
   }
   function loadPendingSummary(){
     loadStyleOnce("data-doc-tit-pending-summary-style","shared/pending-summary.css?v=20260915-1");
